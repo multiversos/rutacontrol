@@ -9,7 +9,9 @@ Base operativa del MVP interno para control diario y financiero de una flota peq
 - Login con redireccion por rol y validacion de `profiles.active`.
 - CRUD de rutas y buses para `admin`.
 - Registro diario con calculo en vivo alineado al redondeo SQL y bloqueo final por constraint.
-- Preparacion de deploy para Vercel a nivel de codigo.
+- Rutas reales verificadas en `/dashboard`, `/dashboard/buses`, `/dashboard/routes`, `/dashboard/daily` y `/dashboard/daily/new`.
+- Validacion local completada: `npm install`, `npm run typecheck`, `npm run lint` y `npm run build` ejecutados con exito.
+- Git inicializado en `main` y remoto `origin` configurado a `https://github.com/multiversos/rutacontrol.git`.
 
 ## Stack tecnico
 
@@ -78,6 +80,21 @@ npx supabase gen types typescript --project-id "<PROJECT_REF>" --schema public >
 - buses de ejemplo
 - promocion de `admin@rutacontrol.local` a rol `admin` si el usuario ya existe en `auth.users`
 
+## Git y remoto
+
+Estado actual:
+
+- repo local inicializado en `main`
+- commit local creado
+- remoto `origin` configurado
+- push pendiente hasta que exista el repo remoto
+
+Comandos pendientes cuando exista el repo `multiversos/rutacontrol`:
+
+```bash
+git push -u origin main
+```
+
 ## Vercel
 
 Next.js se detecta automaticamente. Configura en Vercel:
@@ -90,29 +107,16 @@ Next.js se detecta automaticamente. Configura en Vercel:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` si aplica
 - `SUPABASE_SERVICE_ROLE_KEY` solo si se necesitara para procesos privilegiados
 
-## Git y remoto
+## Bloqueos externos reales
 
-Cuando `git` este disponible:
-
-```bash
-git init -b main
-git add .
-git commit -m "feat: bootstrap sprint 1 base"
-git remote add origin https://github.com/multiversos/rutacontrol.git
-git push -u origin main
-```
-
-## Bloqueos del entorno
-
-- `git` no esta disponible en la maquina o no esta en PATH.
-- `node` no esta disponible en la maquina o no esta en PATH.
-- `npm` no esta disponible en la maquina o no esta en PATH.
-- `pnpm` no esta disponible en la maquina o no esta en PATH.
+- Falta crear o proporcionar el repositorio remoto `multiversos/rutacontrol`.
+- Falta crear el proyecto Supabase y entregar credenciales reales.
+- Falta crear o vincular el proyecto de Vercel.
+- El conector de Vercel disponible en este entorno no pudo materializar el deploy automaticamente y remitio al flujo de CLI o Git integration.
 
 ## Pasos manuales inevitables
 
-1. Instalar `git` y Node.js `>= 20.9`.
-2. Crear o proporcionar el repositorio `multiversos/rutacontrol`.
-3. Crear el proyecto Supabase y completar las variables reales en `.env.local`.
-4. Ejecutar instalacion, validaciones y build.
-5. Importar o desplegar el proyecto en Vercel con las variables configuradas.
+1. Crear o proporcionar el repositorio `multiversos/rutacontrol`.
+2. Crear el proyecto Supabase y completar las variables reales en `.env.local`.
+3. Empujar `main` al remoto con `git push -u origin main`.
+4. Crear o vincular el proyecto en Vercel y cargar las variables de entorno.
