@@ -41,10 +41,13 @@
 - [x] `npm run typecheck`
 - [x] `npm run lint`
 - [x] `npm run build`
-- [ ] deploy inicial en Vercel
+- [x] proyecto Vercel creado y enlazado
+- [x] deploy inicial en Vercel
+- [x] preview deployment generado
+- [x] production deployment generado
 
 ## Bloqueos externos reales
 
 - [ ] Crear o proporcionar el repo remoto `multiversos/rutacontrol`
 - [ ] Crear proyecto Supabase y entregar credenciales reales
-- [ ] Conectar o crear proyecto en Vercel
+- [ ] Conectar GitHub al repo real para sincronizacion continua

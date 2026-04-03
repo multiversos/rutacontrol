@@ -12,6 +12,8 @@ Base operativa del MVP interno para control diario y financiero de una flota peq
 - Rutas reales verificadas en `/dashboard`, `/dashboard/buses`, `/dashboard/routes`, `/dashboard/daily` y `/dashboard/daily/new`.
 - Validacion local completada: `npm install`, `npm run typecheck`, `npm run lint` y `npm run build` ejecutados con exito.
 - Git inicializado en `main` y remoto `origin` configurado a `https://github.com/multiversos/rutacontrol.git`.
+- Proyecto Vercel creado y enlazado al workspace.
+- Deploy real disponible en produccion y preview.
 
 ## Stack tecnico
 
@@ -97,11 +99,21 @@ git push -u origin main
 
 ## Vercel
 
-Next.js se detecta automaticamente. Configura en Vercel:
+Estado actual:
+
+- proyecto `rutacontrol` creado en Vercel
+- workspace enlazado con `.vercel/project.json`
+- preview operativo: `https://rutacontrol-9fz7i3mzn-multiversos-4148s-projects.vercel.app`
+- produccion operativa: `https://rutacontrol.vercel.app`
+
+Variables ya configuradas en produccion:
 
 - `NEXT_PUBLIC_APP_NAME`
-- `NEXT_PUBLIC_SITE_URL`
 - `BUSINESS_TIMEZONE`
+- `NEXT_PUBLIC_SITE_URL`
+
+Variables aun pendientes por secretos externos:
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` si aplica
@@ -111,8 +123,7 @@ Next.js se detecta automaticamente. Configura en Vercel:
 
 - Falta crear o proporcionar el repositorio remoto `multiversos/rutacontrol`.
 - Falta crear el proyecto Supabase y entregar credenciales reales.
-- Falta crear o vincular el proyecto de Vercel.
-- El conector de Vercel disponible en este entorno no pudo materializar el deploy automaticamente y remitio al flujo de CLI o Git integration.
+- Falta vincular GitHub con el repo real para habilitar pushes y previews por integracion Git.
 
 ## Pasos manuales inevitables
 
