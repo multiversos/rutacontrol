@@ -1,28 +1,26 @@
 # RutaControl
 
-Base operativa del MVP interno para control diario y financiero de una flota pequena de buses. El repositorio ya incluye auth con Supabase, RLS, catalogos base y registro diario con persistencia en Supabase.
+Estado del repositorio: `Sprint 1 listo para conexion externa`.
 
-## Estado actual
+RutaControl es una aplicacion interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El alcance actual cubre login con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses y registros diarios con recalculo financiero en SQL.
 
-- Estructura lista para Next.js App Router, TypeScript estricto, Tailwind y Supabase SSR.
-- Migracion inicial con tablas, triggers, RLS y reglas de negocio del Sprint 1.
-- Login con redireccion por rol y validacion de `profiles.active`.
-- CRUD de rutas y buses para `admin`.
-- Registro diario con calculo en vivo alineado al redondeo SQL y bloqueo final por constraint.
-- Rutas reales verificadas en `/dashboard`, `/dashboard/buses`, `/dashboard/routes`, `/dashboard/daily` y `/dashboard/daily/new`.
-- Validacion local completada: `npm install`, `npm run typecheck`, `npm run lint` y `npm run build` ejecutados con exito.
-- Git inicializado en `main` y remoto `origin` configurado a `https://github.com/multiversos/rutacontrol.git`.
-- Proyecto Vercel creado y enlazado al workspace.
-- Deploy real disponible en produccion y preview.
+## Estado verificado
 
-## Stack tecnico
+- App validada localmente con `npm install`, `npm run typecheck`, `npm run lint` y `npm run build`.
+- Estructura App Router estable en `/dashboard`, `/dashboard/buses`, `/dashboard/routes`, `/dashboard/daily` y `/dashboard/daily/new`.
+- Auth endurecida con `profiles.active`, perfiles faltantes y redireccion por rol.
+- RLS, triggers y migracion principal preparados en [supabase/migrations/0001_core.sql](N:/projects/busescontrol/supabase/migrations/0001_core.sql).
+- Seed base preparado en [supabase/seed.sql](N:/projects/busescontrol/supabase/seed.sql).
+- Proyecto Vercel creado, enlazado y desplegado.
 
-- Next.js 16
-- React 19
-- TypeScript estricto
-- Tailwind CSS
-- Supabase (`@supabase/supabase-js` + `@supabase/ssr`)
-- Server Actions para el CRUD interno
+## Estado de servicios externos
+
+- GitHub remoto: `origin` configurado a `https://github.com/multiversos/rutacontrol.git`, pero el repo remoto todavia no existe o no es accesible desde la integracion actual.
+- Supabase: codigo y CLI listos, pero todavia no hay proyecto autenticado ni secretos reales.
+- Vercel:
+  - produccion: [https://rutacontrol.vercel.app](https://rutacontrol.vercel.app)
+  - preview mas reciente: [https://rutacontrol-9fz7i3mzn-multiversos-4148s-projects.vercel.app](https://rutacontrol-9fz7i3mzn-multiversos-4148s-projects.vercel.app)
+  - nota: el preview sigue protegido por autenticacion de Vercel
 
 ## Variables de entorno
 
@@ -39,7 +37,7 @@ Opcionales:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-`SUPABASE_SERVICE_ROLE_KEY` no se usa para saltarse RLS en la UI de Sprint 1. Solo debe reservarse para trabajos privilegiados de servidor cuando realmente hagan falta.
+`SUPABASE_SERVICE_ROLE_KEY` no es necesaria para cerrar Sprint 1 y no debe usarse para saltarse RLS en la UI.
 
 ## Arranque local
 
@@ -51,83 +49,26 @@ npm run build
 npm run dev
 ```
 
-## Supabase
+## Documentacion de handoff
 
-Aplicar migraciones con CLI local:
+- Conexion externa: [docs/deployment-checklist.md](N:/projects/busescontrol/docs/deployment-checklist.md)
+- Smoke test de Sprint 1: [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md)
+- Estado exacto del proyecto: [docs/project-status.md](N:/projects/busescontrol/docs/project-status.md)
+- Checklist historico de fundacion: [docs/sprint-0-checklist.md](N:/projects/busescontrol/docs/sprint-0-checklist.md)
 
-```bash
-npx supabase init
-npx supabase db reset
-```
+## Bloqueos externos actuales
 
-O enlazar un proyecto remoto:
+- Falta crear o dar acceso al repo remoto `multiversos/rutacontrol`.
+- Falta crear el proyecto Supabase real.
+- Faltan `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` o `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- Falta aplicar migracion y seed en Supabase real.
 
-```bash
-npx supabase login
-npx supabase link --project-ref <PROJECT_REF>
-npx supabase db push
-```
+## Criterio exacto para cerrar Sprint 1
 
-Generar tipos:
+Sprint 1 se considera cerrado cuando se cumplan estas cinco condiciones:
 
-```bash
-npx supabase gen types typescript --project-id "<PROJECT_REF>" --schema public > lib/supabase/database.types.ts
-```
-
-## Seed inicial
-
-`supabase/seed.sql` crea:
-
-- rutas de ejemplo
-- buses de ejemplo
-- promocion de `admin@rutacontrol.local` a rol `admin` si el usuario ya existe en `auth.users`
-
-## Git y remoto
-
-Estado actual:
-
-- repo local inicializado en `main`
-- commit local creado
-- remoto `origin` configurado
-- push pendiente hasta que exista el repo remoto
-
-Comandos pendientes cuando exista el repo `multiversos/rutacontrol`:
-
-```bash
-git push -u origin main
-```
-
-## Vercel
-
-Estado actual:
-
-- proyecto `rutacontrol` creado en Vercel
-- workspace enlazado con `.vercel/project.json`
-- preview operativo: `https://rutacontrol-9fz7i3mzn-multiversos-4148s-projects.vercel.app`
-- produccion operativa: `https://rutacontrol.vercel.app`
-
-Variables ya configuradas en produccion:
-
-- `NEXT_PUBLIC_APP_NAME`
-- `BUSINESS_TIMEZONE`
-- `NEXT_PUBLIC_SITE_URL`
-
-Variables aun pendientes por secretos externos:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` si aplica
-- `SUPABASE_SERVICE_ROLE_KEY` solo si se necesitara para procesos privilegiados
-
-## Bloqueos externos reales
-
-- Falta crear o proporcionar el repositorio remoto `multiversos/rutacontrol`.
-- Falta crear el proyecto Supabase y entregar credenciales reales.
-- Falta vincular GitHub con el repo real para habilitar pushes y previews por integracion Git.
-
-## Pasos manuales inevitables
-
-1. Crear o proporcionar el repositorio `multiversos/rutacontrol`.
-2. Crear el proyecto Supabase y completar las variables reales en `.env.local`.
-3. Empujar `main` al remoto con `git push -u origin main`.
-4. Crear o vincular el proyecto en Vercel y cargar las variables de entorno.
+1. `main` existe en el remoto de GitHub y acepta `git push -u origin main`.
+2. Existe un proyecto Supabase real enlazado, con migracion y seed aplicados.
+3. La app tiene configuradas las variables publicas de Supabase en local o en Vercel.
+4. Existe al menos un usuario `admin` activo y un usuario `registrador` activo en `public.profiles`.
+5. El checklist de [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md) pasa de punta a punta.
