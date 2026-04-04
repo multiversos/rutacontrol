@@ -198,12 +198,17 @@ security definer
 set search_path = public
 as $$
 declare
+  source_payload jsonb;
   target_repair_id uuid;
 begin
+  source_payload := case
+    when tg_op = 'DELETE' then to_jsonb(old)
+    else to_jsonb(new)
+  end;
+
   target_repair_id := case
-    when tg_table_name = 'repairs' then new.id
-    when tg_op = 'DELETE' then old.repair_id
-    else new.repair_id
+    when tg_table_name = 'repairs' then (source_payload ->> 'id')::uuid
+    else (source_payload ->> 'repair_id')::uuid
   end;
 
   if target_repair_id is null then

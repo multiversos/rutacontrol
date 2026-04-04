@@ -16,7 +16,7 @@
 - Sprint 2: cerrado
 - Sprint 3: cerrado
 - Sprint 4: cerrado
-- Sprint 5: en implementacion en `sprint-5`
+- Sprint 5: cerrado
 
 ## Reglas para futuros agentes
 
@@ -50,4 +50,4 @@
 
 ## Fase actual permitida
 
-Sprint 5 esta en ejecucion sobre `sprint-5`. Cualquier nuevo trabajo debe respetar el alcance de deudas, pagos parciales, reparaciones con comprobante y Storage antes de pensar en Sprint 6.
+Sprint 5 quedo cerrado con deudas, pagos parciales, reparaciones con comprobante y Storage operativos. Sprint 6 sigue pendiente y no iniciado; cualquier nuevo trabajo debe abrirse de forma explicita en una rama nueva y sin alterar la estabilidad de `main`.

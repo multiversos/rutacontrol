@@ -1,8 +1,8 @@
 # RutaControl
 
-Estado del repositorio: `Sprint 5 en implementacion en sprint-5`.
+Estado del repositorio: `Sprint 5 cerrado`.
 
-RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible y alertas internas. La rama `sprint-5` agrega deudas, pagos parciales, reparaciones con comprobante y uploads reales a Supabase Storage.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible, alertas internas, deudas con pagos parciales y reparaciones con comprobante y uploads reales a Supabase Storage.
 
 ## Estado actual
 
@@ -11,7 +11,7 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - Sprint 2: cerrado el 3 de abril de 2026
 - Sprint 3: cerrado el 3 de abril de 2026
 - Sprint 4: cerrado el 3 de abril de 2026
-- Sprint 5: en implementacion en `sprint-5`
+- Sprint 5: cerrado el 4 de abril de 2026
 
 ## Criterios aprobados de Sprint 1
 
@@ -57,7 +57,7 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 ## Infraestructura verificada
 
 - GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
-- Supabase real conectado con migraciones `0001`, `0002`, `0003`, `0004` y `0005` aplicadas
+- Supabase real conectado con migraciones `0001`, `0002`, `0003`, `0004`, `0005`, `0006` y `0007` aplicadas
 - Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
 
 ## Stack
@@ -78,6 +78,22 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - `/dashboard/daily/new`
 - `/dashboard/debts`
 - `/dashboard/repairs`
+
+## Criterios aprobados de Sprint 5
+
+- modulo de deudas: PASS
+- deuda nueva en `pending`: PASS
+- pago parcial: PASS
+- paso a `partial`: PASS
+- pago total y paso a `paid`: PASS
+- modulo de reparaciones: PASS
+- reparacion con comprobante real: PASS
+- reparacion invalida sin comprobante: PASS
+- historial por bus: PASS
+- proximo servicio sugerido: PASS
+- registrador fuera de `/dashboard/debts`: PASS
+- registrador fuera de `/dashboard/repairs`: PASS
+- regresion Sprint 1, 2, 3 y 4: PASS
 
 ## Variables de entorno principales
 
@@ -108,4 +124,4 @@ npm run dev
 
 ## Siguiente fase
 
-Sprint 5 esta implementado en codigo sobre `sprint-5`, pero requiere aplicar [0006_debts_repairs.sql](N:/projects/busescontrol/supabase/migrations/0006_debts_repairs.sql) en Supabase real para ejecutar los smoke tests completos del modulo de deudas y reparaciones.
+Sprint 6 queda pendiente y no iniciado. La base estable tras Sprint 5 ya incluye deudas, pagos parciales, reparaciones con comprobante, historial por unidad y proximo servicio sugerido, sin abrir todavia trabajo funcional nuevo fuera del roadmap.
