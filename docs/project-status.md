@@ -1,6 +1,6 @@
 # Project Status
 
-Fecha de actualizacion: 3 de abril de 2026.
+Fecha de actualizacion: 4 de abril de 2026.
 
 ## Estado por sprint
 
@@ -9,10 +9,11 @@ Fecha de actualizacion: 3 de abril de 2026.
 | Sprint 0 | Cerrado | Fundacion tecnica, auth base, migracion inicial y despliegue |
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
 | Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales de base y regresion de Sprint 1 |
+| Sprint 3 | En implementacion en `sprint-3` | Dashboard admin, KPIs, filtros, historial y auditoria visible |
 
 ## Resumen ejecutivo
 
-RutaControl queda estable para cierre de release con Sprint 0, Sprint 1 y Sprint 2 aprobados. El proyecto ya esta conectado a GitHub, Supabase y Vercel, y los criterios de cierre del flujo diario quedaron verificados en entorno real.
+RutaControl mantiene `main` estable en `v0.2.0-sprint2` y ya tiene una implementacion funcional de Sprint 3 trabajando sobre la rama `sprint-3`. El proyecto sigue conectado a GitHub, Supabase y Vercel, con smoke tests reales recientes sobre la rama activa.
 
 ## Estado real de infraestructura
 
@@ -79,9 +80,37 @@ Sprint 2 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
 - smoke tests reales de base sobre Supabase: PASS
 - smoke tests de regresion de UI y autenticacion: PASS
 
+## Estado de Sprint 3
+
+Sprint 3 esta implementado en la rama `sprint-3` y pendiente de cierre formal. Alcance cubierto en esta rama:
+
+1. dashboard admin real
+2. KPIs operativos
+3. filtros por rango de fecha y bus
+4. historial semanal y mensual
+5. auditoria basica visible
+6. vista diferenciada por rol
+
+Validacion mas reciente en `sprint-3`:
+
+- login admin a `/dashboard`: PASS
+- dashboard admin renderiza sin error: PASS
+- KPI ingreso del dia: PASS
+- KPI neto del dia: PASS
+- KPI diferencias abiertas: PASS
+- KPI buses pendientes: PASS
+- filtro por fecha: PASS
+- filtro por bus: PASS
+- historial semanal: PASS
+- historial mensual: PASS
+- auditoria visible para admin: PASS
+- registrador sin acceso al dashboard admin: PASS
+- registrador aterriza en `/dashboard/daily/new`: PASS
+- regresion Sprint 1 y Sprint 2: PASS
+
 ## Estado de la siguiente fase
 
-Sprint 3 todavia no esta abierto ni implementado. `main` queda congelada como baseline estable despues del cierre de Sprint 2.
+Sprint 3 no esta mergeado en `main` todavia. `main` sigue congelada como baseline estable despues del cierre de Sprint 2 y la preparacion de un eventual Sprint 4 queda fuera del alcance actual.
 
 ## Criterio exacto de cierre actual
 
