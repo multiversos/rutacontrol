@@ -1,6 +1,6 @@
 # Sprint 2 Plan
 
-Estado: `en ejecucion`.
+Estado: `cerrado`.
 
 Rama de trabajo recomendada: `sprint-2`
 
@@ -23,7 +23,7 @@ Sprint 2 solo puede cubrir estos cuatro temas:
 - anomaly engine
 - reporting avanzado
 - cambios de arquitectura
-- rediseño de UI fuera de lo necesario para cierre operativo
+- rediseno de UI fuera de lo necesario para cierre operativo
 
 ## Reglas de negocio exactas
 
@@ -102,7 +102,7 @@ Sprint 2 solo puede cubrir estos cuatro temas:
 - Doble enforcement entre app y SQL con mensajes inconsistentes
 - Romper los smoke tests ya aprobados de Sprint 1
 
-## Estado de implementacion actual
+## Estado de implementacion final
 
 Sprint 2 ya tiene estos cambios implementados en codigo dentro de `sprint-2`:
 
@@ -113,19 +113,27 @@ Sprint 2 ya tiene estos cambios implementados en codigo dentro de `sprint-2`:
 - tabla diaria mostrando estado `draft` vs `closed`
 - action de guardado alineada con cierre automatico y bloqueo post-cierre
 
-Validacion actual:
+Validacion final:
 
 - `npm run typecheck`: PASS
 - `npm run lint`: PASS
 - `npm run build`: PASS
-- login admin y registrador: PASS en servidor local
+- login admin: PASS
+- login registrador: PASS
 - acceso a `/dashboard`, `/dashboard/routes`, `/dashboard/buses`, `/dashboard/daily/new`: PASS
-- smoke de Supabase para Sprint 2: pendiente de aplicar la migracion `0003` en el proyecto real
+- `daily_records` incompletos como `draft`: PASS
+- cierre automatico a `closed`: PASS
+- persistencia de `closed_at`: PASS
+- persistencia de `closure_hash`: PASS
+- `closure_hash` inmutable tras cierre: PASS
+- bloqueo real de edicion post-cierre: PASS
+- diferencia de caja persistida correctamente: PASS
+- regresion Sprint 1: PASS
 
-## Criterio de inicio
+## Fecha de cierre
 
-Sprint 2 puede arrancar sin ambiguedad desde este branch cuando:
+3 de abril de 2026.
 
-1. el equipo acepte esta delimitacion de alcance
-2. se confirme la formula exacta de diferencia de caja
-3. se confirme el set exacto de campos que alimenta `closure_hash`
+## Estado posterior al cierre
+
+Sprint 2 queda congelado como release estable. `main` puede etiquetarse desde este punto como `v0.2.0-sprint2`. Sprint 3 no se abre en este documento.

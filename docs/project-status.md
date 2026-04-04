@@ -8,11 +8,11 @@ Fecha de actualizacion: 3 de abril de 2026.
 | --- | --- | --- |
 | Sprint 0 | Cerrado | Fundacion tecnica, auth base, migracion inicial y despliegue |
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
-| Sprint 2 | En progreso | Codigo implementado en `sprint-2`, pendiente aplicar `0003_daily_record_closure.sql` en Supabase real |
+| Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales de base y regresion de Sprint 1 |
 
 ## Resumen ejecutivo
 
-RutaControl quedo estable en `main` con Sprint 1 cerrado. El proyecto ya esta conectado a GitHub, Supabase y Vercel, y los criterios aprobados del MVP quedaron verificados en entorno real.
+RutaControl queda estable para cierre de release con Sprint 0, Sprint 1 y Sprint 2 aprobados. El proyecto ya esta conectado a GitHub, Supabase y Vercel, y los criterios de cierre del flujo diario quedaron verificados en entorno real.
 
 ## Estado real de infraestructura
 
@@ -20,7 +20,7 @@ RutaControl quedo estable en `main` con Sprint 1 cerrado. El proyecto ya esta co
 | --- | --- | --- |
 | Git local | Verificado | Repositorio en `main` y listo para tag de cierre |
 | GitHub remoto | Verificado | `origin` apunta a `https://github.com/multiversos/rutacontrol.git` |
-| Supabase | Verificado | Proyecto real conectado, esquema y seeds aplicados |
+| Supabase | Verificado | Proyecto real conectado con migraciones `0001`, `0002` y `0003` aplicadas |
 | Vercel proyecto | Verificado | Proyecto enlazado y produccion activa |
 | Vercel produccion | Verificado | [https://rutacontrol.vercel.app](https://rutacontrol.vercel.app) |
 
@@ -47,38 +47,49 @@ RutaControl quedo estable en `main` con Sprint 1 cerrado. El proyecto ya esta co
 - CRUD de buses funcionando
 - Registros diarios funcionando con recalculo SQL
 - Regla real de rechazo para buses `inactive` aplicada en base de datos
+- Cierre automatico operativo para `daily_records`
+- Bloqueo post-cierre operativo en app y base de datos
+- `closure_hash` SHA-256 persistido e inmutable despues del cierre
 
 ## Estado de Sprint 2
 
-Sprint 2 ya tiene implementacion en codigo sobre la rama `sprint-2` para:
+Sprint 2 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
 
 1. cierre automatico
 2. bloqueo post-cierre
 3. hash SHA-256
 4. diferencia de caja
 
-Estado actual de validacion:
+## Criterios aprobados de Sprint 2
+
+- `daily_records` incompletos como `draft`: PASS
+- cierre automatico a `closed`: PASS
+- persistencia de `closed_at`: PASS
+- persistencia de `closure_hash`: PASS
+- `closure_hash` inmutable tras cierre: PASS
+- bloqueo real de edicion post-cierre: PASS
+- diferencia de caja persistida correctamente: PASS
+- regresion Sprint 1: PASS
+
+## Evidencia operativa de cierre
 
 - `typecheck`: PASS
 - `lint`: PASS
 - `build`: PASS
-- regresion de UI de Sprint 1 en servidor local contra Supabase real: PASS
-- smoke test directo contra Supabase real para cierre automatico: FAIL mientras no se aplique `supabase/migrations/0003_daily_record_closure.sql`
+- smoke tests reales de base sobre Supabase: PASS
+- smoke tests de regresion de UI y autenticacion: PASS
 
-Bloqueo exacto actual:
+## Estado de la siguiente fase
 
-- Supabase real sigue rechazando borradores incompletos por `not null` en `departure_time`
-- los registros completos siguen quedando `draft`
-- `closed_at` y `closure_hash` siguen en `null`
-
-Eso confirma que el codigo de Sprint 2 ya esta listo, pero el entorno real aun no ejecuto la migracion incremental de Sprint 2.
+Sprint 3 todavia no esta abierto ni implementado. `main` queda congelada como baseline estable despues del cierre de Sprint 2.
 
 ## Criterio exacto de cierre actual
 
-Sprint 1 se considera formalmente cerrado desde este estado porque:
+Sprint 2 se considera formalmente cerrado desde este estado porque:
 
 1. `main` esta estable y recuperable
 2. el repo remoto de GitHub esta operativo
 3. Supabase real esta conectado y validado
 4. Vercel produccion esta desplegado
-5. los smoke tests autenticados pasaron de punta a punta
+5. los smoke tests reales de Sprint 2 pasaron de punta a punta
+6. la regresion de Sprint 1 sigue en PASS
