@@ -44,7 +44,7 @@ export default async function AlertsPage({ searchParams }: AlertsPageProps) {
           <CardTitle>Alertas internas</CardTitle>
           <CardDescription>
             Supervisa inicios de sesion del registrador, cierres completados,
-            diferencias de caja y buses activos que siguen sin cierre.
+            diferencias de caja, buses activos sin cierre y mantenimientos proximos a vencer o vencidos.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -54,8 +54,7 @@ export default async function AlertsPage({ searchParams }: AlertsPageProps) {
           <CardTitle>Criterio de severidad</CardTitle>
           <CardDescription>
             `info` para login y cierre correcto, `warning` para buses sin cierre y
-            diferencias menores a 10 USD, `critical` para diferencias de 10 USD o
-            mas.
+            mantenimientos proximos, `critical` para diferencias de 10 USD o mas y mantenimientos vencidos.
           </CardDescription>
         </CardHeader>
       </Card>

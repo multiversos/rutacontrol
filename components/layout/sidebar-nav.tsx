@@ -8,6 +8,7 @@ import {
   CalendarDays,
   LayoutDashboard,
   MapPinned,
+  Settings2,
   ShieldCheck,
   WalletCards,
   Wrench,
@@ -23,6 +24,7 @@ type SidebarIconKey =
   | "bus"
   | "calendar"
   | "debt"
+  | "maintenance"
   | "repair";
 
 type NavItem = {
@@ -42,6 +44,7 @@ const iconMap = {
   calendar: CalendarDays,
   debt: WalletCards,
   dashboard: LayoutDashboard,
+  maintenance: Settings2,
   repair: Wrench,
   route: MapPinned,
 } as const satisfies Record<SidebarIconKey, React.ComponentType<{ className?: string }>>;

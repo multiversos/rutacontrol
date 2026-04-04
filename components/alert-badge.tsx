@@ -20,6 +20,7 @@ const typeLabelMap: Record<AlertType, string> = {
   closure: "Cierre",
   difference: "Diferencia",
   login: "Login",
+  maintenance: "Mantenimiento",
   missing: "Pendiente",
 };
 
