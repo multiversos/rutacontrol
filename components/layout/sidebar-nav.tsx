@@ -3,16 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BellRing,
   BusFront,
   CalendarDays,
   LayoutDashboard,
   MapPinned,
   ShieldCheck,
+  WalletCards,
+  Wrench,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type SidebarIconKey = "audit" | "dashboard" | "route" | "bus" | "calendar";
+type SidebarIconKey =
+  | "alerts"
+  | "audit"
+  | "dashboard"
+  | "route"
+  | "bus"
+  | "calendar"
+  | "debt"
+  | "repair";
 
 type NavItem = {
   href: string;
@@ -25,10 +36,13 @@ type SidebarNavProps = {
 };
 
 const iconMap = {
+  alerts: BellRing,
   audit: ShieldCheck,
   bus: BusFront,
   calendar: CalendarDays,
+  debt: WalletCards,
   dashboard: LayoutDashboard,
+  repair: Wrench,
   route: MapPinned,
 } as const satisfies Record<SidebarIconKey, React.ComponentType<{ className?: string }>>;
 

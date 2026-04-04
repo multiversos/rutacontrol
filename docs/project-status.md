@@ -1,6 +1,6 @@
 # Project Status
 
-Fecha de actualizacion: 3 de abril de 2026.
+Fecha de actualizacion: 4 de abril de 2026.
 
 ## Estado por sprint
 
@@ -9,23 +9,25 @@ Fecha de actualizacion: 3 de abril de 2026.
 | Sprint 0 | Cerrado | Fundacion tecnica, auth base, migracion inicial y despliegue |
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
 | Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales y regresion de Sprint 1 |
-| Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados con smoke tests reales |
+| Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados |
+| Sprint 4 | Cerrado | Alertas internas y monitoreo operativo sin Telegram |
+| Sprint 5 | Cerrado | Deudas, pagos parciales, reparaciones con comprobante, Storage e historial por unidad validados |
 
 ## Resumen ejecutivo
 
-RutaControl mantiene `main` estable despues del cierre de Sprint 3 y queda congelado en `v0.3.0-sprint3`. El proyecto esta conectado a GitHub, Supabase y Vercel, con validacion funcional real de los sprints 1, 2 y 3.
+RutaControl mantiene una base funcional validada hasta Sprint 5. El proyecto ya tiene modulos administrativos de deudas y reparaciones, con uploads reales a Supabase Storage, consistencia de saldo en SQL y proximo servicio sugerido por unidad.
 
 ## Estado real de infraestructura
 
 | Capa | Estado | Detalle |
 | --- | --- | --- |
-| Git local | Verificado | Repositorio limpio y sincronizado para cierre de Sprint 3 |
+| Git local | Verificado | Rama de cierre `sprint-5` lista para integracion final a `main` |
 | GitHub remoto | Verificado | `origin` apunta a [https://github.com/multiversos/rutacontrol](https://github.com/multiversos/rutacontrol) |
-| Supabase | Verificado | Proyecto real conectado con migraciones `0001`, `0002` y `0003` aplicadas |
+| Supabase | Verificado | Proyecto real conectado con migraciones `0001` a `0007` aplicadas |
 | Vercel proyecto | Verificado | Proyecto enlazado y produccion activa |
 | Vercel produccion | Verificado | [https://rutacontrol.vercel.app](https://rutacontrol.vercel.app) |
 
-## Estado funcional actual
+## Estado funcional cerrado
 
 - Login operativo con Supabase Auth
 - Roles `admin` y `registrador` operativos
@@ -33,79 +35,58 @@ RutaControl mantiene `main` estable despues del cierre de Sprint 3 y queda conge
 - CRUD de rutas funcionando
 - CRUD de buses funcionando
 - Registros diarios funcionando con recalculo SQL
-- Regla real de rechazo para buses `inactive` aplicada en base de datos
+- Rechazo real para buses `inactive`
 - Cierre automatico operativo para `daily_records`
 - Bloqueo post-cierre operativo en app y base de datos
-- `closure_hash` SHA-256 persistido e inmutable despues del cierre
+- `closure_hash` SHA-256 persistido e inmutable
 - Historial semanal y mensual operativo
 - Auditoria visible para admin operativa
+- Alertas internas operativas sin Telegram
+- Modulo de deudas operativo con pagos parciales y saldo pendiente
+- Modulo de reparaciones operativo con comprobante obligatorio y Storage real
+- Historial de reparaciones por bus operativo
+- Proximo servicio sugerido por unidad operativo
 
-## Estado de Sprint 1
+## Estado de Sprint 5
 
-Sprint 1 queda cerrado el 3 de abril de 2026 con estos criterios aprobados:
+Sprint 5 queda cerrado con este alcance:
 
-- Login admin: PASS
-- Login registrador: PASS
-- Redireccion por rol: PASS
-- Acceso a dashboard autenticado: PASS
-- CRUD de rutas: PASS
-- CRUD de buses: PASS
-- Creacion y edicion de `daily_records`: PASS
-- `UNIQUE (bus_id, record_date)`: PASS
-- Rechazo real de buses inactive: PASS
-- Persistencia autenticada contra Supabase: PASS
-- RLS basica: PASS
+1. modulo de deudas
+2. pagos parciales y saldo pendiente
+3. modulo de reparaciones por bus
+4. comprobante obligatorio
+5. historial de reparaciones por unidad
+6. upload a Supabase Storage
+7. proximo servicio sugerido por bus
 
-## Estado de Sprint 2
-
-Sprint 2 queda cerrado el 3 de abril de 2026 con estos criterios aprobados:
-
-- `daily_records` incompletos como `draft`: PASS
-- cierre automatico a `closed`: PASS
-- persistencia de `closed_at`: PASS
-- persistencia de `closure_hash`: PASS
-- `closure_hash` inmutable tras cierre: PASS
-- bloqueo real de edicion post-cierre: PASS
-- diferencia de caja persistida correctamente: PASS
-- regresion Sprint 1: PASS
-
-## Estado de Sprint 3
-
-Sprint 3 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
-
-1. dashboard admin real
-2. KPIs operativos
-3. filtros por rango de fecha y bus
-4. historial semanal y mensual
-5. auditoria basica visible
-6. vista diferenciada por rol
-
-## Criterios aprobados de Sprint 3
-
-- login admin a `/dashboard`: PASS
-- dashboard admin renderiza sin error: PASS
-- KPI ingreso del dia: PASS
-- KPI neto del dia: PASS
-- KPI diferencias abiertas: PASS
-- KPI buses pendientes: PASS
-- filtro por fecha: PASS
-- filtro por bus: PASS
-- historial semanal: PASS
-- historial mensual: PASS
-- auditoria visible para admin: PASS
-- registrador sin acceso al dashboard admin: PASS
-- registrador aterriza en `/dashboard/daily/new`: PASS
-- regresion Sprint 1 y Sprint 2: PASS
-
-## Evidencia operativa de cierre
+Estado actual de validacion:
 
 - `typecheck`: PASS
 - `lint`: PASS
 - `build`: PASS
-- smoke tests reales de Sprint 1: PASS
-- smoke tests reales de Sprint 2: PASS
-- smoke tests reales de Sprint 3: PASS
+- modulo de deudas: PASS
+- deuda nueva en `pending`: PASS
+- pago parcial: PASS
+- paso a `partial`: PASS
+- pago total y paso a `paid`: PASS
+- modulo de reparaciones: PASS
+- reparacion con comprobante real: PASS
+- reparacion invalida sin comprobante: PASS
+- historial por bus: PASS
+- proximo servicio sugerido: PASS
+- registrador fuera de `/dashboard/debts`: PASS
+- registrador fuera de `/dashboard/repairs`: PASS
+- regresion Sprint 1, 2, 3 y 4: PASS
 
-## Estado de la siguiente fase
+## Estado de cierre
 
-Sprint 4 queda pendiente y no iniciado. `main` permanece estable despues del cierre de Sprint 3 y cualquier trabajo nuevo debe abrirse desde el tag `v0.3.0-sprint3`.
+- Sprint 0: cerrado
+- Sprint 1: cerrado
+- Sprint 2: cerrado
+- Sprint 3: cerrado
+- Sprint 4: cerrado
+- Sprint 5: cerrado el 4 de abril de 2026
+
+## Pendiente siguiente fase
+
+Sprint 6 queda pendiente y no iniciado. No hay trabajo funcional abierto fuera del cierre formal de Sprint 5.

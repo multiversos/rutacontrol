@@ -174,6 +174,7 @@ export async function saveDailyRecordAction(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/alerts");
   revalidatePath("/dashboard/daily");
   revalidatePath("/dashboard/daily/new");
 

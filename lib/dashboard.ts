@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Json, Tables } from "@/lib/supabase/database.types";
+import { reconcileMissingClosureAlerts } from "@/lib/alerts";
 import {
   formatDateLabel,
   getBusinessTodayDate,
@@ -294,6 +295,8 @@ function normalizeAuditEntries(
 export async function getAdminDashboardData(filters: DashboardFilterState) {
   const supabase = await createClient();
   const selectedDate = filters.date ?? getBusinessTodayDate();
+
+  await reconcileMissingClosureAlerts(selectedDate);
 
   let recordsQuery = supabase
     .from("daily_records")

@@ -1,8 +1,8 @@
 # RutaControl
 
-Estado del repositorio: `Sprint 3 cerrado`.
+Estado del repositorio: `Sprint 5 cerrado`.
 
-RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo y dashboard administrativo con KPIs, historial y auditoria visible.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible, alertas internas, deudas con pagos parciales y reparaciones con comprobante y uploads reales a Supabase Storage.
 
 ## Estado actual
 
@@ -10,7 +10,8 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - Sprint 1: cerrado el 3 de abril de 2026
 - Sprint 2: cerrado el 3 de abril de 2026
 - Sprint 3: cerrado el 3 de abril de 2026
-- Sprint 4: pendiente, no iniciado
+- Sprint 4: cerrado el 3 de abril de 2026
+- Sprint 5: cerrado el 4 de abril de 2026
 
 ## Criterios aprobados de Sprint 1
 
@@ -56,7 +57,7 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 ## Infraestructura verificada
 
 - GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
-- Supabase real conectado con migraciones `0001`, `0002` y `0003` aplicadas
+- Supabase real conectado con migraciones `0001`, `0002`, `0003`, `0004`, `0005`, `0006` y `0007` aplicadas
 - Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
 
 ## Stack
@@ -75,6 +76,24 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - `/dashboard/buses`
 - `/dashboard/daily`
 - `/dashboard/daily/new`
+- `/dashboard/debts`
+- `/dashboard/repairs`
+
+## Criterios aprobados de Sprint 5
+
+- modulo de deudas: PASS
+- deuda nueva en `pending`: PASS
+- pago parcial: PASS
+- paso a `partial`: PASS
+- pago total y paso a `paid`: PASS
+- modulo de reparaciones: PASS
+- reparacion con comprobante real: PASS
+- reparacion invalida sin comprobante: PASS
+- historial por bus: PASS
+- proximo servicio sugerido: PASS
+- registrador fuera de `/dashboard/debts`: PASS
+- registrador fuera de `/dashboard/repairs`: PASS
+- regresion Sprint 1, 2, 3 y 4: PASS
 
 ## Variables de entorno principales
 
@@ -105,4 +124,4 @@ npm run dev
 
 ## Siguiente fase
 
-Sprint 4 queda pendiente y no iniciada en este release. `main` queda congelada en el cierre de Sprint 3 y cualquier nuevo alcance debe abrirse despues desde `v0.3.0-sprint3`.
+Sprint 6 queda pendiente y no iniciado. La base estable tras Sprint 5 ya incluye deudas, pagos parciales, reparaciones con comprobante, historial por unidad y proximo servicio sugerido, sin abrir todavia trabajo funcional nuevo fuera del roadmap.
