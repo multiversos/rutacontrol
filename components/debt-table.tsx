@@ -34,8 +34,8 @@ function getPayHref(status: DebtStatusFilter, debtId: string) {
 
 export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
   return (
-    <div className="space-y-5">
-      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_auto_auto]">
+    <div className="space-y-4">
+      <form className="grid gap-4 rounded-[30px] border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(241,245,249,0.92))] p-5 shadow-soft md:grid-cols-[1fr_auto_auto]">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="debts-status">
             Estado
@@ -69,20 +69,20 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
       </form>
 
       {debts.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+        <div className="rounded-[30px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
           No hay deudas visibles para el filtro actual.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-[28px] border border-border bg-card/90 shadow-soft">
+        <div className="overflow-x-auto rounded-[30px] border border-border bg-card/95 shadow-soft">
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="bg-muted/60 text-left text-muted-foreground">
+            <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Acreedor</th>
                 <th className="px-4 py-3">Descripcion</th>
                 <th className="px-4 py-3">Registro</th>
-                <th className="px-4 py-3">Monto</th>
-                <th className="px-4 py-3">Abonado</th>
-                <th className="px-4 py-3">Saldo</th>
+                <th className="px-4 py-3 text-right">Monto</th>
+                <th className="px-4 py-3 text-right">Abonado</th>
+                <th className="px-4 py-3 text-right">Saldo</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3">Vence</th>
                 <th className="px-4 py-3 text-right">Accion</th>
@@ -93,24 +93,26 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
                 <tr
                   key={debt.id}
                   className={
-                    selectedDebtId === debt.id ? "bg-primary/5 transition-colors" : ""
+                    selectedDebtId === debt.id
+                      ? "bg-primary/5 transition-colors"
+                      : "transition-colors hover:bg-secondary/35"
                   }
                 >
-                  <td className="px-4 py-3 font-medium">{debt.creditor}</td>
-                  <td className="px-4 py-3">{debt.description}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4 font-semibold">{debt.creditor}</td>
+                  <td className="px-4 py-4">{debt.description}</td>
+                  <td className="px-4 py-4">
                     {debt.dailyRecordLabel ?? "Sin relacion"}
                   </td>
-                  <td className="px-4 py-3">{formatCurrency(debt.amountUsd)}</td>
-                  <td className="px-4 py-3">{formatCurrency(debt.amountPaidUsd)}</td>
-                  <td className="px-4 py-3 font-semibold">
+                  <td className="px-4 py-4 text-right tabular-nums">{formatCurrency(debt.amountUsd)}</td>
+                  <td className="px-4 py-4 text-right tabular-nums">{formatCurrency(debt.amountPaidUsd)}</td>
+                  <td className="px-4 py-4 text-right font-semibold tabular-nums">
                     {formatCurrency(debt.balanceDueUsd)}
                   </td>
-                  <td className="px-4 py-3">{getDebtStatusBadge(debt.status)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">{getDebtStatusBadge(debt.status)}</td>
+                  <td className="whitespace-nowrap px-4 py-4">
                     {debt.dueDate ? formatDateLabel(debt.dueDate) : "--"}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-4 text-right">
                     <Link
                       className="text-sm font-semibold text-primary"
                       href={getPayHref(status, debt.id)}

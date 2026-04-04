@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { getDebtsData, type DebtStatusFilter } from "@/lib/debts";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency, formatDateLabel, formatDateTime } from "@/lib/formatters";
@@ -36,15 +37,18 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Deudas y abonos parciales</CardTitle>
-          <CardDescription>
-            Controla compromisos pendientes, registra pagos parciales y manten el
-            saldo pendiente visible sin depender de calculos manuales.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[
+          {
+            label: debtsData.filters.status === "all" ? "Todas" : debtsData.filters.status,
+            variant: "muted",
+          },
+          { label: `${debtsData.debts.length} visibles`, variant: "muted" },
+        ]}
+        description="Controla compromisos pendientes, registra pagos parciales y manten el saldo pendiente visible sin depender de calculos manuales."
+        eyebrow="Finanzas"
+        title="Deudas y abonos parciales"
+      />
 
       <KpiCards
         items={[
@@ -61,8 +65,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
           {
             helper: "Saldo pendiente vivo para las deudas visibles",
             label: "Saldo pendiente",
-            tone:
-              debtsData.summary.openBalanceUsd > 0 ? "warning" : "success",
+            tone: debtsData.summary.openBalanceUsd > 0 ? "warning" : "success",
             value: formatCurrency(debtsData.summary.openBalanceUsd),
           },
           {
@@ -94,19 +97,17 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
               <CardHeader>
                 <CardTitle>Migracion pendiente en Supabase</CardTitle>
                 <CardDescription>
-                  El modulo de deudas ya esta listo en la app, pero la migracion
-                  `0006_debts_repairs.sql` todavia no esta aplicada en la base real.
+                  El modulo de deudas ya esta listo en la app, pero la migracion `0006_debts_repairs.sql` todavia no esta aplicada en la base real.
                 </CardDescription>
               </CardHeader>
             </Card>
           ) : null}
 
-          <Card>
+          <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
             <CardHeader>
               <CardTitle>Crear deuda</CardTitle>
               <CardDescription>
-                Registra compromisos financieros nuevos y vinculos opcionales con
-                registros diarios.
+                Registra compromisos financieros nuevos y vinculos opcionales con registros diarios.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -114,14 +115,13 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                 <DebtForm recordOptions={debtsData.recordOptions} />
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-                  Aplica la migracion de Sprint 5 para habilitar la persistencia de
-                  deudas y pagos parciales.
+                  Aplica la migracion de Sprint 5 para habilitar la persistencia de deudas y pagos parciales.
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
             <CardHeader>
               <CardTitle>
                 {debtsData.selectedDebt ? "Registrar pago parcial" : "Selecciona una deuda"}
@@ -142,7 +142,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
 
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary/70">
                         Historial de pagos
                       </p>
                     </div>
@@ -151,19 +151,19 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                         Esta deuda todavia no tiene abonos registrados.
                       </div>
                     ) : (
-                      <div className="overflow-hidden rounded-3xl border border-border">
+                      <div className="overflow-hidden rounded-[30px] border border-border">
                         <table className="min-w-full divide-y divide-border text-sm">
-                          <thead className="bg-muted/60 text-left text-muted-foreground">
+                          <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                             <tr>
                               <th className="px-4 py-3">Fecha</th>
-                              <th className="px-4 py-3">Abono</th>
+                              <th className="px-4 py-3 text-right">Abono</th>
                               <th className="px-4 py-3">Notas</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border bg-white/70">
                             {debtsData.paymentHistory.map((payment) => (
-                              <tr key={payment.id}>
-                                <td className="px-4 py-3">
+                              <tr key={payment.id} className="transition-colors hover:bg-secondary/35">
+                                <td className="px-4 py-4">
                                   <div>
                                     <p>{formatDateLabel(payment.paymentDate)}</p>
                                     <p className="text-xs text-muted-foreground">
@@ -171,10 +171,10 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                                     </p>
                                   </div>
                                 </td>
-                                <td className="px-4 py-3 font-semibold">
+                                <td className="px-4 py-4 text-right font-semibold tabular-nums">
                                   {formatCurrency(payment.amountUsd)}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-4 py-4">
                                   {payment.notes?.trim() ? payment.notes : "--"}
                                 </td>
                               </tr>
@@ -191,8 +191,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-                  La vista quedara operativa apenas la base tenga aplicada la
-                  migracion de Sprint 5.
+                  La vista quedara operativa apenas la base tenga aplicada la migracion de Sprint 5.
                 </div>
               )}
             </CardContent>

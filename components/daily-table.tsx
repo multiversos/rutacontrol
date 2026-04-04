@@ -52,8 +52,8 @@ export function DailyTable({
   records,
 }: DailyTableProps) {
   return (
-    <div className="space-y-5">
-      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_auto_auto]">
+    <div className="space-y-4">
+      <form className="grid gap-4 rounded-[30px] border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(241,245,249,0.92))] p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_auto_auto]">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="filter-date-from">
             Desde
@@ -115,24 +115,24 @@ export function DailyTable({
       </form>
 
       {records.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
-          Todavia no hay registros para los filtros seleccionados.
+        <div className="rounded-[30px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+          No encontramos registros para el rango actual. Ajusta fechas, cambia el bus o vuelve al dia operativo para seguir.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-[28px] border border-border bg-card/90 shadow-soft">
+        <div className="overflow-x-auto rounded-[30px] border border-border bg-card/95 shadow-soft">
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="bg-muted/60 text-left text-muted-foreground">
+            <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Bus</th>
                 {isAdmin ? <th className="px-4 py-3">Registrador</th> : null}
-                <th className="px-4 py-3">Ingreso Bs</th>
-                <th className="px-4 py-3">Tasa</th>
-                <th className="px-4 py-3">Ingreso USD</th>
-                <th className="px-4 py-3">Gasto total</th>
-                <th className="px-4 py-3">Neto reportado</th>
-                <th className="px-4 py-3">Neto calculado</th>
-                <th className="px-4 py-3">Diferencia</th>
+                <th className="px-4 py-3 text-right">Ingreso Bs</th>
+                <th className="px-4 py-3 text-right">Tasa</th>
+                <th className="px-4 py-3 text-right">Ingreso USD</th>
+                <th className="px-4 py-3 text-right">Gasto total</th>
+                <th className="px-4 py-3 text-right">Neto reportado</th>
+                <th className="px-4 py-3 text-right">Neto calculado</th>
+                <th className="px-4 py-3 text-right">Diferencia</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3 text-right">Accion</th>
               </tr>
@@ -145,28 +145,28 @@ export function DailyTable({
                   Number.parseFloat(record.otherExpenses);
 
                 return (
-                  <tr key={record.id}>
-                    <td className="px-4 py-3">{formatDateLabel(record.recordDate)}</td>
-                    <td className="px-4 py-3 font-medium">{record.busCode}</td>
+                  <tr key={record.id} className="transition-colors hover:bg-secondary/35">
+                    <td className="whitespace-nowrap px-4 py-4">{formatDateLabel(record.recordDate)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 font-semibold">{record.busCode}</td>
                     {isAdmin ? (
-                      <td className="px-4 py-3">{record.userName ?? "--"}</td>
+                      <td className="px-4 py-4">{record.userName ?? "--"}</td>
                     ) : null}
-                    <td className="px-4 py-3">{formatNumber(record.incomeBs)}</td>
-                    <td className="px-4 py-3">{formatNumber(record.exchangeRate, 6)}</td>
-                    <td className="px-4 py-3">{formatCurrency(record.incomeUsd)}</td>
-                    <td className="px-4 py-3">{formatCurrency(totalExpenses)}</td>
-                    <td className="px-4 py-3">{formatCurrency(record.netProfitUsd)}</td>
-                    <td className="px-4 py-3">{formatCurrency(record.calculatedNet)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right tabular-nums">{formatNumber(record.incomeBs)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right tabular-nums">{formatNumber(record.exchangeRate, 6)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right tabular-nums">{formatCurrency(record.incomeUsd)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right tabular-nums">{formatCurrency(totalExpenses)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right tabular-nums">{formatCurrency(record.netProfitUsd)}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right tabular-nums">{formatCurrency(record.calculatedNet)}</td>
                     <td
                       className={
                         isNonZeroAmount(record.difference)
-                          ? "px-4 py-3 font-semibold text-destructive"
-                          : "px-4 py-3 font-semibold text-emerald-700"
+                          ? "whitespace-nowrap px-4 py-4 text-right font-semibold tabular-nums text-destructive"
+                          : "whitespace-nowrap px-4 py-4 text-right font-semibold tabular-nums text-emerald-700"
                       }
                     >
                       {formatCurrency(record.difference)}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       <div className="space-y-1">
                         <Badge
                           variant={record.status === "closed" ? "success" : "warning"}
@@ -180,7 +180,7 @@ export function DailyTable({
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-4 text-right">
                       <Link
                         className="text-sm font-semibold text-primary"
                         href={`/dashboard/daily/new?recordId=${record.id}`}

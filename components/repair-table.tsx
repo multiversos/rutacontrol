@@ -32,8 +32,8 @@ const categoryLabels: Record<RepairListItem["category"], string> = {
 
 export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) {
   return (
-    <div className="space-y-5">
-      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_auto_auto]">
+    <div className="space-y-4">
+      <form className="grid gap-4 rounded-[30px] border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(241,245,249,0.92))] p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_auto_auto]">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="repairs-date-from">
             Desde
@@ -95,19 +95,19 @@ export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) 
       </form>
 
       {repairs.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
-          No hay reparaciones visibles para el filtro actual.
+        <div className="rounded-[30px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+          No hay reparaciones visibles para el filtro actual. Prueba otro rango o cambia el bus para revisar historial por unidad.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-[28px] border border-border bg-card/90 shadow-soft">
+        <div className="overflow-x-auto rounded-[30px] border border-border bg-card/95 shadow-soft">
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="bg-muted/60 text-left text-muted-foreground">
+            <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Bus</th>
                 <th className="px-4 py-3">Categoria</th>
                 <th className="px-4 py-3">Proveedor</th>
-                <th className="px-4 py-3">Costo</th>
+                <th className="px-4 py-3 text-right">Costo</th>
                 <th className="px-4 py-3">Proximo servicio</th>
                 <th className="px-4 py-3">Comprobante</th>
                 <th className="px-4 py-3">Descripcion</th>
@@ -115,8 +115,8 @@ export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) 
             </thead>
             <tbody className="divide-y divide-border bg-white/70">
               {repairs.map((repair) => (
-                <tr key={repair.id}>
-                  <td className="px-4 py-3">
+                <tr key={repair.id} className="transition-colors hover:bg-secondary/35">
+                  <td className="px-4 py-4">
                     <div>
                       <p>{formatDateLabel(repair.repairDate)}</p>
                       <p className="text-xs text-muted-foreground">
@@ -124,13 +124,13 @@ export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) 
                       </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-medium">{repair.busCode}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4 font-semibold">{repair.busCode}</td>
+                  <td className="px-4 py-4">
                     <Badge variant="muted">{categoryLabels[repair.category]}</Badge>
                   </td>
-                  <td className="px-4 py-3">{repair.provider}</td>
-                  <td className="px-4 py-3">{formatCurrency(repair.costUsd)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">{repair.provider}</td>
+                  <td className="px-4 py-4 text-right tabular-nums">{formatCurrency(repair.costUsd)}</td>
+                  <td className="px-4 py-4">
                     {repair.nextServiceDueDate ? (
                       <div className="space-y-1">
                         <p>{formatDateLabel(repair.nextServiceDueDate)}</p>
@@ -144,7 +144,7 @@ export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) 
                       "--"
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     {repair.attachment?.signedUrl ? (
                       <a
                         className="font-semibold text-primary"
@@ -163,7 +163,7 @@ export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) 
                       </p>
                     ) : null}
                   </td>
-                  <td className="px-4 py-3">{repair.description}</td>
+                  <td className="px-4 py-4">{repair.description}</td>
                 </tr>
               ))}
             </tbody>

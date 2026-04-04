@@ -2,6 +2,7 @@ import { AnomalyBadge } from "@/components/anomaly-badge";
 import { ConfidenceScoreCards } from "@/components/confidence-score-card";
 import { KpiCards } from "@/components/kpi-cards";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { getIntelligenceData } from "@/lib/reports";
@@ -29,17 +30,17 @@ export default async function IntelligencePage({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Inteligencia operativa</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Detecta desviaciones de ingreso por ruta y revisa el score de confianza
-            del registrador con una formula entendible.
-          </p>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[
+          { label: `${data.summary.anomaliesDetected} anomalias`, variant: "muted" },
+          { label: `${data.summary.evaluatedRegistrars} registradores`, variant: "muted" },
+        ]}
+        description="Detecta desviaciones de ingreso por ruta y revisa el score de confianza del registrador con una formula entendible."
+        eyebrow="Analisis"
+        title="Inteligencia operativa"
+      />
 
-      <Card>
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardContent className="pt-6">
           <form className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]">
             <div className="space-y-2">
@@ -47,7 +48,7 @@ export default async function IntelligencePage({
                 Desde
               </label>
               <input
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.dateFrom}
                 id="intelligence-date-from"
                 name="dateFrom"
@@ -59,7 +60,7 @@ export default async function IntelligencePage({
                 Hasta
               </label>
               <input
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.dateTo}
                 id="intelligence-date-to"
                 name="dateTo"
@@ -71,7 +72,7 @@ export default async function IntelligencePage({
                 Ruta
               </label>
               <select
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.routeId ?? ""}
                 id="intelligence-route"
                 name="routeId"
@@ -89,7 +90,7 @@ export default async function IntelligencePage({
                 Registrador
               </label>
               <select
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.profileId ?? ""}
                 id="intelligence-profile"
                 name="profileId"
@@ -103,13 +104,13 @@ export default async function IntelligencePage({
               </select>
             </div>
             <button
-              className="inline-flex h-11 items-center justify-center self-end rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+              className="inline-flex h-12 items-center justify-center self-end rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
               type="submit"
             >
               Aplicar
             </button>
             <a
-              className="inline-flex h-11 items-center justify-center self-end rounded-full border border-border px-5 text-sm font-semibold"
+              className="inline-flex h-12 items-center justify-center self-end rounded-full border border-border px-5 text-sm font-semibold"
               href="/dashboard/intelligence"
             >
               Limpiar
@@ -150,55 +151,55 @@ export default async function IntelligencePage({
         ]}
       />
 
-      <Card>
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardHeader>
-          <CardTitle>Regla de anomalías</CardTitle>
+          <CardTitle>Regla de anomalias</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Se marca anomalía cuando el ingreso del cierre supera 1.5 desviaciones
-            estándar frente al histórico de su ruta. No se evalúa la ruta hasta tener
-            al menos 5 cierres válidos.
+            Se marca anomalia cuando el ingreso del cierre supera 1.5 desviaciones estandar frente al historico de su ruta. No se evalua la ruta hasta tener al menos 5 cierres validos.
           </p>
         </CardHeader>
       </Card>
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
+        <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]">
           <CardHeader>
             <CardTitle>Anomalias por cierre</CardTitle>
           </CardHeader>
           <CardContent>
             {data.anomalies.length === 0 ? (
-              <div className="rounded-[24px] border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground">
+              <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground">
                 No hay cierres visibles para evaluar con los filtros actuales.
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-[28px] border border-border">
+              <div className="overflow-x-auto rounded-[30px] border border-border bg-card/95">
                 <table className="min-w-full divide-y divide-border text-sm">
-                  <thead className="bg-muted/60 text-left text-muted-foreground">
+                  <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     <tr>
                       <th className="px-4 py-3">Fecha</th>
                       <th className="px-4 py-3">Bus</th>
                       <th className="px-4 py-3">Ruta</th>
-                      <th className="px-4 py-3">Ingreso</th>
-                      <th className="px-4 py-3">Promedio</th>
-                      <th className="px-4 py-3">Desv. estándar</th>
+                      <th className="px-4 py-3 text-right">Ingreso</th>
+                      <th className="px-4 py-3 text-right">Promedio</th>
+                      <th className="px-4 py-3 text-right">Desv. estandar</th>
                       <th className="px-4 py-3">Estado</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border bg-white/70">
                     {data.anomalies.map((anomaly) => (
-                      <tr key={anomaly.id}>
-                        <td className="px-4 py-3">{anomaly.recordDate}</td>
-                        <td className="px-4 py-3 font-medium">{anomaly.busCode}</td>
-                        <td className="px-4 py-3">{anomaly.routeLabel}</td>
-                        <td className="px-4 py-3">{formatCurrency(anomaly.incomeUsd)}</td>
-                        <td className="px-4 py-3">
+                      <tr key={anomaly.id} className="transition-colors hover:bg-secondary/35">
+                        <td className="px-4 py-4">{anomaly.recordDate}</td>
+                        <td className="px-4 py-4 font-semibold">{anomaly.busCode}</td>
+                        <td className="px-4 py-4">{anomaly.routeLabel}</td>
+                        <td className="px-4 py-4 text-right tabular-nums">
+                          {formatCurrency(anomaly.incomeUsd)}
+                        </td>
+                        <td className="px-4 py-4 text-right tabular-nums">
                           {formatCurrency(anomaly.baseline.averageIncomeUsd)}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-4 text-right tabular-nums">
                           {formatCurrency(anomaly.baseline.standardDeviationUsd)}
                         </td>
-                        <td className="space-y-2 px-4 py-3">
+                        <td className="space-y-2 px-4 py-4">
                           <AnomalyBadge
                             hasEnoughHistory={anomaly.hasEnoughHistory}
                             isAnomaly={anomaly.isAnomaly}
@@ -215,23 +216,23 @@ export default async function IntelligencePage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]">
           <CardHeader>
             <CardTitle>Baselines por ruta</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Promedio y desviacion estándar usados por el motor de anomalías.
+              Promedio y desviacion estandar usados por el motor de anomalias.
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {data.anomalyBaselines.length === 0 ? (
               <div className="rounded-[24px] border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground">
-                Todavía no hay cierres históricos suficientes para construir baselines.
+                Todavia no hay cierres historicos suficientes para construir baselines.
               </div>
             ) : (
               data.anomalyBaselines.map((baseline) => (
                 <div
                   key={baseline.routeId}
-                  className="rounded-[24px] border border-border bg-white/70 px-4 py-3"
+                  className="rounded-[24px] border border-border bg-white/75 px-4 py-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>

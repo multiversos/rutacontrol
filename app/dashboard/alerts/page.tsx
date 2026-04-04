@@ -1,10 +1,6 @@
 import { AlertTable } from "@/components/alert-table";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { getAlertsData } from "@/lib/alerts";
 import { requireRole } from "@/lib/auth/session";
 
@@ -39,23 +35,21 @@ export default async function AlertsPage({ searchParams }: AlertsPageProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Alertas internas</CardTitle>
-          <CardDescription>
-            Supervisa inicios de sesion del registrador, cierres completados,
-            diferencias de caja y buses activos que siguen sin cierre.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[
+          { label: `${alertsData.alerts.length} visibles`, variant: "muted" },
+          { label: "Admin only", variant: "muted" },
+        ]}
+        description="Supervisa inicios de sesion del registrador, cierres completados, diferencias de caja y buses activos que siguen sin cierre."
+        eyebrow="Monitoreo"
+        title="Alertas internas"
+      />
 
-      <Card>
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardHeader>
           <CardTitle>Criterio de severidad</CardTitle>
           <CardDescription>
-            `info` para login y cierre correcto, `warning` para buses sin cierre y
-            diferencias menores a 10 USD, `critical` para diferencias de 10 USD o
-            mas.
+            `info` para login y cierre correcto, `warning` para buses sin cierre y diferencias menores a 10 USD, `critical` para diferencias de 10 USD o mas.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -71,9 +65,7 @@ export default async function AlertsPage({ searchParams }: AlertsPageProps) {
           <CardHeader>
             <CardTitle>Migracion pendiente en Supabase</CardTitle>
             <CardDescription>
-              La UI de alertas ya esta lista, pero el esquema `0004_internal_alerts.sql`
-              todavia no esta aplicado en la base real. En cuanto se aplique, esta
-              vista empezara a mostrar alertas sin cambios adicionales en la app.
+              La UI de alertas ya esta lista, pero el esquema `0004_internal_alerts.sql` todavia no esta aplicado en la base real. En cuanto se aplique, esta vista empezara a mostrar alertas sin cambios adicionales en la app.
             </CardDescription>
           </CardHeader>
         </Card>

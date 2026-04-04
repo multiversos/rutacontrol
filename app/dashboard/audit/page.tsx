@@ -1,10 +1,5 @@
 import { AuditTable } from "@/components/audit-table";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { getDailyAuditData } from "@/lib/dashboard";
 
@@ -26,15 +21,12 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Auditoria operativa</CardTitle>
-          <CardDescription>
-            Revisa quien creo, actualizo o cerro registros diarios y cuando ocurrio
-            cada evento.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[{ label: `${auditData.entries.length} eventos`, variant: "muted" }]}
+        description="Revisa quien creo, actualizo o cerro registros diarios y cuando ocurrio cada evento."
+        eyebrow="Monitoreo"
+        title="Auditoria operativa"
+      />
 
       <AuditTable entries={auditData.entries} filters={auditData.filters} />
     </div>

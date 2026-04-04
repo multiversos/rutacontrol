@@ -5,6 +5,7 @@ import { useActionState } from "react";
 
 import { saveRouteAction } from "@/app/dashboard/routes/actions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { initialFormState } from "@/lib/forms/action-state";
@@ -21,10 +22,9 @@ export function RouteForm({ route }: RouteFormProps) {
     <form action={formAction} className="space-y-5">
       <input name="routeId" type="hidden" value={route?.id ?? ""} />
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="route-name">Nombre de la ruta</Label>
-        <input
-          className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+        <Input
           defaultValue={route?.name ?? ""}
           id="route-name"
           name="name"
@@ -36,10 +36,9 @@ export function RouteForm({ route }: RouteFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="route-origin">Origen</Label>
-          <input
-            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+          <Input
             defaultValue={route?.origin ?? ""}
             id="route-origin"
             name="origin"
@@ -50,10 +49,9 @@ export function RouteForm({ route }: RouteFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="route-destination">Destino</Label>
-          <input
-            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+          <Input
             defaultValue={route?.destination ?? ""}
             id="route-destination"
             name="destination"
@@ -68,10 +66,9 @@ export function RouteForm({ route }: RouteFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-[1fr_auto]">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="route-expected-income">Ingreso esperado (USD)</Label>
-          <input
-            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+          <Input
             defaultValue={route?.expected_income ?? ""}
             id="route-expected-income"
             min="0"
@@ -88,7 +85,7 @@ export function RouteForm({ route }: RouteFormProps) {
         </div>
 
         <div className="flex items-end">
-          <label className="flex items-center gap-3 rounded-2xl border border-input bg-white/90 px-4 py-3 text-sm">
+          <label className="flex items-center gap-3 rounded-[24px] border border-input/90 bg-white/95 px-4 py-3 text-sm">
             <Checkbox defaultChecked={route?.active ?? true} name="active" />
             Activa
           </label>

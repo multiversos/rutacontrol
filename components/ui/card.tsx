@@ -9,7 +9,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-[28px] border border-border/80 bg-card/90 shadow-soft backdrop-blur",
+        "relative overflow-hidden rounded-[30px] border border-border/80 bg-card/95 shadow-soft backdrop-blur before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/80",
         className,
       )}
       {...props}
@@ -21,7 +21,7 @@ export function CardHeader({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("space-y-2 p-6", className)} {...props} />;
+  return <div className={cn("space-y-3 p-6", className)} {...props} />;
 }
 
 export function CardTitle({
@@ -29,7 +29,22 @@ export function CardTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-xl font-semibold tracking-tight", className)} {...props} />
+    <h3 className={cn("text-xl font-semibold tracking-tight text-foreground", className)} {...props} />
+  );
+}
+
+export function CardEyebrow({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={cn(
+        "text-xs font-semibold uppercase tracking-[0.22em] text-primary/70",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

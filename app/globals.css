@@ -2,23 +2,23 @@
 @config "../tailwind.config.ts";
 
 :root {
-  --background: 210 33% 98%;
-  --foreground: 216 42% 14%;
+  --background: 204 38% 97%;
+  --foreground: 216 37% 14%;
   --card: 0 0% 100%;
-  --card-foreground: 216 42% 14%;
-  --primary: 210 77% 32%;
+  --card-foreground: 216 37% 14%;
+  --primary: 208 77% 29%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 199 68% 92%;
-  --secondary-foreground: 210 77% 22%;
-  --muted: 210 25% 94%;
-  --muted-foreground: 215 16% 39%;
-  --accent: 30 89% 92%;
-  --accent-foreground: 24 76% 28%;
-  --destructive: 0 75% 55%;
+  --secondary: 194 62% 93%;
+  --secondary-foreground: 208 77% 20%;
+  --muted: 206 29% 93%;
+  --muted-foreground: 214 15% 37%;
+  --accent: 35 89% 91%;
+  --accent-foreground: 28 72% 28%;
+  --destructive: 0 72% 54%;
   --destructive-foreground: 0 0% 100%;
-  --border: 214 20% 86%;
-  --input: 214 20% 86%;
-  --ring: 210 77% 32%;
+  --border: 212 24% 84%;
+  --input: 212 24% 84%;
+  --ring: 208 77% 29%;
   --radius: 1rem;
 }
 
@@ -32,8 +32,9 @@ html {
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(125, 211, 252, 0.22), transparent 30%),
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.18), transparent 25%),
+    radial-gradient(circle at top left, rgba(103, 232, 249, 0.2), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.14), transparent 24%),
+    radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.08), transparent 18%),
     hsl(var(--background));
   color: hsl(var(--foreground));
 }
@@ -50,4 +51,20 @@ a {
 .surface-grid {
   background-image: var(--tw-gradient-stops), linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
   background-size: auto, 22px 22px, 22px 22px;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(51, 65, 85, 0.28);
+  background-clip: padding-box;
 }

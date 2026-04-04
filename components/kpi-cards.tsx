@@ -21,16 +21,22 @@ const toneClassMap = {
 
 export function KpiCards({ items }: KpiCardsProps) {
   return (
-    <section className="grid gap-4 md:grid-cols-4">
+    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
-        <Card key={item.label}>
-          <CardHeader>
+        <Card
+          key={item.label}
+          className="overflow-hidden border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]"
+        >
+          <CardHeader className="pb-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground/90">
+              KPI
+            </p>
             <CardTitle className="text-base">{item.label}</CardTitle>
-            <p className="text-sm text-muted-foreground">{item.helper}</p>
+            <p className="text-sm leading-6 text-muted-foreground">{item.helper}</p>
           </CardHeader>
           <CardContent
             className={cn(
-              "pt-0 text-3xl font-semibold",
+              "pt-0 text-3xl font-semibold sm:text-[2rem]",
               toneClassMap[item.tone ?? "default"],
             )}
           >

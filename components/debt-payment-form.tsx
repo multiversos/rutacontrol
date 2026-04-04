@@ -26,7 +26,7 @@ export function DebtPaymentForm({ debt }: DebtPaymentFormProps) {
     <form action={formAction} className="space-y-5">
       <input name="debtId" type="hidden" value={debt.id} />
 
-      <div className="rounded-2xl border border-border bg-muted/40 p-4 text-sm">
+      <div className="rounded-[24px] border border-border/70 bg-muted/35 p-4 text-sm">
         <p className="font-semibold">{debt.creditor}</p>
         <p className="mt-1 text-muted-foreground">{debt.description}</p>
         <p className="mt-3 text-muted-foreground">
@@ -38,7 +38,7 @@ export function DebtPaymentForm({ debt }: DebtPaymentFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="debt-payment-amount">Abono (USD)</Label>
           <Input
             disabled={disabled}
@@ -56,7 +56,7 @@ export function DebtPaymentForm({ debt }: DebtPaymentFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="debt-payment-date">Fecha del abono</Label>
           <Input
             defaultValue={getBusinessTodayDate()}
@@ -73,7 +73,7 @@ export function DebtPaymentForm({ debt }: DebtPaymentFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="debt-payment-notes">Notas del abono</Label>
         <Textarea
           disabled={disabled}

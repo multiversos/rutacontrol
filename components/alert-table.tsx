@@ -28,8 +28,8 @@ export function AlertTable({ alerts, busOptions, filters }: AlertTableProps) {
   const unreadCount = alerts.filter((alert) => !alert.read).length;
 
   return (
-    <div className="space-y-5">
-      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto]">
+    <div className="space-y-4">
+      <form className="grid gap-4 rounded-[30px] border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(241,245,249,0.92))] p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto]">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="alerts-date-from">
             Desde
@@ -123,7 +123,7 @@ export function AlertTable({ alerts, busOptions, filters }: AlertTableProps) {
         </Link>
       </form>
 
-      <div className="flex flex-col gap-3 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-[30px] border border-border bg-card/95 p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-semibold">Alertas visibles</p>
           <p className="text-sm text-muted-foreground">
@@ -150,13 +150,13 @@ export function AlertTable({ alerts, busOptions, filters }: AlertTableProps) {
       </div>
 
       {alerts.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
-          No hay alertas para los filtros seleccionados.
+        <div className="rounded-[30px] border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+          No hay alertas para los filtros seleccionados. Prueba otro rango, otro bus o cambia la severidad para revisar el estado operativo.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-[28px] border border-border bg-card/90 shadow-soft">
+        <div className="overflow-x-auto rounded-[30px] border border-border bg-card/95 shadow-soft">
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="bg-muted/60 text-left text-muted-foreground">
+            <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Tipo</th>
@@ -170,19 +170,19 @@ export function AlertTable({ alerts, busOptions, filters }: AlertTableProps) {
             </thead>
             <tbody className="divide-y divide-border bg-white/70">
               {alerts.map((alert) => (
-                <tr key={alert.id}>
-                  <td className="px-4 py-3">{formatDateTime(alert.createdAt)}</td>
-                  <td className="px-4 py-3">
+                <tr key={alert.id} className="transition-colors hover:bg-secondary/35">
+                  <td className="whitespace-nowrap px-4 py-4">{formatDateTime(alert.createdAt)}</td>
+                  <td className="px-4 py-4">
                     <AlertTypeBadge type={alert.alertType} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <AlertSeverityBadge severity={alert.severity} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <AlertReadBadge read={alert.read} />
                   </td>
-                  <td className="px-4 py-3">{alert.busCode ?? "--"}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-4 font-medium">{alert.busCode ?? "--"}</td>
+                  <td className="px-4 py-4">
                     {alert.dailyRecordId ? (
                       <Link
                         className="font-mono text-xs text-primary"
@@ -194,7 +194,7 @@ export function AlertTable({ alerts, busOptions, filters }: AlertTableProps) {
                       "--"
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <div className="space-y-1">
                       <p>{alert.message}</p>
                       {alert.profileName ? (
@@ -204,7 +204,7 @@ export function AlertTable({ alerts, busOptions, filters }: AlertTableProps) {
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-4 text-right">
                     <form action={markAlertReadAction}>
                       <input name="alertId" type="hidden" value={alert.id} />
                       <button

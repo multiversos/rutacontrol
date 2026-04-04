@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency, formatDateLabel } from "@/lib/formatters";
 import { getRepairsData } from "@/lib/repairs";
@@ -47,15 +48,15 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Reparaciones por unidad</CardTitle>
-          <CardDescription>
-            Registra reparaciones con comprobante obligatorio, revisa historial por
-            bus y deja visible el proximo servicio sugerido.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[
+          { label: `${repairsData.repairs.length} visibles`, variant: "muted" },
+          { label: "Comprobante obligatorio", variant: "warning" },
+        ]}
+        description="Registra reparaciones con comprobante obligatorio, revisa historial por bus y deja visible el proximo servicio sugerido."
+        eyebrow="Finanzas"
+        title="Reparaciones por unidad"
+      />
 
       <KpiCards
         items={[
@@ -94,37 +95,30 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
           repairs={repairsData.repairs}
         />
 
-        <Card>
+        <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
           <CardHeader>
             <CardTitle>Registrar reparacion</CardTitle>
             <CardDescription>
-              La reparacion solo se guarda si el comprobante se sube a Supabase
-              Storage y la base valida la operacion.
+              La reparacion solo se guarda si el comprobante se sube a Supabase Storage y la base valida la operacion.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {!repairsData.migrationReady ? (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                La migracion `0006_debts_repairs.sql` todavia no esta aplicada en
-                Supabase real. Apenas se aplique, este formulario quedara listo para
-                persistir reparaciones y comprobantes.
+                La migracion `0006_debts_repairs.sql` todavia no esta aplicada en Supabase real. Apenas se aplique, este formulario quedara listo para persistir reparaciones y comprobantes.
               </div>
             ) : (
-              <RepairForm
-                buses={repairsData.busOptions}
-                currentUserId={context.profile.id}
-              />
+              <RepairForm buses={repairsData.busOptions} currentUserId={context.profile.id} />
             )}
 
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              Un comprobante real es obligatorio. El sistema no acepta reparaciones
-              completas sin archivo adjunto valido.
+              Un comprobante real es obligatorio. El sistema no acepta reparaciones completas sin archivo adjunto valido.
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardHeader>
           <CardTitle>Proximo servicio sugerido por bus</CardTitle>
           <CardDescription>
@@ -132,9 +126,9 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto rounded-3xl border border-border">
+          <div className="overflow-x-auto rounded-[30px] border border-border">
             <table className="min-w-full divide-y divide-border text-sm">
-              <thead className="bg-muted/60 text-left text-muted-foreground">
+              <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Bus</th>
                   <th className="px-4 py-3">Proximo servicio</th>
@@ -144,9 +138,9 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
               </thead>
               <tbody className="divide-y divide-border bg-white/70">
                 {repairsData.suggestedServices.map((service) => (
-                  <tr key={service.busId}>
-                    <td className="px-4 py-3 font-medium">{service.busCode}</td>
-                    <td className="px-4 py-3">
+                  <tr key={service.busId} className="transition-colors hover:bg-secondary/35">
+                    <td className="px-4 py-4 font-semibold">{service.busCode}</td>
+                    <td className="px-4 py-4">
                       {service.nextServiceDueDate ? (
                         <Badge variant="warning">
                           {formatDateLabel(service.nextServiceDueDate)}
@@ -155,10 +149,10 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
                         "Sin sugerencia"
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       {service.repairDate ? formatDateLabel(service.repairDate) : "--"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       {service.notes?.trim() ? service.notes : "--"}
                     </td>
                   </tr>

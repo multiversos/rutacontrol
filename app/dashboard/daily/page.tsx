@@ -5,12 +5,8 @@ import { HistorySummaryTable } from "@/components/history-summary-table";
 import { KpiCards } from "@/components/kpi-cards";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { requireAuth } from "@/lib/auth/session";
 import { getDailyHistoryData } from "@/lib/dashboard";
 import { formatCurrency, formatDateLabel } from "@/lib/formatters";
@@ -61,20 +57,24 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {context.profile.role === "admin"
-              ? "Historial operativo"
-              : "Mis registros diarios"}
-          </CardTitle>
-          <CardDescription>
-            {context.profile.role === "admin"
-              ? "Filtra por rango y por bus, revisa el historial agrupado y detecta diferencias abiertas."
-              : "Consulta tus registros guardados y filtralos por rango de fechas o por bus."}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[
+          {
+            label: context.profile.role === "admin" ? "Vista administrativa" : "Vista personal",
+            variant: "muted",
+          },
+          ...(historyData.filters.busId ? [{ label: "Bus filtrado", variant: "muted" as const }] : []),
+        ]}
+        description={
+          context.profile.role === "admin"
+            ? "Filtra por rango y por bus, revisa el historial agrupado y detecta diferencias abiertas."
+            : "Consulta tus registros guardados y filtralos por rango de fechas o por bus."
+        }
+        eyebrow={context.profile.role === "admin" ? "Operacion" : "Registrador"}
+        title={
+          context.profile.role === "admin" ? "Historial operativo" : "Mis registros diarios"
+        }
+      />
 
       {context.profile.role === "admin" ? (
         <>
@@ -104,13 +104,12 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
             ]}
           />
 
-          <Card>
+          <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-2">
                 <CardTitle>Lectura del rango actual</CardTitle>
                 <CardDescription>
-                  El historial visible se esta armando con los filtros activos del
-                  admin.
+                  El historial visible se arma con los filtros activos del admin.
                 </CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -155,13 +154,12 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
             />
           </section>
 
-          <Card>
+          <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>Auditoria visible</CardTitle>
                 <CardDescription>
-                  Si necesitas revisar quien creo, actualizo o cerro un registro,
-                  abre la vista dedicada de auditoria.
+                  Si necesitas revisar quien creo, actualizo o cerro un registro, abre la vista dedicada de auditoria.
                 </CardDescription>
               </div>
               <Link

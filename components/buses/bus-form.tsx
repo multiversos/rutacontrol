@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { saveBusAction } from "@/app/dashboard/buses/actions";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -23,10 +24,10 @@ export function BusForm({ bus, routes }: BusFormProps) {
       <input name="busId" type="hidden" value={bus?.id ?? ""} />
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="bus-code">Codigo interno</Label>
-          <input
-            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm uppercase"
+          <Input
+            className="uppercase"
             defaultValue={bus?.code ?? ""}
             id="bus-code"
             name="code"
@@ -37,10 +38,10 @@ export function BusForm({ bus, routes }: BusFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="bus-plate">Placa</Label>
-          <input
-            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm uppercase"
+          <Input
+            className="uppercase"
             defaultValue={bus?.plate ?? ""}
             id="bus-plate"
             name="plate"
@@ -53,7 +54,7 @@ export function BusForm({ bus, routes }: BusFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="bus-route">Ruta asignada</Label>
           <Select
             defaultValue={bus?.route_id ?? ""}
@@ -72,7 +73,7 @@ export function BusForm({ bus, routes }: BusFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="bus-status">Estado</Label>
           <Select defaultValue={bus?.status ?? "active"} id="bus-status" name="status">
             <option value="active">Activo</option>

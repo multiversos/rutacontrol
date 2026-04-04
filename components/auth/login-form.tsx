@@ -22,7 +22,7 @@ export function LoginForm({ disabled = false, redirectTo }: LoginFormProps) {
     <form action={formAction} className="space-y-5">
       <input name="redirectTo" type="hidden" value={redirectTo} />
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="email">Correo</Label>
         <Input
           autoComplete="email"
@@ -35,7 +35,7 @@ export function LoginForm({ disabled = false, redirectTo }: LoginFormProps) {
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="password">Contrasena</Label>
         <Input
           autoComplete="current-password"
@@ -52,6 +52,10 @@ export function LoginForm({ disabled = false, redirectTo }: LoginFormProps) {
           {state.error}
         </p>
       ) : null}
+
+      <div className="rounded-[24px] border border-border/70 bg-secondary/35 px-4 py-3 text-sm text-muted-foreground">
+        El sistema te redirige automaticamente segun tu rol: el admin entra al panel y el registrador aterriza en el cierre diario.
+      </div>
 
       {disabled ? (
         <Button className="w-full" disabled type="button" variant="secondary">

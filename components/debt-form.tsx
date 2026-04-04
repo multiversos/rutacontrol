@@ -20,7 +20,7 @@ export function DebtForm({ recordOptions }: DebtFormProps) {
 
   return (
     <form action={formAction} className="space-y-5">
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="debt-creditor">Acreedor</Label>
         <Input id="debt-creditor" name="creditor" placeholder="Proveedor, taller o tercero" />
         {state.fieldErrors?.creditor?.[0] ? (
@@ -28,7 +28,7 @@ export function DebtForm({ recordOptions }: DebtFormProps) {
         ) : null}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="debt-description">Descripcion</Label>
         <Textarea
           id="debt-description"
@@ -43,7 +43,7 @@ export function DebtForm({ recordOptions }: DebtFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="debt-amount">Monto original (USD)</Label>
           <Input
             id="debt-amount"
@@ -60,7 +60,7 @@ export function DebtForm({ recordOptions }: DebtFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="debt-due-date">Fecha limite</Label>
           <Input
             defaultValue={getBusinessTodayDate()}
@@ -74,10 +74,10 @@ export function DebtForm({ recordOptions }: DebtFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="debt-daily-record">Relacionar con registro diario</Label>
         <select
-          className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+          className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
           defaultValue=""
           id="debt-daily-record"
           name="dailyRecordId"

@@ -4,6 +4,7 @@ import { HistorySummaryTable } from "@/components/history-summary-table";
 import { KpiCards } from "@/components/kpi-cards";
 import { ReportTable } from "@/components/report-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency } from "@/lib/formatters";
 import { getReportsData } from "@/lib/reports";
@@ -49,17 +50,17 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Reportes de rentabilidad</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Consolida cierres por bus, ruta, semana y mes sin alterar el flujo
-            diario ya aprobado.
-          </p>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        badges={[
+          { label: `${data.summary.closureCount} cierres`, variant: "muted" },
+          { label: "CSV descargable", variant: "muted" },
+        ]}
+        description="Consolida cierres por bus, ruta, semana y mes sin alterar el flujo diario ya aprobado."
+        eyebrow="Analisis"
+        title="Reportes de rentabilidad"
+      />
 
-      <Card>
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardContent className="pt-6">
           <form className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]">
             <div className="space-y-2">
@@ -67,7 +68,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 Desde
               </label>
               <input
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.dateFrom}
                 id="reports-date-from"
                 name="dateFrom"
@@ -79,7 +80,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 Hasta
               </label>
               <input
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.dateTo}
                 id="reports-date-to"
                 name="dateTo"
@@ -91,7 +92,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 Ruta
               </label>
               <select
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.routeId ?? ""}
                 id="reports-route"
                 name="routeId"
@@ -109,7 +110,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 Bus
               </label>
               <select
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
                 defaultValue={data.filters.busId ?? ""}
                 id="reports-bus"
                 name="busId"
@@ -123,13 +124,13 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
               </select>
             </div>
             <button
-              className="inline-flex h-11 items-center justify-center self-end rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+              className="inline-flex h-12 items-center justify-center self-end rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
               type="submit"
             >
               Aplicar
             </button>
             <a
-              className="inline-flex h-11 items-center justify-center self-end rounded-full border border-border px-5 text-sm font-semibold"
+              className="inline-flex h-12 items-center justify-center self-end rounded-full border border-border px-5 text-sm font-semibold"
               href="/dashboard/reports"
             >
               Limpiar
@@ -164,7 +165,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         ]}
       />
 
-      <Card>
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardHeader>
           <CardTitle>Exportacion descargable</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -214,7 +215,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
       <section className="grid gap-6 xl:grid-cols-2">
         <HistorySummaryTable
-          description="Cierres automáticos consolidados por semana operativa."
+          description="Cierres automaticos consolidados por semana operativa."
           rows={data.weeklyClosures.map((row) => ({
             busCount: row.busCount,
             closedRecords: row.closureCount,
@@ -229,7 +230,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           title="Cierre semanal consolidado"
         />
         <HistorySummaryTable
-          description="Cierres automáticos consolidados por mes calendario."
+          description="Cierres automaticos consolidados por mes calendario."
           rows={data.monthlyClosures.map((row) => ({
             busCount: row.busCount,
             closedRecords: row.closureCount,

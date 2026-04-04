@@ -153,10 +153,10 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
 
   return (
     <form ref={formRef} className="space-y-5" onSubmit={handleSubmit}>
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="repair-bus">Bus</Label>
         <select
-          className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+          className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
           defaultValue=""
           id="repair-bus"
           name="busId"
@@ -174,10 +174,10 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="repair-category">Categoria</Label>
           <select
-            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+            className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
             defaultValue="mechanical"
             id="repair-category"
             name="category"
@@ -192,7 +192,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
           </select>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="repair-date">Fecha de reparacion</Label>
           <Input
             defaultValue={getBusinessTodayDate()}
@@ -209,7 +209,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="repair-provider">Proveedor o taller</Label>
           <Input
             id="repair-provider"
@@ -221,7 +221,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="repair-cost">Costo (USD)</Label>
           <Input
             id="repair-cost"
@@ -237,7 +237,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="repair-description">Descripcion</Label>
         <Textarea
           id="repair-description"
@@ -252,7 +252,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="repair-next-service-date">Proximo servicio sugerido</Label>
           <Input
             id="repair-next-service-date"
@@ -266,7 +266,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
           <Label htmlFor="repair-receipt">Comprobante</Label>
           <Input
             accept=".pdf,image/jpeg,image/png,image/webp"
@@ -298,7 +298,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
         <Label htmlFor="repair-next-service-notes">Notas del proximo servicio</Label>
         <Textarea
           id="repair-next-service-notes"

@@ -39,7 +39,7 @@ export function BusSelector({
   const selectedBusBlocked = value ? isBlocked(value) : false;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <Select
         disabled={disabled}
         id="bus-selector"
@@ -64,11 +64,11 @@ export function BusSelector({
       </Select>
 
       {selectedBusBlocked ? (
-        <p className="text-sm text-destructive">
+        <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
           El bus seleccionado ya tiene un registro para esta fecha.
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="rounded-2xl bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
           Solo se habilitan unidades activas y sin choques visibles para tu alcance
           actual. La base confirma el bloqueo final al guardar.
         </p>
