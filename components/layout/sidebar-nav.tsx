@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Activity,
+  BarChart3,
   BellRing,
   BusFront,
   CalendarDays,
@@ -19,11 +21,13 @@ type SidebarIconKey =
   | "alerts"
   | "audit"
   | "dashboard"
+  | "intelligence"
   | "route"
   | "bus"
   | "calendar"
   | "debt"
-  | "repair";
+  | "repair"
+  | "reports";
 
 type NavItem = {
   href: string;
@@ -42,7 +46,9 @@ const iconMap = {
   calendar: CalendarDays,
   debt: WalletCards,
   dashboard: LayoutDashboard,
+  intelligence: Activity,
   repair: Wrench,
+  reports: BarChart3,
   route: MapPinned,
 } as const satisfies Record<SidebarIconKey, React.ComponentType<{ className?: string }>>;
 

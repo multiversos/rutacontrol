@@ -301,6 +301,38 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </Card>
             </Link>
 
+            <Link href="/dashboard/reports">
+              <Card className="h-full bg-white/70 transition-transform hover:-translate-y-0.5">
+                <CardContent className="flex h-full flex-col justify-between gap-6 p-5">
+                  <div className="space-y-2">
+                    <p className="font-semibold">Reportes</p>
+                    <p className="text-sm text-muted-foreground">
+                      Consolida rentabilidad por bus y por ruta, con cierres semanales y mensuales descargables.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    Abrir reportes <ArrowRight className="h-4 w-4" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/dashboard/intelligence">
+              <Card className="h-full bg-white/70 transition-transform hover:-translate-y-0.5">
+                <CardContent className="flex h-full flex-col justify-between gap-6 p-5">
+                  <div className="space-y-2">
+                    <p className="font-semibold">Inteligencia</p>
+                    <p className="text-sm text-muted-foreground">
+                      Detecta anomalías de ingreso por ruta y revisa el score de confianza por registrador.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    Abrir inteligencia <ArrowRight className="h-4 w-4" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Link href="/dashboard/repairs">
               <Card className="h-full bg-white/70 transition-transform hover:-translate-y-0.5">
                 <CardContent className="flex h-full flex-col justify-between gap-6 p-5">
