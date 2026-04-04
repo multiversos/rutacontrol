@@ -14,7 +14,7 @@
 - Sprint 0: cerrado
 - Sprint 1: cerrado
 - Sprint 2: cerrado
-- Sprint 3: no iniciado
+- Sprint 3: cerrado
 
 ## Reglas para futuros agentes
 
@@ -48,4 +48,4 @@
 
 ## Proxima fase permitida
 
-Sprint 3 todavia no esta abierto. Cualquier trabajo nuevo debe partir desde `main` despues del tag `v0.2.0-sprint2` y abrirse con alcance explicito antes de implementarse.
+Sprint 4 todavia no esta iniciado. Cualquier trabajo nuevo debe partir desde `main` despues del tag `v0.3.0-sprint3` y abrirse con alcance explicito antes de implementarse.

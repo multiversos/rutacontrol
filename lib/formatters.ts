@@ -47,3 +47,31 @@ export function getBusinessTodayDate() {
 
   return `${year}-${month}-${day}`;
 }
+
+function parseDateString(value: string) {
+  return value.includes("T") ? new Date(value) : new Date(`${value}T00:00:00Z`);
+}
+
+export function formatDateLabel(value: string) {
+  const date = parseDateString(value);
+
+  return new Intl.DateTimeFormat("es-VE", {
+    dateStyle: "medium",
+    timeZone: value.includes("T") ? "America/Caracas" : "UTC",
+  }).format(date);
+}
+
+export function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("es-VE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Caracas",
+  }).format(new Date(value));
+}
+
+export function shiftDateString(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+
+  return date.toISOString().slice(0, 10);
+}

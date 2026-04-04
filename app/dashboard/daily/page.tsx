@@ -1,5 +1,10 @@
+import Link from "next/link";
+
 import { DailyTable, type DailyFilters } from "@/components/daily-table";
+import { HistorySummaryTable } from "@/components/history-summary-table";
 import { KpiCards } from "@/components/kpi-cards";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
@@ -7,88 +12,49 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
-
-async function getDailyContext(filters: DailyFilters) {
-  const supabase = await createClient();
-  let recordsQuery = supabase
-    .from("daily_records")
-    .select(
-      "id, bus_id, user_id, record_date, income_bs, exchange_rate, income_usd, fuel_cost, worker_payment, other_expenses, net_profit_usd, calculated_net, difference, status, closed_at",
-    )
-    .order("record_date", { ascending: false });
-
-  if (filters.date) {
-    recordsQuery = recordsQuery.eq("record_date", filters.date);
-  }
-
-  if (filters.busId) {
-    recordsQuery = recordsQuery.eq("bus_id", filters.busId);
-  }
-
-  const [{ data: records }, { data: buses }, { data: profiles }] = await Promise.all([
-    recordsQuery,
-    supabase.from("buses").select("id, code").order("code"),
-    supabase.from("profiles").select("id, name"),
-  ]);
-
-  const busMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
-  const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile.name]));
-  const normalizedRecords = (records ?? []).map((record) => ({
-    busCode: busMap.get(record.bus_id) ?? record.bus_id,
-    calculatedNet: record.calculated_net,
-    closedAt: record.closed_at,
-    difference: record.difference,
-    exchangeRate: record.exchange_rate ?? "0.000000",
-    fuelCost: record.fuel_cost ?? "0.00",
-    id: record.id,
-    incomeBs: record.income_bs ?? "0.00",
-    incomeUsd: record.income_usd,
-    netProfitUsd: record.net_profit_usd ?? "0.00",
-    otherExpenses: record.other_expenses ?? "0.00",
-    recordDate: record.record_date,
-    status: record.status,
-    userName: profileMap.get(record.user_id) ?? undefined,
-    workerPayment: record.worker_payment ?? "0.00",
-  }));
-
-  return {
-    busOptions: (buses ?? []).map((bus) => ({
-      code: bus.code,
-      id: bus.id,
-    })),
-    records: normalizedRecords,
-  };
-}
+import { getDailyHistoryData } from "@/lib/dashboard";
+import { formatCurrency, formatDateLabel } from "@/lib/formatters";
 
 type DailyPageProps = {
   searchParams?: Promise<{
     busId?: string;
     date?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }>;
 };
 
 export default async function DailyPage({ searchParams }: DailyPageProps) {
   const context = await requireAuth();
-
   const params = searchParams ? await searchParams : undefined;
   const filters: DailyFilters = {
     busId: params?.busId ? String(params.busId) : undefined,
-    date: params?.date ? String(params.date) : undefined,
+    dateFrom: params?.dateFrom
+      ? String(params.dateFrom)
+      : params?.date
+        ? String(params.date)
+        : undefined,
+    dateTo: params?.dateTo
+      ? String(params.dateTo)
+      : params?.date
+        ? String(params.date)
+        : undefined,
   };
-  const { busOptions, records } = await getDailyContext(filters);
-  const totals = records.reduce(
+  const historyData = await getDailyHistoryData(filters);
+  const totals = historyData.records.reduce(
     (accumulator, record) => ({
-      difference: accumulator.difference + Number.parseFloat(record.difference),
+      differenceCount:
+        accumulator.differenceCount +
+        (Math.abs(Number.parseFloat(record.difference)) >= 0.01 ? 1 : 0),
       incomeUsd: accumulator.incomeUsd + Number.parseFloat(record.incomeUsd),
-      netProfitUsd:
-        accumulator.netProfitUsd + Number.parseFloat(record.netProfitUsd),
+      netCalculated:
+        accumulator.netCalculated + Number.parseFloat(record.calculatedNet),
       totalRecords: accumulator.totalRecords + 1,
     }),
     {
-      difference: 0,
+      differenceCount: 0,
       incomeUsd: 0,
-      netProfitUsd: 0,
+      netCalculated: 0,
       totalRecords: 0,
     },
   );
@@ -99,31 +65,117 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
         <CardHeader>
           <CardTitle>
             {context.profile.role === "admin"
-              ? "Operacion diaria"
+              ? "Historial operativo"
               : "Mis registros diarios"}
           </CardTitle>
           <CardDescription>
-            Filtra por fecha o por bus y revisa los principales datos financieros del
-            dia.
+            {context.profile.role === "admin"
+              ? "Filtra por rango y por bus, revisa el historial agrupado y detecta diferencias abiertas."
+              : "Consulta tus registros guardados y filtralos por rango de fechas o por bus."}
           </CardDescription>
         </CardHeader>
       </Card>
 
       {context.profile.role === "admin" ? (
-        <KpiCards
-          totalDifference={totals.difference}
-          totalIncomeUsd={totals.incomeUsd}
-          totalNetProfitUsd={totals.netProfitUsd}
-          totalRecords={totals.totalRecords}
-        />
+        <>
+          <KpiCards
+            items={[
+              {
+                helper: "Registros visibles con los filtros actuales",
+                label: "Registros visibles",
+                value: String(totals.totalRecords),
+              },
+              {
+                helper: "Suma del ingreso USD en el rango filtrado",
+                label: "Ingreso USD filtrado",
+                value: formatCurrency(totals.incomeUsd),
+              },
+              {
+                helper: "Suma del neto calculado en el rango filtrado",
+                label: "Neto calculado",
+                value: formatCurrency(totals.netCalculated),
+              },
+              {
+                helper: "Registros con difference distinta de 0",
+                label: "Diferencias abiertas",
+                tone: totals.differenceCount > 0 ? "danger" : "success",
+                value: String(totals.differenceCount),
+              },
+            ]}
+          />
+
+          <Card>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-2">
+                <CardTitle>Lectura del rango actual</CardTitle>
+                <CardDescription>
+                  El historial visible se esta armando con los filtros activos del
+                  admin.
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {historyData.filters.dateFrom ? (
+                  <Badge variant="muted">
+                    Desde {formatDateLabel(historyData.filters.dateFrom)}
+                  </Badge>
+                ) : null}
+                {historyData.filters.dateTo ? (
+                  <Badge variant="muted">
+                    Hasta {formatDateLabel(historyData.filters.dateTo)}
+                  </Badge>
+                ) : null}
+                {historyData.filters.busId ? (
+                  <Badge variant="muted">Bus filtrado</Badge>
+                ) : null}
+              </div>
+            </CardHeader>
+          </Card>
+        </>
       ) : null}
 
       <DailyTable
-        busOptions={busOptions}
-        filters={filters}
+        busOptions={historyData.busOptions}
+        filters={historyData.filters}
         isAdmin={context.profile.role === "admin"}
-        records={records}
+        records={historyData.records}
       />
+
+      {context.profile.role === "admin" ? (
+        <>
+          <section className="grid gap-6 xl:grid-cols-2">
+            <HistorySummaryTable
+              description="Agrupa registros por semana para revisar tendencia operativa sin salir del modulo."
+              rows={historyData.weeklySummary}
+              title="Historial semanal"
+            />
+            <HistorySummaryTable
+              description="Agrupa registros por mes para comparar volumen, neto calculado y diferencias."
+              rows={historyData.monthlySummary}
+              title="Historial mensual"
+            />
+          </section>
+
+          <Card>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle>Auditoria visible</CardTitle>
+                <CardDescription>
+                  Si necesitas revisar quien creo, actualizo o cerro un registro,
+                  abre la vista dedicada de auditoria.
+                </CardDescription>
+              </div>
+              <Link
+                className={buttonVariants({
+                  variant: "secondary",
+                })}
+                href="/dashboard/audit"
+              >
+                Abrir auditoria
+              </Link>
+            </CardHeader>
+          </Card>
+        </>
+      ) : null}
     </div>
   );
 }
