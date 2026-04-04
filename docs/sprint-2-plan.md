@@ -1,6 +1,6 @@
 # Sprint 2 Plan
 
-Estado: `abierto para ejecucion controlada`.
+Estado: `en ejecucion`.
 
 Rama de trabajo recomendada: `sprint-2`
 
@@ -101,6 +101,26 @@ Sprint 2 solo puede cubrir estos cuatro temas:
 - Definicion incompleta de los campos fuente del hash
 - Doble enforcement entre app y SQL con mensajes inconsistentes
 - Romper los smoke tests ya aprobados de Sprint 1
+
+## Estado de implementacion actual
+
+Sprint 2 ya tiene estos cambios implementados en codigo dentro de `sprint-2`:
+
+- migracion incremental `supabase/migrations/0003_daily_record_closure.sql`
+- formulario de registros diarios capaz de guardar borradores incompletos
+- cierre automatico reflejado en la UI
+- bloqueo visual de registros cerrados
+- tabla diaria mostrando estado `draft` vs `closed`
+- action de guardado alineada con cierre automatico y bloqueo post-cierre
+
+Validacion actual:
+
+- `npm run typecheck`: PASS
+- `npm run lint`: PASS
+- `npm run build`: PASS
+- login admin y registrador: PASS en servidor local
+- acceso a `/dashboard`, `/dashboard/routes`, `/dashboard/buses`, `/dashboard/daily/new`: PASS
+- smoke de Supabase para Sprint 2: pendiente de aplicar la migracion `0003` en el proyecto real
 
 ## Criterio de inicio
 

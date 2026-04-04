@@ -8,7 +8,7 @@ Fecha de actualizacion: 3 de abril de 2026.
 | --- | --- | --- |
 | Sprint 0 | Cerrado | Fundacion tecnica, auth base, migracion inicial y despliegue |
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
-| Sprint 2 | No iniciado | Solo abierto a nivel de planificacion, sin features implementadas |
+| Sprint 2 | En progreso | Codigo implementado en `sprint-2`, pendiente aplicar `0003_daily_record_closure.sql` en Supabase real |
 
 ## Resumen ejecutivo
 
@@ -50,12 +50,28 @@ RutaControl quedo estable en `main` con Sprint 1 cerrado. El proyecto ya esta co
 
 ## Estado de Sprint 2
 
-Sprint 2 todavia no esta implementado. El siguiente alcance permitido es:
+Sprint 2 ya tiene implementacion en codigo sobre la rama `sprint-2` para:
 
 1. cierre automatico
 2. bloqueo post-cierre
 3. hash SHA-256
 4. diferencia de caja
+
+Estado actual de validacion:
+
+- `typecheck`: PASS
+- `lint`: PASS
+- `build`: PASS
+- regresion de UI de Sprint 1 en servidor local contra Supabase real: PASS
+- smoke test directo contra Supabase real para cierre automatico: FAIL mientras no se aplique `supabase/migrations/0003_daily_record_closure.sql`
+
+Bloqueo exacto actual:
+
+- Supabase real sigue rechazando borradores incompletos por `not null` en `departure_time`
+- los registros completos siguen quedando `draft`
+- `closed_at` y `closure_hash` siguen en `null`
+
+Eso confirma que el codigo de Sprint 2 ya esta listo, pero el entorno real aun no ejecuto la migracion incremental de Sprint 2.
 
 ## Criterio exacto de cierre actual
 
