@@ -1,7 +1,13 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatNumber, isNonZeroAmount } from "@/lib/formatters";
+import {
+  formatCurrency,
+  formatDateLabel,
+  formatDateTime,
+  formatNumber,
+  isNonZeroAmount,
+} from "@/lib/formatters";
 
 type BusFilterOption = {
   code: string;
@@ -10,7 +16,8 @@ type BusFilterOption = {
 
 export type DailyFilters = {
   busId: string | undefined;
-  date: string | undefined;
+  dateFrom: string | undefined;
+  dateTo: string | undefined;
 };
 
 type DailyTableRecord = {
@@ -46,16 +53,29 @@ export function DailyTable({
 }: DailyTableProps) {
   return (
     <div className="space-y-5">
-      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_1fr_auto_auto]">
+      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_1fr_1fr_auto_auto]">
         <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="filter-date">
-            Filtrar por fecha
+          <label className="text-sm font-medium" htmlFor="filter-date-from">
+            Desde
           </label>
           <input
             className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
-            defaultValue={filters.date ?? ""}
-            id="filter-date"
-            name="date"
+            defaultValue={filters.dateFrom ?? ""}
+            id="filter-date-from"
+            name="dateFrom"
+            type="date"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="filter-date-to">
+            Hasta
+          </label>
+          <input
+            className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
+            defaultValue={filters.dateTo ?? ""}
+            id="filter-date-to"
+            name="dateTo"
             type="date"
           />
         </div>
@@ -126,7 +146,7 @@ export function DailyTable({
 
                 return (
                   <tr key={record.id}>
-                    <td className="px-4 py-3">{record.recordDate}</td>
+                    <td className="px-4 py-3">{formatDateLabel(record.recordDate)}</td>
                     <td className="px-4 py-3 font-medium">{record.busCode}</td>
                     {isAdmin ? (
                       <td className="px-4 py-3">{record.userName ?? "--"}</td>
@@ -155,7 +175,7 @@ export function DailyTable({
                         </Badge>
                         {record.closedAt ? (
                           <p className="text-xs text-muted-foreground">
-                            {record.closedAt}
+                            {formatDateTime(record.closedAt)}
                           </p>
                         ) : null}
                       </div>

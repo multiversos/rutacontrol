@@ -10,7 +10,7 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { getDefaultDashboardPath } from "@/lib/auth/routing";
 import { ROLE_LABELS, type Profile } from "@/lib/auth/types";
 
-type DashboardNavIcon = "dashboard" | "route" | "bus" | "calendar";
+type DashboardNavIcon = "audit" | "bus" | "calendar" | "dashboard" | "route";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -49,6 +49,11 @@ export function DashboardShell({
             icon: "calendar" as DashboardNavIcon,
             label: "Nuevo registro",
           },
+          {
+            href: "/dashboard/audit",
+            icon: "audit" as DashboardNavIcon,
+            label: "Auditoria",
+          },
         ]
       : [
           {
@@ -77,9 +82,9 @@ export function DashboardShell({
                   RutaControl
                 </p>
                 <div>
-                  <p className="text-2xl font-semibold">Sprint 1 operativo</p>
+                  <p className="text-2xl font-semibold">Sprint 3 operativo</p>
                   <p className="mt-1 text-sm text-primary-foreground/80">
-                    Rutas, buses y registros diarios listos para operar.
+                    Operacion diaria, historial y auditoria visibles para administracion.
                   </p>
                 </div>
               </div>
@@ -108,7 +113,7 @@ export function DashboardShell({
           <header className="flex flex-col gap-4 rounded-[32px] border border-border/80 bg-card/90 p-5 shadow-soft backdrop-blur sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                MVP operable
+                Operacion supervisada
               </p>
               <h1 className="text-2xl font-semibold tracking-tight">
                 Dashboard protegido

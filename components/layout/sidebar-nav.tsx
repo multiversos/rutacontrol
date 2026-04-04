@@ -7,11 +7,12 @@ import {
   CalendarDays,
   LayoutDashboard,
   MapPinned,
+  ShieldCheck,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type SidebarIconKey = "dashboard" | "route" | "bus" | "calendar";
+type SidebarIconKey = "audit" | "dashboard" | "route" | "bus" | "calendar";
 
 type NavItem = {
   href: string;
@@ -24,6 +25,7 @@ type SidebarNavProps = {
 };
 
 const iconMap = {
+  audit: ShieldCheck,
   bus: BusFront,
   calendar: CalendarDays,
   dashboard: LayoutDashboard,
