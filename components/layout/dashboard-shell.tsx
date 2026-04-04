@@ -1,10 +1,6 @@
 import Link from "next/link";
 import {
-  BusFront,
-  CalendarDays,
-  LayoutDashboard,
   LogOut,
-  MapPinned,
 } from "lucide-react";
 
 import { signOutAction } from "@/app/dashboard/actions";
@@ -13,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { getDefaultDashboardPath } from "@/lib/auth/routing";
 import { ROLE_LABELS, type Profile } from "@/lib/auth/types";
+
+type DashboardNavIcon = "dashboard" | "route" | "bus" | "calendar";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -25,42 +23,42 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const navItems =
     profile.role === "admin"
-      ? [
+        ? [
           {
             href: "/dashboard",
-            icon: LayoutDashboard,
+            icon: "dashboard" as DashboardNavIcon,
             label: "Resumen",
           },
           {
             href: "/dashboard/routes",
-            icon: MapPinned,
+            icon: "route" as DashboardNavIcon,
             label: "Rutas",
           },
           {
             href: "/dashboard/buses",
-            icon: BusFront,
+            icon: "bus" as DashboardNavIcon,
             label: "Buses",
           },
           {
             href: "/dashboard/daily",
-            icon: CalendarDays,
+            icon: "calendar" as DashboardNavIcon,
             label: "Registros diarios",
           },
           {
             href: "/dashboard/daily/new",
-            icon: CalendarDays,
+            icon: "calendar" as DashboardNavIcon,
             label: "Nuevo registro",
           },
         ]
       : [
           {
             href: "/dashboard/daily/new",
-            icon: CalendarDays,
+            icon: "calendar" as DashboardNavIcon,
             label: "Nuevo registro",
           },
           {
             href: "/dashboard/daily",
-            icon: CalendarDays,
+            icon: "calendar" as DashboardNavIcon,
             label: "Mis registros",
           },
         ];

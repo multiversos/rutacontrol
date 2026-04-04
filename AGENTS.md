@@ -2,38 +2,54 @@
 
 ## Contexto de producto
 
-- Proyecto: **RutaControl**
+- Proyecto: `RutaControl`
 - Uso: interno
 - Roles: `admin`, `registrador`
 - Los choferes no usan el sistema
-- Una sola persona registra la operación al final del día
-- Moneda operativa: bolívares con conversión a USD
+- Una sola persona registra la operacion al final del dia
+- Moneda operativa: bolivares con conversion a USD
+
+## Estado actual del proyecto
+
+- Sprint 0: cerrado
+- Sprint 1: cerrado
+- Sprint 2: no iniciado
 
 ## Reglas para futuros agentes
 
-1. Trabajar por sprint, sin mezclar alcances.
-2. No introducir módulos de deudas, reparaciones, Telegram, anomalías o reporting avanzado antes de tiempo.
-3. Mantener los cálculos críticos en servidor o SQL; nunca depender solo del frontend.
-4. Respetar la restricción `UNIQUE (bus_id, record_date)` en `daily_records`.
-5. Usar español en UI y documentación de producto; inglés en código.
-6. Mantener la tabla `profiles` enlazada 1:1 con `auth.users(id)`.
-7. No debilitar RLS para acelerar desarrollo.
-8. Priorizar Server Actions para CRUD interno del MVP; reservar `app/api` para integraciones externas.
+1. Trabajar por sprint y no mezclar alcances.
+2. Mantener `daily_records` como tabla principal operativa del MVP.
+3. Mantener `expenses` como detalle complementario hasta nuevo aviso.
+4. No introducir modulos de deudas, reparaciones, Telegram, anomalias o reporting avanzado antes de tiempo.
+5. Mantener los calculos criticos en servidor o SQL; nunca depender solo del frontend.
+6. Respetar `UNIQUE (bus_id, record_date)` en `daily_records`.
+7. No debilitar RLS para mejorar UX.
+8. Mantener `profiles` enlazada 1:1 con `auth.users(id)`.
+9. Usar Server Actions para CRUD interno mientras siga aplicando esta arquitectura.
 
 ## Convenciones
 
 - TypeScript estricto
 - Import alias: `@/*`
-- Componentes de UI reutilizables en `components/ui`
+- Componentes UI reutilizables en `components/ui`
 - Clientes Supabase en `lib/supabase`
 - Auth y guards en `lib/auth`
 - Validadores de negocio en `lib/validators`
 - ADRs en `docs/adr`
 
-## Calidad mínima antes de cerrar una fase
+## Calidad minima antes de cerrar una fase
 
 - Esquema SQL consistente con tipos TS
 - Variables documentadas
 - Rutas protegidas sin bypass
-- Sin lógica crítica únicamente en cliente
-- README y checklist actualizados
+- Sin logica critica unicamente en cliente
+- README y documentacion del sprint actualizados
+
+## Proxima fase permitida
+
+Sprint 2 debe limitarse a:
+
+1. cierre automatico
+2. bloqueo post-cierre
+3. hash SHA-256
+4. diferencia de caja

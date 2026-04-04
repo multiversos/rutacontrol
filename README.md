@@ -1,43 +1,61 @@
 # RutaControl
 
-Estado del repositorio: `Sprint 1 listo para conexion externa`.
+Estado del repositorio: `Sprint 1 cerrado`.
 
-RutaControl es una aplicacion interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El alcance actual cubre login con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses y registros diarios con recalculo financiero en SQL.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El MVP actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses y registros diarios con recalculo financiero en SQL.
 
-## Estado verificado
+## Estado actual
 
-- App validada localmente con `npm install`, `npm run typecheck`, `npm run lint` y `npm run build`.
-- Estructura App Router estable en `/dashboard`, `/dashboard/buses`, `/dashboard/routes`, `/dashboard/daily` y `/dashboard/daily/new`.
-- Auth endurecida con `profiles.active`, perfiles faltantes y redireccion por rol.
-- RLS, triggers y migracion principal preparados en [supabase/migrations/0001_core.sql](N:/projects/busescontrol/supabase/migrations/0001_core.sql).
-- Seed base preparado en [supabase/seed.sql](N:/projects/busescontrol/supabase/seed.sql).
-- Proyecto Vercel creado, enlazado y desplegado.
+- Sprint 0: cerrado
+- Sprint 1: cerrado el 3 de abril de 2026
+- Sprint 2: no implementado todavia
 
-## Estado de servicios externos
+## Criterios aprobados de Sprint 1
 
-- GitHub remoto: `origin` configurado a `https://github.com/multiversos/rutacontrol.git`, pero el repo remoto todavia no existe o no es accesible desde la integracion actual.
-- Supabase: codigo y CLI listos, pero todavia no hay proyecto autenticado ni secretos reales.
-- Vercel:
-  - produccion: [https://rutacontrol.vercel.app](https://rutacontrol.vercel.app)
-  - preview mas reciente: [https://rutacontrol-9fz7i3mzn-multiversos-4148s-projects.vercel.app](https://rutacontrol-9fz7i3mzn-multiversos-4148s-projects.vercel.app)
-  - nota: el preview sigue protegido por autenticacion de Vercel
+- Login admin: PASS
+- Login registrador: PASS
+- Redireccion por rol: PASS
+- Acceso a dashboard autenticado: PASS
+- CRUD de rutas: PASS
+- CRUD de buses: PASS
+- Creacion y edicion de `daily_records`: PASS
+- `UNIQUE (bus_id, record_date)`: PASS
+- Rechazo real de buses inactive: PASS
+- Persistencia autenticada contra Supabase: PASS
+- RLS basica: PASS
 
-## Variables de entorno
+## Infraestructura verificada
 
-Copia `.env.example` a `.env.local` y completa:
+- GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
+- Supabase real conectado con esquema, seed y smoke tests autenticados ejecutados
+- Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
+
+## Stack
+
+- Next.js App Router
+- TypeScript estricto
+- Tailwind CSS
+- Supabase SSR
+- Vercel
+
+## Rutas activas del MVP
+
+- `/login`
+- `/dashboard`
+- `/dashboard/routes`
+- `/dashboard/buses`
+- `/dashboard/daily`
+- `/dashboard/daily/new`
+
+## Variables de entorno principales
 
 - `NEXT_PUBLIC_APP_NAME`
 - `BUSINESS_TIMEZONE`
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
-Opcionales:
-
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-`SUPABASE_SERVICE_ROLE_KEY` no es necesaria para cerrar Sprint 1 y no debe usarse para saltarse RLS en la UI.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` opcional
+- `SUPABASE_SERVICE_ROLE_KEY` solo para procesos de servidor realmente privilegiados
 
 ## Arranque local
 
@@ -49,26 +67,18 @@ npm run build
 npm run dev
 ```
 
-## Documentacion de handoff
+## Documentacion operativa
 
-- Conexion externa: [docs/deployment-checklist.md](N:/projects/busescontrol/docs/deployment-checklist.md)
-- Smoke test de Sprint 1: [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md)
-- Estado exacto del proyecto: [docs/project-status.md](N:/projects/busescontrol/docs/project-status.md)
-- Checklist historico de fundacion: [docs/sprint-0-checklist.md](N:/projects/busescontrol/docs/sprint-0-checklist.md)
+- Estado del proyecto: [docs/project-status.md](N:/projects/busescontrol/docs/project-status.md)
+- Checklist de despliegue e integraciones: [docs/deployment-checklist.md](N:/projects/busescontrol/docs/deployment-checklist.md)
+- Evidencia y checklist funcional de Sprint 1: [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md)
+- Checklist de fundacion: [docs/sprint-0-checklist.md](N:/projects/busescontrol/docs/sprint-0-checklist.md)
 
-## Bloqueos externos actuales
+## Siguiente fase
 
-- Falta crear o dar acceso al repo remoto `multiversos/rutacontrol`.
-- Falta crear el proyecto Supabase real.
-- Faltan `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` o `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-- Falta aplicar migracion y seed en Supabase real.
+La siguiente fase es Sprint 2. Su alcance todavia no esta implementado y debe limitarse a:
 
-## Criterio exacto para cerrar Sprint 1
-
-Sprint 1 se considera cerrado cuando se cumplan estas cinco condiciones:
-
-1. `main` existe en el remoto de GitHub y acepta `git push -u origin main`.
-2. Existe un proyecto Supabase real enlazado, con migracion y seed aplicados.
-3. La app tiene configuradas las variables publicas de Supabase en local o en Vercel.
-4. Existe al menos un usuario `admin` activo y un usuario `registrador` activo en `public.profiles`.
-5. El checklist de [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md) pasa de punta a punta.
+1. cierre automatico
+2. bloqueo post-cierre
+3. hash SHA-256
+4. diferencia de caja

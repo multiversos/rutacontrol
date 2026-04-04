@@ -2,19 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
+import {
+  BusFront,
+  CalendarDays,
+  LayoutDashboard,
+  MapPinned,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+type SidebarIconKey = "dashboard" | "route" | "bus" | "calendar";
+
 type NavItem = {
   href: string;
-  icon: LucideIcon;
+  icon: SidebarIconKey;
   label: string;
 };
 
 type SidebarNavProps = {
   items: NavItem[];
 };
+
+const iconMap = {
+  bus: BusFront,
+  calendar: CalendarDays,
+  dashboard: LayoutDashboard,
+  route: MapPinned,
+} as const satisfies Record<SidebarIconKey, React.ComponentType<{ className?: string }>>;
 
 export function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
@@ -23,6 +37,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
   return (
     <nav className="space-y-2">
       {items.map((item) => {
+        const Icon = iconMap[item.icon];
         const active = hasExactMatch
           ? pathname === item.href
           : pathname === item.href ||
@@ -39,7 +54,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
             )}
             href={item.href}
           >
-            <item.icon className="h-4 w-4" />
+            <Icon className="h-4 w-4" />
             <span>{item.label}</span>
           </Link>
         );
