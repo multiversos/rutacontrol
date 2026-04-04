@@ -9,6 +9,8 @@ import {
   LayoutDashboard,
   MapPinned,
   ShieldCheck,
+  WalletCards,
+  Wrench,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -19,7 +21,9 @@ type SidebarIconKey =
   | "dashboard"
   | "route"
   | "bus"
-  | "calendar";
+  | "calendar"
+  | "debt"
+  | "repair";
 
 type NavItem = {
   href: string;
@@ -36,7 +40,9 @@ const iconMap = {
   audit: ShieldCheck,
   bus: BusFront,
   calendar: CalendarDays,
+  debt: WalletCards,
   dashboard: LayoutDashboard,
+  repair: Wrench,
   route: MapPinned,
 } as const satisfies Record<SidebarIconKey, React.ComponentType<{ className?: string }>>;
 

@@ -284,6 +284,38 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 </CardContent>
               </Card>
             </Link>
+
+            <Link href="/dashboard/debts">
+              <Card className="h-full bg-white/70 transition-transform hover:-translate-y-0.5">
+                <CardContent className="flex h-full flex-col justify-between gap-6 p-5">
+                  <div className="space-y-2">
+                    <p className="font-semibold">Deudas</p>
+                    <p className="text-sm text-muted-foreground">
+                      Controla compromisos pendientes, pagos parciales y saldo abierto sin salir del panel.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    Abrir deudas <ArrowRight className="h-4 w-4" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/dashboard/repairs">
+              <Card className="h-full bg-white/70 transition-transform hover:-translate-y-0.5">
+                <CardContent className="flex h-full flex-col justify-between gap-6 p-5">
+                  <div className="space-y-2">
+                    <p className="font-semibold">Reparaciones</p>
+                    <p className="text-sm text-muted-foreground">
+                      Registra comprobantes reales, consulta historial por unidad y visualiza el proximo servicio sugerido.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    Abrir reparaciones <ArrowRight className="h-4 w-4" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </CardContent>
         </Card>
 

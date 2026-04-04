@@ -15,7 +15,9 @@ type DashboardNavIcon =
   | "audit"
   | "bus"
   | "calendar"
+  | "debt"
   | "dashboard"
+  | "repair"
   | "route";
 
 type DashboardShellProps = {
@@ -61,6 +63,16 @@ export function DashboardShell({
             label: "Auditoria",
           },
           {
+            href: "/dashboard/debts",
+            icon: "debt" as DashboardNavIcon,
+            label: "Deudas",
+          },
+          {
+            href: "/dashboard/repairs",
+            icon: "repair" as DashboardNavIcon,
+            label: "Reparaciones",
+          },
+          {
             href: "/dashboard/alerts",
             icon: "alerts" as DashboardNavIcon,
             label: "Alertas",
@@ -93,9 +105,9 @@ export function DashboardShell({
                   RutaControl
                 </p>
                 <div>
-                  <p className="text-2xl font-semibold">Sprint 4 operativo</p>
+                  <p className="text-2xl font-semibold">Sprint 5 operativo</p>
                   <p className="mt-1 text-sm text-primary-foreground/80">
-                    Operacion diaria, historial, auditoria y alertas internas visibles para administracion.
+                    Operacion diaria, historial, auditoria, alertas internas, deudas y reparaciones visibles para administracion.
                   </p>
                 </div>
               </div>

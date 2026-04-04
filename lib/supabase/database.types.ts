@@ -239,6 +239,114 @@ export type Database = {
           },
         ];
       };
+      debt_payments: {
+        Row: {
+          amount_usd: string;
+          created_at: string;
+          created_by: string;
+          debt_id: string;
+          id: string;
+          notes: string | null;
+          payment_date: string;
+          updated_at: string;
+        };
+        Insert: {
+          amount_usd: string;
+          created_at?: string;
+          created_by: string;
+          debt_id: string;
+          id?: string;
+          notes?: string | null;
+          payment_date?: string;
+          updated_at?: string;
+        };
+        Update: {
+          amount_usd?: string;
+          created_at?: string;
+          created_by?: string;
+          debt_id?: string;
+          id?: string;
+          notes?: string | null;
+          payment_date?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "debt_payments_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "debt_payments_debt_id_fkey";
+            columns: ["debt_id"];
+            isOneToOne: false;
+            referencedRelation: "debts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      debts: {
+        Row: {
+          amount_paid_usd: string;
+          amount_usd: string;
+          balance_due_usd: string;
+          created_at: string;
+          created_by: string;
+          creditor: string;
+          daily_record_id: string | null;
+          description: string;
+          due_date: string | null;
+          id: string;
+          status: Database["public"]["Enums"]["debt_status"];
+          updated_at: string;
+        };
+        Insert: {
+          amount_paid_usd?: string;
+          amount_usd: string;
+          balance_due_usd?: string;
+          created_at?: string;
+          created_by: string;
+          creditor: string;
+          daily_record_id?: string | null;
+          description: string;
+          due_date?: string | null;
+          id?: string;
+          status?: Database["public"]["Enums"]["debt_status"];
+          updated_at?: string;
+        };
+        Update: {
+          amount_paid_usd?: string;
+          amount_usd?: string;
+          balance_due_usd?: string;
+          created_at?: string;
+          created_by?: string;
+          creditor?: string;
+          daily_record_id?: string | null;
+          description?: string;
+          due_date?: string | null;
+          id?: string;
+          status?: Database["public"]["Enums"]["debt_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "debts_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "debts_daily_record_id_fkey";
+            columns: ["daily_record_id"];
+            isOneToOne: false;
+            referencedRelation: "daily_records";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       expenses: {
         Row: {
           amount_bs: string | null;
@@ -313,6 +421,107 @@ export type Database = {
         };
         Relationships: [];
       };
+      repair_attachments: {
+        Row: {
+          bucket_name: string;
+          content_type: string;
+          created_at: string;
+          file_size_bytes: number;
+          id: string;
+          object_path: string;
+          original_name: string;
+          repair_id: string;
+        };
+        Insert: {
+          bucket_name?: string;
+          content_type: string;
+          created_at?: string;
+          file_size_bytes: number;
+          id?: string;
+          object_path: string;
+          original_name: string;
+          repair_id: string;
+        };
+        Update: {
+          bucket_name?: string;
+          content_type?: string;
+          created_at?: string;
+          file_size_bytes?: number;
+          id?: string;
+          object_path?: string;
+          original_name?: string;
+          repair_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "repair_attachments_repair_id_fkey";
+            columns: ["repair_id"];
+            isOneToOne: false;
+            referencedRelation: "repairs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      repairs: {
+        Row: {
+          bus_id: string;
+          category: Database["public"]["Enums"]["repair_category"];
+          cost_usd: string;
+          created_at: string;
+          created_by: string;
+          description: string;
+          id: string;
+          next_service_due_date: string | null;
+          next_service_notes: string | null;
+          provider: string;
+          repair_date: string;
+          updated_at: string;
+        };
+        Insert: {
+          bus_id: string;
+          category?: Database["public"]["Enums"]["repair_category"];
+          cost_usd: string;
+          created_at?: string;
+          created_by: string;
+          description: string;
+          id?: string;
+          next_service_due_date?: string | null;
+          next_service_notes?: string | null;
+          provider: string;
+          repair_date?: string;
+          updated_at?: string;
+        };
+        Update: {
+          bus_id?: string;
+          category?: Database["public"]["Enums"]["repair_category"];
+          cost_usd?: string;
+          created_at?: string;
+          created_by?: string;
+          description?: string;
+          id?: string;
+          next_service_due_date?: string | null;
+          next_service_notes?: string | null;
+          provider?: string;
+          repair_date?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "repairs_bus_id_fkey";
+            columns: ["bus_id"];
+            isOneToOne: false;
+            referencedRelation: "buses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "repairs_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       routes: {
         Row: {
           active: boolean;
@@ -355,6 +564,25 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: string | null;
       };
+      create_repair_with_receipt: {
+        Args: {
+          _bucket_name?: string | null;
+          _bus_id: string;
+          _category: Database["public"]["Enums"]["repair_category"];
+          _content_type?: string | null;
+          _cost_usd: string | number;
+          _description: string;
+          _file_size_bytes?: number | null;
+          _next_service_due_date?: string | null;
+          _next_service_notes?: string | null;
+          _object_path?: string | null;
+          _original_name?: string | null;
+          _provider: string;
+          _repair_date: string;
+          _repair_id: string;
+        };
+        Returns: string;
+      };
       current_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["app_role"] | null;
@@ -394,8 +622,17 @@ export type Database = {
       app_role: "admin" | "registrador";
       audit_action: "create" | "update" | "delete" | "close";
       bus_status: "active" | "maintenance" | "inactive";
+      debt_status: "pending" | "partial" | "paid";
       daily_record_status: "draft" | "closed";
       expense_category: "fuel" | "worker_payment" | "other";
+      repair_category:
+        | "mechanical"
+        | "electrical"
+        | "bodywork"
+        | "tires"
+        | "oil_change"
+        | "inspection"
+        | "other";
     };
     CompositeTypes: {
       [_ in never]: never;

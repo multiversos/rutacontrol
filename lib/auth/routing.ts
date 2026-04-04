@@ -6,6 +6,8 @@ export const ALLOWED_REDIRECT_PATHS = [
   "/dashboard/daily",
   "/dashboard/daily/new",
   "/dashboard/buses",
+  "/dashboard/debts",
+  "/dashboard/repairs",
   "/dashboard/routes",
   "/dashboard/audit",
 ] as const;
@@ -32,6 +34,8 @@ export function sanitizeRedirectPath(path?: string | null, role?: AppRole | null
     role === "registrador" &&
     (path === "/dashboard" ||
       path === "/dashboard/alerts" ||
+      path === "/dashboard/debts" ||
+      path === "/dashboard/repairs" ||
       path === "/dashboard/buses" ||
       path === "/dashboard/routes" ||
       path === "/dashboard/audit")
