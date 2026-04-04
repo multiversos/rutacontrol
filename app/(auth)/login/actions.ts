@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 
@@ -77,6 +78,12 @@ export async function signInAction(
   }
 
   await supabase.rpc("touch_last_login");
+
+  if (profile.role === "registrador") {
+    await supabase.rpc("create_login_alert");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/alerts");
+  }
 
   const nextPath = sanitizeRedirectPath(requestedRedirect, profile.role);
 

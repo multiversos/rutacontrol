@@ -10,7 +10,13 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { getDefaultDashboardPath } from "@/lib/auth/routing";
 import { ROLE_LABELS, type Profile } from "@/lib/auth/types";
 
-type DashboardNavIcon = "audit" | "bus" | "calendar" | "dashboard" | "route";
+type DashboardNavIcon =
+  | "alerts"
+  | "audit"
+  | "bus"
+  | "calendar"
+  | "dashboard"
+  | "route";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -54,6 +60,11 @@ export function DashboardShell({
             icon: "audit" as DashboardNavIcon,
             label: "Auditoria",
           },
+          {
+            href: "/dashboard/alerts",
+            icon: "alerts" as DashboardNavIcon,
+            label: "Alertas",
+          },
         ]
       : [
           {
@@ -82,9 +93,9 @@ export function DashboardShell({
                   RutaControl
                 </p>
                 <div>
-                  <p className="text-2xl font-semibold">Sprint 3 operativo</p>
+                  <p className="text-2xl font-semibold">Sprint 4 operativo</p>
                   <p className="mt-1 text-sm text-primary-foreground/80">
-                    Operacion diaria, historial y auditoria visibles para administracion.
+                    Operacion diaria, historial, auditoria y alertas internas visibles para administracion.
                   </p>
                 </div>
               </div>

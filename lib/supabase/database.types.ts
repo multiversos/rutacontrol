@@ -9,6 +9,73 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          alert_type: Database["public"]["Enums"]["alert_type"];
+          bus_id: string | null;
+          created_at: string;
+          daily_record_id: string | null;
+          dedupe_key: string | null;
+          id: string;
+          message: string;
+          metadata: Json;
+          profile_id: string | null;
+          read: boolean;
+          read_at: string | null;
+          severity: Database["public"]["Enums"]["alert_severity"];
+        };
+        Insert: {
+          alert_type: Database["public"]["Enums"]["alert_type"];
+          bus_id?: string | null;
+          created_at?: string;
+          daily_record_id?: string | null;
+          dedupe_key?: string | null;
+          id?: string;
+          message: string;
+          metadata?: Json;
+          profile_id?: string | null;
+          read?: boolean;
+          read_at?: string | null;
+          severity: Database["public"]["Enums"]["alert_severity"];
+        };
+        Update: {
+          alert_type?: Database["public"]["Enums"]["alert_type"];
+          bus_id?: string | null;
+          created_at?: string;
+          daily_record_id?: string | null;
+          dedupe_key?: string | null;
+          id?: string;
+          message?: string;
+          metadata?: Json;
+          profile_id?: string | null;
+          read?: boolean;
+          read_at?: string | null;
+          severity?: Database["public"]["Enums"]["alert_severity"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alerts_bus_id_fkey";
+            columns: ["bus_id"];
+            isOneToOne: false;
+            referencedRelation: "buses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alerts_daily_record_id_fkey";
+            columns: ["daily_record_id"];
+            isOneToOne: false;
+            referencedRelation: "daily_records";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "alerts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       audit_log: {
         Row: {
           action: Database["public"]["Enums"]["audit_action"];
@@ -284,9 +351,19 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_login_alert: {
+        Args: Record<PropertyKey, never>;
+        Returns: string | null;
+      };
       current_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["app_role"] | null;
+      };
+      get_difference_alert_severity: {
+        Args: {
+          _difference: string | number | null;
+        };
+        Returns: Database["public"]["Enums"]["alert_severity"];
       };
       is_active_user: {
         Args: Record<PropertyKey, never>;
@@ -300,12 +377,20 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      reconcile_missing_closure_alerts: {
+        Args: {
+          _record_date?: string | null;
+        };
+        Returns: number;
+      };
       touch_last_login: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
     };
     Enums: {
+      alert_severity: "info" | "warning" | "critical";
+      alert_type: "login" | "closure" | "difference" | "missing";
       app_role: "admin" | "registrador";
       audit_action: "create" | "update" | "delete" | "close";
       bus_status: "active" | "maintenance" | "inactive";

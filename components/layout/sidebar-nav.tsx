@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BellRing,
   BusFront,
   CalendarDays,
   LayoutDashboard,
@@ -12,7 +13,13 @@ import {
 
 import { cn } from "@/lib/utils";
 
-type SidebarIconKey = "audit" | "dashboard" | "route" | "bus" | "calendar";
+type SidebarIconKey =
+  | "alerts"
+  | "audit"
+  | "dashboard"
+  | "route"
+  | "bus"
+  | "calendar";
 
 type NavItem = {
   href: string;
@@ -25,6 +32,7 @@ type SidebarNavProps = {
 };
 
 const iconMap = {
+  alerts: BellRing,
   audit: ShieldCheck,
   bus: BusFront,
   calendar: CalendarDays,
