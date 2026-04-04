@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BusPhoto } from "@/components/buses/bus-photo";
 import { MaintenanceStatusBadge } from "@/components/maintenance-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -32,33 +33,43 @@ type BusProfileHeaderProps = {
 
 export function BusProfileHeader({ summary }: BusProfileHeaderProps) {
   const { bus, lastOperationalRecord, nextMaintenance, parkedEstimate } = summary;
-  const routeLabel = summary.routeLabel.replaceAll("Â·", "-").replaceAll("·", "-");
+  const routeLabel = summary.routeLabel.replaceAll("Ã‚Â·", "-").replaceAll("Â·", "-");
 
   return (
     <Card>
       <CardHeader className="space-y-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={busStatusVariantMap[bus.status]}>
-                {busStatusLabelMap[bus.status]}
-              </Badge>
-              <Badge variant="muted">{summary.routeStatusLabel}</Badge>
-            </div>
-            <div className="space-y-1">
-              <CardTitle className="text-3xl tracking-tight">
-                {bus.code} - {bus.plate}
-              </CardTitle>
-              <CardDescription className="max-w-3xl text-sm">
-                Ficha historica completa de la unidad, con operacion diaria,
-                finanzas, mantenimiento, repuestos, deudas y reparaciones en una
-                sola vista.
-              </CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              <span>Linea operativa: {routeLabel}</span>
-              <span>Creado: {formatDateLabel(bus.created_at.slice(0, 10))}</span>
-              <span>Ultima actualizacion: {formatDateLabel(bus.updated_at.slice(0, 10))}</span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <BusPhoto
+              className="shrink-0"
+              code={bus.code}
+              photoUrl={summary.photoUrl}
+              size="lg"
+            />
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={busStatusVariantMap[bus.status]}>
+                  {busStatusLabelMap[bus.status]}
+                </Badge>
+                <Badge variant="muted">{summary.routeStatusLabel}</Badge>
+              </div>
+              <div className="space-y-1">
+                <CardTitle className="text-3xl tracking-tight">
+                  {bus.code} - {bus.plate}
+                </CardTitle>
+                <CardDescription className="max-w-3xl text-sm">
+                  Ficha historica completa de la unidad, con operacion diaria,
+                  finanzas, mantenimiento, repuestos, deudas y reparaciones en una
+                  sola vista.
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <span>Linea operativa: {routeLabel}</span>
+                <span>Creado: {formatDateLabel(bus.created_at.slice(0, 10))}</span>
+                <span>
+                  Ultima actualizacion: {formatDateLabel(bus.updated_at.slice(0, 10))}
+                </span>
+              </div>
             </div>
           </div>
 

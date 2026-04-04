@@ -1,6 +1,12 @@
 import "server-only";
 
 import type { Tables } from "@/lib/supabase/database.types";
+import {
+  isDemoBus,
+  isDemoDebtRecord,
+  isOperationalRecordDate,
+} from "@/lib/demo-data";
+import { getBusinessTodayDate } from "@/lib/formatters";
 import { createClient } from "@/lib/supabase/server";
 
 type DebtPaymentRow = Pick<
@@ -42,6 +48,7 @@ export async function getDebtsData(filters: {
   status?: DebtStatusFilter;
 }) {
   const supabase = await createClient();
+  const today = getBusinessTodayDate();
   const status = filters.status ?? "all";
 
   let debtsQuery = supabase
@@ -73,9 +80,17 @@ export async function getDebtsData(filters: {
     throw debtsError;
   }
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
   const busMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
   const recordMap = new Map(
-    (recentRecords ?? []).map((record) => [
+    (recentRecords ?? [])
+      .filter(
+        (record) =>
+          visibleBusIds.has(record.bus_id) &&
+          isOperationalRecordDate(record.record_date, today),
+      )
+      .map((record) => [
       record.id,
       `${busMap.get(record.bus_id) ?? record.bus_id} - ${record.record_date}`,
     ]),
@@ -114,7 +129,9 @@ export async function getDebtsData(filters: {
         .order("created_at", { ascending: false })
     : { data: [] as DebtPaymentRow[] };
 
-  const normalizedDebts = (debts ?? []).map((debt) => ({
+  const normalizedDebts = (debts ?? [])
+    .filter((debt) => !isDemoDebtRecord(debt))
+    .map((debt) => ({
     amountPaidUsd: debt.amount_paid_usd,
     amountUsd: debt.amount_usd,
     balanceDueUsd: debt.balance_due_usd,

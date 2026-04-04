@@ -1,6 +1,8 @@
 import "server-only";
 
 import { getAlertsData, type AlertListItem } from "@/lib/alerts";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
+import { isDemoBus, isOperationalRecordDate } from "@/lib/demo-data";
 import {
   formatCurrency,
   getBusinessTodayDate,
@@ -154,6 +156,7 @@ export type BusProfileSummary = {
   route: RouteRow | null;
   routeLabel: string;
   routeStatusLabel: string;
+  photoUrl: string | null;
   lastOperationalRecord: BusProfileOperationalRecord | null;
   nextMaintenance: BusProfileNextMaintenance | null;
   parkedEstimate: BusProfileParkedEstimate | null;
@@ -427,12 +430,17 @@ export async function getBusProfileData(
     return null;
   }
 
+  if (isDemoBus(bus)) {
+    return null;
+  }
+
   const [
     { data: route },
     { data: dailyRecords },
     maintenanceData,
     repairsData,
     alertsData,
+    photoMap,
   ] = await Promise.all([
     supabase
       .from("routes")
@@ -465,6 +473,7 @@ export async function getBusProfileData(
       readState: "all",
       severity: "all",
     }),
+    getBusPhotoUrlMap(supabase, [busId]),
   ]);
 
   const userIds = Array.from(
@@ -478,7 +487,7 @@ export async function getBusProfileData(
   const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile.name]));
   const allOperationRecords = (dailyRecords ?? []).map((record) =>
     buildOperationRecord(record, profileMap),
-  );
+  ).filter((record) => isOperationalRecordDate(record.recordDate, today));
 
   const operationHistory = allOperationRecords.filter((record) => {
     if (record.recordDate < dateFrom || record.recordDate > dateTo) {
@@ -729,6 +738,7 @@ export async function getBusProfileData(
       nextMaintenance,
       parkedEstimate,
       pendingDebtUsd: openDebtUsd,
+      photoUrl: photoMap.get(busId) ?? null,
       route: route ?? null,
       routeLabel,
       routeStatusLabel,

@@ -83,23 +83,26 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <RepairTable
-          busOptions={repairsData.busOptions}
-          filters={{
-            busId: repairsData.filters.busId ?? "",
-            dateFrom: repairsData.filters.dateFrom!,
-            dateTo: repairsData.filters.dateTo!,
-          }}
-          repairs={repairsData.repairs}
-        />
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(470px,1.1fr)] 2xl:grid-cols-[minmax(0,0.86fr)_minmax(560px,1.14fr)]">
+        <div className="min-w-0">
+          <RepairTable
+            busOptions={repairsData.busOptions}
+            filters={{
+              busId: repairsData.filters.busId ?? "",
+              dateFrom: repairsData.filters.dateFrom!,
+              dateTo: repairsData.filters.dateTo!,
+            }}
+            repairs={repairsData.repairs}
+          />
+        </div>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Registrar reparacion</CardTitle>
             <CardDescription>
               La reparacion solo se guarda si el comprobante se sube a Supabase
-              Storage y la base valida la operacion.
+              Storage y la base valida la operacion. El formulario prioriza ancho
+              util para taller, descripcion y proximo servicio.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">

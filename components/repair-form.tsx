@@ -152,7 +152,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
   }
 
   return (
-    <form ref={formRef} className="space-y-5" onSubmit={handleSubmit}>
+    <form ref={formRef} className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <Label htmlFor="repair-bus">Bus</Label>
         <select
@@ -171,6 +171,36 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         {state.fieldErrors?.busId?.[0] ? (
           <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
         ) : null}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(180px,0.55fr)_minmax(0,1.45fr)]">
+        <div className="space-y-2">
+          <Label htmlFor="repair-date">Fecha de reparacion</Label>
+          <Input
+            defaultValue={getBusinessTodayDate()}
+            id="repair-date"
+            name="repairDate"
+            type="date"
+          />
+          {state.fieldErrors?.repairDate?.[0] ? (
+            <p className="text-sm text-destructive">
+              {state.fieldErrors.repairDate[0]}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="repair-provider">Proveedor o taller</Label>
+          <Input
+            className="w-full"
+            id="repair-provider"
+            name="provider"
+            placeholder="Ej. Taller Los Andes"
+          />
+          {state.fieldErrors?.provider?.[0] ? (
+            <p className="text-sm text-destructive">{state.fieldErrors.provider[0]}</p>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -193,35 +223,6 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="repair-date">Fecha de reparacion</Label>
-          <Input
-            defaultValue={getBusinessTodayDate()}
-            id="repair-date"
-            name="repairDate"
-            type="date"
-          />
-          {state.fieldErrors?.repairDate?.[0] ? (
-            <p className="text-sm text-destructive">
-              {state.fieldErrors.repairDate[0]}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="repair-provider">Proveedor o taller</Label>
-          <Input
-            id="repair-provider"
-            name="provider"
-            placeholder="Ej. Taller Los Andes"
-          />
-          {state.fieldErrors?.provider?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.provider[0]}</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
           <Label htmlFor="repair-cost">Costo (USD)</Label>
           <Input
             id="repair-cost"
@@ -240,6 +241,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       <div className="space-y-2">
         <Label htmlFor="repair-description">Descripcion</Label>
         <Textarea
+          className="min-h-[144px] resize-y"
           id="repair-description"
           name="description"
           placeholder="Describe el trabajo realizado y las piezas involucradas."
@@ -251,7 +253,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         ) : null}
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 xl:grid-cols-[minmax(180px,0.55fr)_minmax(0,1.45fr)]">
         <div className="space-y-2">
           <Label htmlFor="repair-next-service-date">Proximo servicio sugerido</Label>
           <Input
@@ -301,6 +303,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       <div className="space-y-2">
         <Label htmlFor="repair-next-service-notes">Notas del proximo servicio</Label>
         <Textarea
+          className="min-h-[132px] resize-y"
           id="repair-next-service-notes"
           name="nextServiceNotes"
           placeholder="Ej. Revisar frenos y cambio preventivo en 30 dias."

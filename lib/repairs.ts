@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Tables } from "@/lib/supabase/database.types";
+import { isDemoBus } from "@/lib/demo-data";
 import { getBusinessTodayDate, shiftDateString } from "@/lib/formatters";
 import { createClient } from "@/lib/supabase/server";
 
@@ -105,6 +106,8 @@ export async function getRepairsData(filters: RepairFilterState) {
       : { data: [] as RepairAttachmentRow[] };
 
   const busMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
   const attachmentMap = new Map<string, RepairAttachmentRow>();
 
   (attachments ?? []).forEach((attachment) => {
@@ -124,7 +127,9 @@ export async function getRepairsData(filters: RepairFilterState) {
   );
   const signedUrlMap = new Map(signedUrlEntries);
 
-  const normalizedRepairs = (repairs ?? []).map((repair) => {
+  const normalizedRepairs = (repairs ?? [])
+    .filter((repair) => visibleBusIds.has(repair.bus_id))
+    .map((repair) => {
     const attachment = attachmentMap.get(repair.id);
 
     return {
@@ -154,7 +159,7 @@ export async function getRepairsData(filters: RepairFilterState) {
 
   const nextServiceMap = new Map<string, NextServiceSuggestion>();
 
-  (buses ?? [])
+  visibleBuses
     .filter((bus) => bus.status === "active")
     .forEach((bus) => {
       nextServiceMap.set(bus.id, {
@@ -187,7 +192,7 @@ export async function getRepairsData(filters: RepairFilterState) {
   });
 
   return {
-    busOptions: (buses ?? []).map((bus) => ({
+    busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
     })),

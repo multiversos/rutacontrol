@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Database, Enums, Tables } from "@/lib/supabase/database.types";
 import { reconcileMaintenanceAlerts } from "@/lib/alerts";
+import { isDemoBus } from "@/lib/demo-data";
 import { getBusinessTodayDate, shiftDateString } from "@/lib/formatters";
 import {
   MAINTENANCE_POSITION_LABELS,
@@ -184,6 +185,8 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
     throw cyclesError;
   }
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
   const busCodeMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
   const debtMap = new Map<string, MaintenanceCycleItem["debt"]>();
 
@@ -210,6 +213,8 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
     currentCycles = currentCycles.filter((cycle) => cycle.busId === busId);
   }
 
+  currentCycles = currentCycles.filter((cycle) => visibleBusIds.has(cycle.busId));
+
   if (status !== "all") {
     currentCycles = currentCycles.filter((cycle) => cycle.status === status);
   }
@@ -228,7 +233,9 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
       ] as const),
   );
 
-  const records = (maintenanceRecords ?? []).map((record) => {
+  const records = (maintenanceRecords ?? [])
+    .filter((record) => visibleBusIds.has(record.bus_id))
+    .map((record) => {
     const debtRow = Array.isArray(record.debt) ? record.debt[0] : record.debt;
     const debt =
       debtRow?.id != null
@@ -307,7 +314,7 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
   ).map(([, value]) => value);
 
   return {
-    busOptions: (buses ?? []).map((bus) => ({
+    busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
       status: bus.status,
