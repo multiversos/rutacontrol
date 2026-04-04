@@ -270,7 +270,7 @@ begin
       b.id as bus_id,
       b.code as bus_code,
       dr.id as daily_record_id,
-      dr.status as record_status
+      dr.status::text as record_status
     from public.buses b
     left join public.daily_records dr
       on dr.bus_id = b.id
