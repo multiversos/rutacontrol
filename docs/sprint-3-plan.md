@@ -1,8 +1,9 @@
 # Sprint 3 Plan
 
-Estado: `implementado en rama sprint-3`, pendiente de cierre formal.
+Estado: `cerrado`.
 
 Punto de partida: `main` congelada en `v0.2.0-sprint2`
+Fecha de cierre: `3 de abril de 2026`
 
 ## Alcance ejecutado
 
@@ -67,9 +68,10 @@ Sprint 3 cubre solamente:
 - HTML historial: `C:\\Users\\parra\\AppData\\Local\\Temp\\rutacontrol-smoke-output\\sprint3-history-654779.html`
 - HTML auditoria: `C:\\Users\\parra\\AppData\\Local\\Temp\\rutacontrol-smoke-output\\sprint3-audit-654779.html`
 
-## Pendiente para cierre formal
+## Resultado de cierre
 
-- revision final del diff de `sprint-3`
-- commits de cierre
-- merge limpio hacia `main`
-- tag de release de Sprint 3 cuando corresponda
+- Sprint 3 queda aprobado y listo para merge en `main`
+- regresion de Sprint 1: PASS
+- regresion de Sprint 2: PASS
+- infraestructura externa operativa en GitHub, Supabase y Vercel
+- Sprint 4 queda pendiente y no iniciado

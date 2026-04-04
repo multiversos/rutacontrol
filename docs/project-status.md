@@ -1,6 +1,6 @@
 # Project Status
 
-Fecha de actualizacion: 4 de abril de 2026.
+Fecha de actualizacion: 3 de abril de 2026.
 
 ## Estado por sprint
 
@@ -8,24 +8,41 @@ Fecha de actualizacion: 4 de abril de 2026.
 | --- | --- | --- |
 | Sprint 0 | Cerrado | Fundacion tecnica, auth base, migracion inicial y despliegue |
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
-| Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales de base y regresion de Sprint 1 |
-| Sprint 3 | En implementacion en `sprint-3` | Dashboard admin, KPIs, filtros, historial y auditoria visible |
+| Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales y regresion de Sprint 1 |
+| Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados con smoke tests reales |
 
 ## Resumen ejecutivo
 
-RutaControl mantiene `main` estable en `v0.2.0-sprint2` y ya tiene una implementacion funcional de Sprint 3 trabajando sobre la rama `sprint-3`. El proyecto sigue conectado a GitHub, Supabase y Vercel, con smoke tests reales recientes sobre la rama activa.
+RutaControl mantiene `main` estable despues del cierre de Sprint 3 y queda congelado en `v0.3.0-sprint3`. El proyecto esta conectado a GitHub, Supabase y Vercel, con validacion funcional real de los sprints 1, 2 y 3.
 
 ## Estado real de infraestructura
 
 | Capa | Estado | Detalle |
 | --- | --- | --- |
-| Git local | Verificado | Repositorio en `main` y listo para tag de cierre |
-| GitHub remoto | Verificado | `origin` apunta a `https://github.com/multiversos/rutacontrol.git` |
+| Git local | Verificado | Repositorio limpio y sincronizado para cierre de Sprint 3 |
+| GitHub remoto | Verificado | `origin` apunta a [https://github.com/multiversos/rutacontrol](https://github.com/multiversos/rutacontrol) |
 | Supabase | Verificado | Proyecto real conectado con migraciones `0001`, `0002` y `0003` aplicadas |
 | Vercel proyecto | Verificado | Proyecto enlazado y produccion activa |
 | Vercel produccion | Verificado | [https://rutacontrol.vercel.app](https://rutacontrol.vercel.app) |
 
-## Criterios aprobados de Sprint 1
+## Estado funcional actual
+
+- Login operativo con Supabase Auth
+- Roles `admin` y `registrador` operativos
+- Dashboard admin operativo con KPIs reales
+- CRUD de rutas funcionando
+- CRUD de buses funcionando
+- Registros diarios funcionando con recalculo SQL
+- Regla real de rechazo para buses `inactive` aplicada en base de datos
+- Cierre automatico operativo para `daily_records`
+- Bloqueo post-cierre operativo en app y base de datos
+- `closure_hash` SHA-256 persistido e inmutable despues del cierre
+- Historial semanal y mensual operativo
+- Auditoria visible para admin operativa
+
+## Estado de Sprint 1
+
+Sprint 1 queda cerrado el 3 de abril de 2026 con estos criterios aprobados:
 
 - Login admin: PASS
 - Login registrador: PASS
@@ -39,29 +56,9 @@ RutaControl mantiene `main` estable en `v0.2.0-sprint2` y ya tiene una implement
 - Persistencia autenticada contra Supabase: PASS
 - RLS basica: PASS
 
-## Estado funcional actual
-
-- Login operativo con Supabase Auth
-- Roles `admin` y `registrador` operativos
-- Dashboard protegido funcionando
-- CRUD de rutas funcionando
-- CRUD de buses funcionando
-- Registros diarios funcionando con recalculo SQL
-- Regla real de rechazo para buses `inactive` aplicada en base de datos
-- Cierre automatico operativo para `daily_records`
-- Bloqueo post-cierre operativo en app y base de datos
-- `closure_hash` SHA-256 persistido e inmutable despues del cierre
-
 ## Estado de Sprint 2
 
-Sprint 2 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
-
-1. cierre automatico
-2. bloqueo post-cierre
-3. hash SHA-256
-4. diferencia de caja
-
-## Criterios aprobados de Sprint 2
+Sprint 2 queda cerrado el 3 de abril de 2026 con estos criterios aprobados:
 
 - `daily_records` incompletos como `draft`: PASS
 - cierre automatico a `closed`: PASS
@@ -72,17 +69,9 @@ Sprint 2 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
 - diferencia de caja persistida correctamente: PASS
 - regresion Sprint 1: PASS
 
-## Evidencia operativa de cierre
-
-- `typecheck`: PASS
-- `lint`: PASS
-- `build`: PASS
-- smoke tests reales de base sobre Supabase: PASS
-- smoke tests de regresion de UI y autenticacion: PASS
-
 ## Estado de Sprint 3
 
-Sprint 3 esta implementado en la rama `sprint-3` y pendiente de cierre formal. Alcance cubierto en esta rama:
+Sprint 3 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
 
 1. dashboard admin real
 2. KPIs operativos
@@ -91,7 +80,7 @@ Sprint 3 esta implementado en la rama `sprint-3` y pendiente de cierre formal. A
 5. auditoria basica visible
 6. vista diferenciada por rol
 
-Validacion mas reciente en `sprint-3`:
+## Criterios aprobados de Sprint 3
 
 - login admin a `/dashboard`: PASS
 - dashboard admin renderiza sin error: PASS
@@ -108,17 +97,15 @@ Validacion mas reciente en `sprint-3`:
 - registrador aterriza en `/dashboard/daily/new`: PASS
 - regresion Sprint 1 y Sprint 2: PASS
 
+## Evidencia operativa de cierre
+
+- `typecheck`: PASS
+- `lint`: PASS
+- `build`: PASS
+- smoke tests reales de Sprint 1: PASS
+- smoke tests reales de Sprint 2: PASS
+- smoke tests reales de Sprint 3: PASS
+
 ## Estado de la siguiente fase
 
-Sprint 3 no esta mergeado en `main` todavia. `main` sigue congelada como baseline estable despues del cierre de Sprint 2 y la preparacion de un eventual Sprint 4 queda fuera del alcance actual.
-
-## Criterio exacto de cierre actual
-
-Sprint 2 se considera formalmente cerrado desde este estado porque:
-
-1. `main` esta estable y recuperable
-2. el repo remoto de GitHub esta operativo
-3. Supabase real esta conectado y validado
-4. Vercel produccion esta desplegado
-5. los smoke tests reales de Sprint 2 pasaron de punta a punta
-6. la regresion de Sprint 1 sigue en PASS
+Sprint 4 queda pendiente y no iniciado. `main` permanece estable despues del cierre de Sprint 3 y cualquier trabajo nuevo debe abrirse desde el tag `v0.3.0-sprint3`.

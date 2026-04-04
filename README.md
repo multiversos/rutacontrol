@@ -1,15 +1,16 @@
 # RutaControl
 
-Estado del repositorio: `Sprint 2 cerrado`.
+Estado del repositorio: `Sprint 3 cerrado`.
 
-RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL y cierre automatico operativo de `daily_records`.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo y dashboard administrativo con KPIs, historial y auditoria visible.
 
 ## Estado actual
 
 - Sprint 0: cerrado
 - Sprint 1: cerrado el 3 de abril de 2026
 - Sprint 2: cerrado el 3 de abril de 2026
-- Sprint 3: pendiente, no iniciado
+- Sprint 3: cerrado el 3 de abril de 2026
+- Sprint 4: pendiente, no iniciado
 
 ## Criterios aprobados de Sprint 1
 
@@ -25,12 +26,6 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - Persistencia autenticada contra Supabase: PASS
 - RLS basica: PASS
 
-## Infraestructura verificada
-
-- GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
-- Supabase real conectado con migraciones `0001`, `0002` y `0003` aplicadas
-- Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
-
 ## Criterios aprobados de Sprint 2
 
 - `daily_records` incompletos como `draft`: PASS
@@ -41,6 +36,28 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - bloqueo real de edicion post-cierre: PASS
 - diferencia de caja persistida correctamente: PASS
 - regresion Sprint 1: PASS
+
+## Criterios aprobados de Sprint 3
+
+- login admin -> `/dashboard`: PASS
+- dashboard admin renderiza: PASS
+- KPI ingreso del dia: PASS
+- KPI neto del dia: PASS
+- KPI diferencias abiertas: PASS
+- KPI buses pendientes: PASS
+- filtro por fecha: PASS
+- filtro por bus: PASS
+- historial semanal: PASS
+- historial mensual: PASS
+- auditoria visible para admin: PASS
+- registrador fuera del dashboard admin: PASS
+- regresion Sprint 1 y Sprint 2: PASS
+
+## Infraestructura verificada
+
+- GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
+- Supabase real conectado con migraciones `0001`, `0002` y `0003` aplicadas
+- Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
 
 ## Stack
 
@@ -88,4 +105,4 @@ npm run dev
 
 ## Siguiente fase
 
-Sprint 3 todavia no esta abierto en este release. `main` queda congelada en el cierre de Sprint 2 y cualquier nuevo alcance debe abrirse despues desde este baseline estable.
+Sprint 4 queda pendiente y no iniciada en este release. `main` queda congelada en el cierre de Sprint 3 y cualquier nuevo alcance debe abrirse despues desde `v0.3.0-sprint3`.
