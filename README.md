@@ -1,8 +1,8 @@
 # RutaControl
 
-Estado del repositorio: `Sprint 3 cerrado`.
+Estado del repositorio: `Sprint 5 en implementacion en sprint-5`.
 
-RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo y dashboard administrativo con KPIs, historial y auditoria visible.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible y alertas internas. La rama `sprint-5` agrega deudas, pagos parciales, reparaciones con comprobante y uploads reales a Supabase Storage.
 
 ## Estado actual
 
@@ -10,7 +10,8 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - Sprint 1: cerrado el 3 de abril de 2026
 - Sprint 2: cerrado el 3 de abril de 2026
 - Sprint 3: cerrado el 3 de abril de 2026
-- Sprint 4: pendiente, no iniciado
+- Sprint 4: cerrado el 3 de abril de 2026
+- Sprint 5: en implementacion en `sprint-5`
 
 ## Criterios aprobados de Sprint 1
 
@@ -56,7 +57,7 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 ## Infraestructura verificada
 
 - GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
-- Supabase real conectado con migraciones `0001`, `0002` y `0003` aplicadas
+- Supabase real conectado con migraciones `0001`, `0002`, `0003`, `0004` y `0005` aplicadas
 - Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
 
 ## Stack
@@ -75,6 +76,8 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - `/dashboard/buses`
 - `/dashboard/daily`
 - `/dashboard/daily/new`
+- `/dashboard/debts`
+- `/dashboard/repairs`
 
 ## Variables de entorno principales
 
@@ -105,4 +108,4 @@ npm run dev
 
 ## Siguiente fase
 
-Sprint 4 queda pendiente y no iniciada en este release. `main` queda congelada en el cierre de Sprint 3 y cualquier nuevo alcance debe abrirse despues desde `v0.3.0-sprint3`.
+Sprint 5 esta implementado en codigo sobre `sprint-5`, pero requiere aplicar [0006_debts_repairs.sql](N:/projects/busescontrol/supabase/migrations/0006_debts_repairs.sql) en Supabase real para ejecutar los smoke tests completos del modulo de deudas y reparaciones.

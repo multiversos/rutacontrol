@@ -15,13 +15,15 @@
 - Sprint 1: cerrado
 - Sprint 2: cerrado
 - Sprint 3: cerrado
+- Sprint 4: cerrado
+- Sprint 5: en implementacion en `sprint-5`
 
 ## Reglas para futuros agentes
 
 1. Trabajar por sprint y no mezclar alcances.
 2. Mantener `daily_records` como tabla principal operativa del MVP.
 3. Mantener `expenses` como detalle complementario hasta nuevo aviso.
-4. No introducir modulos de deudas, reparaciones, Telegram, anomalias o reporting avanzado antes de tiempo.
+4. No introducir Telegram, anomalias o reporting avanzado fuera del sprint correspondiente.
 5. Mantener los calculos criticos en servidor o SQL; nunca depender solo del frontend.
 6. Respetar `UNIQUE (bus_id, record_date)` en `daily_records`.
 7. No debilitar RLS para mejorar UX.
@@ -46,6 +48,6 @@
 - Sin logica critica unicamente en cliente
 - README y documentacion del sprint actualizados
 
-## Proxima fase permitida
+## Fase actual permitida
 
-Sprint 4 todavia no esta iniciado. Cualquier trabajo nuevo debe partir desde `main` despues del tag `v0.3.0-sprint3` y abrirse con alcance explicito antes de implementarse.
+Sprint 5 esta en ejecucion sobre `sprint-5`. Cualquier nuevo trabajo debe respetar el alcance de deudas, pagos parciales, reparaciones con comprobante y Storage antes de pensar en Sprint 6.

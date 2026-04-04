@@ -9,24 +9,25 @@ Fecha de actualizacion: 3 de abril de 2026.
 | Sprint 0 | Cerrado | Fundacion tecnica, auth base, migracion inicial y despliegue |
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
 | Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales y regresion de Sprint 1 |
-| Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados con smoke tests reales |
-| Sprint 4 | En implementacion en `sprint-4` | Alertas internas y monitoreo operativo sin Telegram |
+| Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados |
+| Sprint 4 | Cerrado | Alertas internas y monitoreo operativo sin Telegram |
+| Sprint 5 | En implementacion en `sprint-5` | Deudas, pagos parciales, reparaciones con comprobante y Storage |
 
 ## Resumen ejecutivo
 
-RutaControl mantiene `main` estable despues del cierre de Sprint 3 y queda congelado en `v0.3.0-sprint3`. El proyecto esta conectado a GitHub, Supabase y Vercel, con validacion funcional real de los sprints 1, 2 y 3.
+RutaControl mantiene una base funcional validada hasta Sprint 4 y ya tiene Sprint 5 implementado en codigo sobre la rama `sprint-5`. La rama nueva agrega los modulos administrativos de deudas y reparaciones, con uploads reales a Supabase Storage y consistencia de saldo en SQL.
 
 ## Estado real de infraestructura
 
 | Capa | Estado | Detalle |
 | --- | --- | --- |
-| Git local | Verificado | Repositorio limpio y sincronizado para cierre de Sprint 3 |
+| Git local | Verificado | Rama de trabajo actual `sprint-5` |
 | GitHub remoto | Verificado | `origin` apunta a [https://github.com/multiversos/rutacontrol](https://github.com/multiversos/rutacontrol) |
-| Supabase | Verificado | Proyecto real conectado con migraciones `0001`, `0002` y `0003` aplicadas |
+| Supabase | Parcial | Proyecto real conectado; Sprint 5 requiere aplicar `0006_debts_repairs.sql` |
 | Vercel proyecto | Verificado | Proyecto enlazado y produccion activa |
 | Vercel produccion | Verificado | [https://rutacontrol.vercel.app](https://rutacontrol.vercel.app) |
 
-## Estado funcional actual
+## Estado funcional cerrado
 
 - Login operativo con Supabase Auth
 - Roles `admin` y `registrador` operativos
@@ -34,98 +35,63 @@ RutaControl mantiene `main` estable despues del cierre de Sprint 3 y queda conge
 - CRUD de rutas funcionando
 - CRUD de buses funcionando
 - Registros diarios funcionando con recalculo SQL
-- Regla real de rechazo para buses `inactive` aplicada en base de datos
+- Rechazo real para buses `inactive`
 - Cierre automatico operativo para `daily_records`
 - Bloqueo post-cierre operativo en app y base de datos
-- `closure_hash` SHA-256 persistido e inmutable despues del cierre
+- `closure_hash` SHA-256 persistido e inmutable
 - Historial semanal y mensual operativo
 - Auditoria visible para admin operativa
+- Alertas internas operativas sin Telegram
 
-## Estado de Sprint 1
+## Estado de Sprint 5
 
-Sprint 1 queda cerrado el 3 de abril de 2026 con estos criterios aprobados:
+Sprint 5 queda implementado en codigo con este alcance:
 
-- Login admin: PASS
-- Login registrador: PASS
-- Redireccion por rol: PASS
-- Acceso a dashboard autenticado: PASS
-- CRUD de rutas: PASS
-- CRUD de buses: PASS
-- Creacion y edicion de `daily_records`: PASS
-- `UNIQUE (bus_id, record_date)`: PASS
-- Rechazo real de buses inactive: PASS
-- Persistencia autenticada contra Supabase: PASS
-- RLS basica: PASS
-
-## Estado de Sprint 2
-
-Sprint 2 queda cerrado el 3 de abril de 2026 con estos criterios aprobados:
-
-- `daily_records` incompletos como `draft`: PASS
-- cierre automatico a `closed`: PASS
-- persistencia de `closed_at`: PASS
-- persistencia de `closure_hash`: PASS
-- `closure_hash` inmutable tras cierre: PASS
-- bloqueo real de edicion post-cierre: PASS
-- diferencia de caja persistida correctamente: PASS
-- regresion Sprint 1: PASS
-
-## Estado de Sprint 3
-
-Sprint 3 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
-
-1. dashboard admin real
-2. KPIs operativos
-3. filtros por rango de fecha y bus
-4. historial semanal y mensual
-5. auditoria basica visible
-6. vista diferenciada por rol
-
-## Criterios aprobados de Sprint 3
-
-- login admin a `/dashboard`: PASS
-- dashboard admin renderiza sin error: PASS
-- KPI ingreso del dia: PASS
-- KPI neto del dia: PASS
-- KPI diferencias abiertas: PASS
-- KPI buses pendientes: PASS
-- filtro por fecha: PASS
-- filtro por bus: PASS
-- historial semanal: PASS
-- historial mensual: PASS
-- auditoria visible para admin: PASS
-- registrador sin acceso al dashboard admin: PASS
-- registrador aterriza en `/dashboard/daily/new`: PASS
-- regresion Sprint 1 y Sprint 2: PASS
-
-## Evidencia operativa de cierre
-
-- `typecheck`: PASS
-- `lint`: PASS
-- `build`: PASS
-- smoke tests reales de Sprint 1: PASS
-- smoke tests reales de Sprint 2: PASS
-- smoke tests reales de Sprint 3: PASS
-
-## Estado de Sprint 4
-
-Sprint 4 esta implementado en la rama `sprint-4` con este alcance:
-
-1. sistema interno de alertas
-2. alertas de login, cierre, diferencia y buses sin cierre
-3. vista administrativa en `/dashboard/alerts`
-4. filtros por severidad, estado, fecha y bus
-5. marcado de alertas como leidas
+1. modulo de deudas
+2. pagos parciales y saldo pendiente
+3. modulo de reparaciones por bus
+4. comprobante obligatorio
+5. historial de reparaciones por unidad
+6. upload a Supabase Storage
+7. proximo servicio sugerido por bus
 
 Estado actual de validacion:
 
 - `typecheck`: PASS
 - `lint`: PASS
 - `build`: PASS
-- login admin y registrador con la nueva rama: PASS
-- registrador bloqueado de `/dashboard/alerts`: PASS
-- migracion `0004_internal_alerts.sql` pendiente en Supabase real
+- rutas admin nuevas (`/dashboard/debts`, `/dashboard/repairs`) compiladas: PASS
+- degradacion segura si la migracion `0006_debts_repairs.sql` aun no esta aplicada: PASS
+- migracion `0006_debts_repairs.sql` aplicada en Supabase real: PENDIENTE
+- smoke tests reales de Sprint 5: PENDIENTES por apply real de `0006`
 
-## Estado de la siguiente fase
+## Bloqueo externo actual
 
-Sprint 4 queda abierto solo en `sprint-4`. `main` permanece estable despues del cierre de Sprint 3 y cualquier trabajo nuevo debe partir desde `v0.3.0-sprint3`.
+La base real todavia no tiene estas tablas en cache REST:
+
+- `public.debts`
+- `public.debt_payments`
+- `public.repairs`
+- `public.repair_attachments`
+
+Evidencia real observada desde la rama:
+
+- `debts`: `404 PGRST205`
+- `debt_payments`: `404 PGRST205`
+- `repairs`: `404 PGRST205`
+- `repair_attachments`: `404 PGRST205`
+
+## Siguiente paso exacto
+
+Aplicar en Supabase SQL Editor el contenido completo de:
+
+- [supabase/migrations/0006_debts_repairs.sql](N:/projects/busescontrol/supabase/migrations/0006_debts_repairs.sql)
+
+Despues de eso, la rama `sprint-5` ya queda lista para correr los smoke tests reales de:
+
+- creacion de deuda
+- pagos parciales y cambio de estado
+- reparacion con comprobante real
+- historial por bus
+- upload a Storage
+- bloqueo de acceso para `registrador`
