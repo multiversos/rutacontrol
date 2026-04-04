@@ -12,10 +12,11 @@ Fecha de actualizacion: 4 de abril de 2026.
 | Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados |
 | Sprint 4 | Cerrado | Alertas internas y monitoreo operativo sin Telegram |
 | Sprint 5 | Cerrado | Deudas, pagos parciales, reparaciones con comprobante, Storage e historial por unidad validados |
+| Sprint 6 | En implementacion en `sprint-6` | Inteligencia, scoring, reportes, cierres consolidados y exportacion CSV |
 
 ## Resumen ejecutivo
 
-RutaControl mantiene una base funcional validada hasta Sprint 5. El proyecto ya tiene modulos administrativos de deudas y reparaciones, con uploads reales a Supabase Storage, consistencia de saldo en SQL y proximo servicio sugerido por unidad.
+RutaControl mantiene una base funcional validada hasta Sprint 5 y ahora suma en `sprint-6` la capa de inteligencia operativa, scoring de confianza, reportes de rentabilidad, cierres consolidados y exportacion CSV.
 
 ## Estado real de infraestructura
 
@@ -89,4 +90,4 @@ Estado actual de validacion:
 
 ## Pendiente siguiente fase
 
-Sprint 6 queda pendiente y no iniciado. No hay trabajo funcional abierto fuera del cierre formal de Sprint 5.
+Sprint 6 esta implementado en `sprint-6` y queda pendiente de cierre formal. No hay trabajo abierto de Sprint 7 ni posterior.
