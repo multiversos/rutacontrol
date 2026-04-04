@@ -48,7 +48,8 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
             <div>
               <CardTitle>Buses</CardTitle>
               <CardDescription>
-                Cada unidad debe tener una ruta fija y un estado operativo claro.
+                Revisa el estado de cada unidad y abre su ficha historica completa
+                para ver operacion, finanzas, mantenimiento y reparaciones.
               </CardDescription>
             </div>
             <Link
@@ -73,25 +74,40 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
                     <th className="px-4 py-3">Placa</th>
                     <th className="px-4 py-3">Ruta</th>
                     <th className="px-4 py-3">Estado</th>
-                    <th className="px-4 py-3 text-right">Accion</th>
+                    <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-white/70">
                   {buses.map((bus) => (
                     <tr key={bus.id}>
-                      <td className="px-4 py-3 font-medium">{bus.code}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <Link
+                          className="text-primary transition-colors hover:text-primary/80"
+                          href={`/dashboard/buses/${bus.id}`}
+                        >
+                          {bus.code}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3">{bus.plate}</td>
                       <td className="px-4 py-3">
                         {routeMap.get(bus.route_id) ?? bus.route_id}
                       </td>
                       <td className="px-4 py-3">{bus.status}</td>
                       <td className="px-4 py-3 text-right">
-                        <Link
-                          className="text-sm font-semibold text-primary"
-                          href={`/dashboard/buses?edit=${bus.id}`}
-                        >
-                          Editar
-                        </Link>
+                        <div className="flex items-center justify-end gap-3">
+                          <Link
+                            className="text-sm font-semibold text-primary"
+                            href={`/dashboard/buses/${bus.id}`}
+                          >
+                            Perfil
+                          </Link>
+                          <Link
+                            className="text-sm font-semibold text-primary"
+                            href={`/dashboard/buses?edit=${bus.id}`}
+                          >
+                            Editar
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -107,8 +123,8 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
           <CardTitle>{selectedBus ? "Editar bus" : "Crear bus"}</CardTitle>
           <CardDescription>
             {selectedBus
-              ? "Actualiza la unidad y su relacion con la ruta."
-              : "Registra una unidad operativa y asignale una ruta fija."}
+              ? "Actualiza los datos base de la unidad; su historia completa vive en la ficha del bus."
+              : "Registra una unidad operativa para empezar a cargar su historia diaria y tecnica."}
           </CardDescription>
         </CardHeader>
         <CardContent>
