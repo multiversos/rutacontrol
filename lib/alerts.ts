@@ -82,6 +82,23 @@ export async function reconcileMissingClosureAlerts(recordDate?: string) {
   }
 }
 
+export async function reconcileMaintenanceAlerts(recordDate?: string) {
+  const supabase = await createClient();
+  const targetDate = recordDate ?? getBusinessTodayDate();
+  const { error } = await supabase.rpc("reconcile_maintenance_alerts", {
+    _record_date: targetDate,
+  });
+
+  if (
+    error &&
+    error.code !== "PGRST202" &&
+    error.code !== "42883" &&
+    error.code !== "42P01"
+  ) {
+    throw error;
+  }
+}
+
 export async function getAlertsData(filters: Partial<AlertFilters>) {
   const supabase = await createClient();
   const today = getBusinessTodayDate();
@@ -91,7 +108,10 @@ export async function getAlertsData(filters: Partial<AlertFilters>) {
   const readState = filters.readState ?? "all";
   const busId = filters.busId;
 
-  await reconcileMissingClosureAlerts(dateTo);
+  await Promise.all([
+    reconcileMissingClosureAlerts(dateTo),
+    reconcileMaintenanceAlerts(dateTo),
+  ]);
 
   let alertsQuery = supabase
     .from("alerts")

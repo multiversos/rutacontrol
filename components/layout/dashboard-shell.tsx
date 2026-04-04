@@ -17,6 +17,7 @@ type DashboardNavIcon =
   | "calendar"
   | "debt"
   | "dashboard"
+  | "maintenance"
   | "repair"
   | "route";
 
@@ -68,6 +69,11 @@ export function DashboardShell({
             label: "Deudas",
           },
           {
+            href: "/dashboard/maintenance",
+            icon: "maintenance" as DashboardNavIcon,
+            label: "Mantenimiento",
+          },
+          {
             href: "/dashboard/repairs",
             icon: "repair" as DashboardNavIcon,
             label: "Reparaciones",
@@ -105,9 +111,9 @@ export function DashboardShell({
                   RutaControl
                 </p>
                 <div>
-                  <p className="text-2xl font-semibold">Sprint 5 operativo</p>
+                  <p className="text-2xl font-semibold">Operacion protegida</p>
                   <p className="mt-1 text-sm text-primary-foreground/80">
-                    Operacion diaria, historial, auditoria, alertas internas, deudas y reparaciones visibles para administracion.
+                    Operacion diaria, historial, auditoria, alertas internas, deudas, reparaciones y mantenimiento visibles para administracion.
                   </p>
                 </div>
               </div>

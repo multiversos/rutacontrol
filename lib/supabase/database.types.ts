@@ -388,6 +388,132 @@ export type Database = {
           },
         ];
       };
+      maintenance_items: {
+        Row: {
+          component_name: string;
+          component_position:
+            | Database["public"]["Enums"]["maintenance_component_position"]
+            | null;
+          cost_usd: string;
+          created_at: string;
+          expected_work_days: number | null;
+          id: string;
+          maintenance_record_id: string;
+          notes: string | null;
+          previous_cycle_work_days: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          component_name: string;
+          component_position?:
+            | Database["public"]["Enums"]["maintenance_component_position"]
+            | null;
+          cost_usd: string;
+          created_at?: string;
+          expected_work_days?: number | null;
+          id?: string;
+          maintenance_record_id: string;
+          notes?: string | null;
+          previous_cycle_work_days?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          component_name?: string;
+          component_position?:
+            | Database["public"]["Enums"]["maintenance_component_position"]
+            | null;
+          cost_usd?: string;
+          created_at?: string;
+          expected_work_days?: number | null;
+          id?: string;
+          maintenance_record_id?: string;
+          notes?: string | null;
+          previous_cycle_work_days?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_items_maintenance_record_id_fkey";
+            columns: ["maintenance_record_id"];
+            isOneToOne: false;
+            referencedRelation: "maintenance_records";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      maintenance_records: {
+        Row: {
+          bus_id: string;
+          created_at: string;
+          created_by: string;
+          debt_id: string | null;
+          description: string;
+          expected_work_days: number | null;
+          id: string;
+          maintenance_type: Database["public"]["Enums"]["maintenance_type"];
+          notes: string | null;
+          previous_cycle_work_days: number | null;
+          provider: string;
+          service_date: string;
+          total_cost_usd: string;
+          updated_at: string;
+        };
+        Insert: {
+          bus_id: string;
+          created_at?: string;
+          created_by: string;
+          debt_id?: string | null;
+          description: string;
+          expected_work_days?: number | null;
+          id?: string;
+          maintenance_type: Database["public"]["Enums"]["maintenance_type"];
+          notes?: string | null;
+          previous_cycle_work_days?: number | null;
+          provider: string;
+          service_date?: string;
+          total_cost_usd: string;
+          updated_at?: string;
+        };
+        Update: {
+          bus_id?: string;
+          created_at?: string;
+          created_by?: string;
+          debt_id?: string | null;
+          description?: string;
+          expected_work_days?: number | null;
+          id?: string;
+          maintenance_type?: Database["public"]["Enums"]["maintenance_type"];
+          notes?: string | null;
+          previous_cycle_work_days?: number | null;
+          provider?: string;
+          service_date?: string;
+          total_cost_usd?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_records_bus_id_fkey";
+            columns: ["bus_id"];
+            isOneToOne: false;
+            referencedRelation: "buses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "maintenance_records_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "maintenance_records_debt_id_fkey";
+            columns: ["debt_id"];
+            isOneToOne: false;
+            referencedRelation: "debts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           active: boolean;
@@ -583,15 +709,63 @@ export type Database = {
         };
         Returns: string;
       };
+      create_maintenance_record: {
+        Args: {
+          _bus_id: string;
+          _debt_amount_usd?: number | string | null;
+          _debt_creditor?: string | null;
+          _debt_due_date?: string | null;
+          _description: string;
+          _expected_work_days?: number | null;
+          _items?: Json | null;
+          _maintenance_type: Database["public"]["Enums"]["maintenance_type"];
+          _notes?: string | null;
+          _provider: string;
+          _service_date: string;
+          _total_cost_usd: number | string;
+        };
+        Returns: string;
+      };
       current_role: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["Enums"]["app_role"] | null;
+      };
+      current_maintenance_cycles: {
+        Args: {
+          _record_date?: string | null;
+        };
+        Returns: {
+          bus_id: string;
+          component_name: string | null;
+          component_position:
+            | Database["public"]["Enums"]["maintenance_component_position"]
+            | null;
+          debt_id: string | null;
+          description: string;
+          expected_work_days: number;
+          maintenance_item_id: string | null;
+          maintenance_record_id: string;
+          maintenance_type: Database["public"]["Enums"]["maintenance_type"];
+          previous_cycle_work_days: number | null;
+          provider: string;
+          service_date: string;
+          status: Database["public"]["Enums"]["maintenance_status"];
+          total_cost_usd: string;
+          worked_days: number;
+        }[];
       };
       get_difference_alert_severity: {
         Args: {
           _difference: string | number | null;
         };
         Returns: Database["public"]["Enums"]["alert_severity"];
+      };
+      get_maintenance_status: {
+        Args: {
+          _expected_work_days: number | null;
+          _worked_days: number | null;
+        };
+        Returns: Database["public"]["Enums"]["maintenance_status"];
       };
       is_active_user: {
         Args: Record<PropertyKey, never>;
@@ -611,6 +785,20 @@ export type Database = {
         };
         Returns: number;
       };
+      reconcile_maintenance_alerts: {
+        Args: {
+          _record_date?: string | null;
+        };
+        Returns: number;
+      };
+      bus_worked_days_since: {
+        Args: {
+          _bus_id: string;
+          _service_date: string;
+          _until_date?: string | null;
+        };
+        Returns: number;
+      };
       touch_last_login: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
@@ -618,13 +806,26 @@ export type Database = {
     };
     Enums: {
       alert_severity: "info" | "warning" | "critical";
-      alert_type: "login" | "closure" | "difference" | "missing";
+      alert_type: "login" | "closure" | "difference" | "missing" | "maintenance";
       app_role: "admin" | "registrador";
       audit_action: "create" | "update" | "delete" | "close";
       bus_status: "active" | "maintenance" | "inactive";
       debt_status: "pending" | "partial" | "paid";
       daily_record_status: "draft" | "closed";
       expense_category: "fuel" | "worker_payment" | "other";
+      maintenance_component_position:
+        | "front_left"
+        | "front_right"
+        | "rear_left"
+        | "rear_right";
+      maintenance_status: "up_to_date" | "due_soon" | "overdue";
+      maintenance_type:
+        | "oil_change"
+        | "brake_pads"
+        | "filters"
+        | "spare_parts"
+        | "general_service"
+        | "other";
       repair_category:
         | "mechanical"
         | "electrical"
