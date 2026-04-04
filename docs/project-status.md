@@ -10,6 +10,7 @@ Fecha de actualizacion: 3 de abril de 2026.
 | Sprint 1 | Cerrado | MVP operable validado con smoke tests reales |
 | Sprint 2 | Cerrado | Cierre operativo validado con smoke tests reales y regresion de Sprint 1 |
 | Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados con smoke tests reales |
+| Sprint 4 | En implementacion en `sprint-4` | Alertas internas y monitoreo operativo sin Telegram |
 
 ## Resumen ejecutivo
 
@@ -106,6 +107,25 @@ Sprint 3 queda cerrado el 3 de abril de 2026 con este alcance aprobado:
 - smoke tests reales de Sprint 2: PASS
 - smoke tests reales de Sprint 3: PASS
 
+## Estado de Sprint 4
+
+Sprint 4 esta implementado en la rama `sprint-4` con este alcance:
+
+1. sistema interno de alertas
+2. alertas de login, cierre, diferencia y buses sin cierre
+3. vista administrativa en `/dashboard/alerts`
+4. filtros por severidad, estado, fecha y bus
+5. marcado de alertas como leidas
+
+Estado actual de validacion:
+
+- `typecheck`: PASS
+- `lint`: PASS
+- `build`: PASS
+- login admin y registrador con la nueva rama: PASS
+- registrador bloqueado de `/dashboard/alerts`: PASS
+- migracion `0004_internal_alerts.sql` pendiente en Supabase real
+
 ## Estado de la siguiente fase
 
-Sprint 4 queda pendiente y no iniciado. `main` permanece estable despues del cierre de Sprint 3 y cualquier trabajo nuevo debe abrirse desde el tag `v0.3.0-sprint3`.
+Sprint 4 queda abierto solo en `sprint-4`. `main` permanece estable despues del cierre de Sprint 3 y cualquier trabajo nuevo debe partir desde `v0.3.0-sprint3`.
