@@ -11,7 +11,6 @@ export const busSchema = z.object({
     .trim()
     .min(5, "La placa es obligatoria.")
     .max(20, "La placa no puede superar 20 caracteres."),
-  routeId: z.string().uuid("Selecciona una ruta valida."),
   status: z.enum(["active", "maintenance", "inactive"]),
 });
 

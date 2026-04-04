@@ -1,11 +1,10 @@
 "use client";
 
 import { Select } from "@/components/ui/select";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import type { Tables } from "@/lib/supabase/database.types";
 
-type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
-  routeName: string;
-};
+type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status">;
 
 type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record_date">;
 
@@ -55,7 +54,7 @@ export function BusSelector({
 
           return (
             <option disabled={disabled} key={bus.id} value={bus.id}>
-              {bus.code} - {bus.routeName} - {bus.plate}
+              {bus.code} - {bus.plate}
               {blocked ? " - Ya registrado" : ""}
               {bus.status !== "active" ? " - No disponible" : ""}
             </option>
@@ -69,8 +68,9 @@ export function BusSelector({
         </p>
       ) : (
         <p className="rounded-2xl bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
-          Solo se habilitan unidades activas y sin choques visibles para tu alcance
-          actual. La base confirma el bloqueo final al guardar.
+          Todas las unidades visibles pertenecen a la linea fija {OPERATIONAL_ROUTE_LABEL}.
+          Solo se habilitan buses activos y sin choques visibles. La base confirma el
+          bloqueo final al guardar.
         </p>
       )}
     </div>

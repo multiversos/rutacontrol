@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireRole } from "@/lib/auth/session";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
+import { ensureOperationalRoute } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 import { busSchema } from "@/lib/validators/bus";
 
@@ -11,7 +12,6 @@ function normalizeBusFormData(formData: FormData) {
   return {
     code: String(formData.get("code") ?? "").trim().toUpperCase(),
     plate: String(formData.get("plate") ?? "").trim().toUpperCase(),
-    routeId: formData.get("routeId"),
     status: formData.get("status"),
   };
 }
@@ -34,14 +34,28 @@ export async function saveBusAction(
   }
 
   const busId = String(formData.get("busId") ?? "").trim();
+  const supabase = await createClient();
+
+  let operationalRouteId: string;
+
+  try {
+    const operationalRoute = await ensureOperationalRoute(supabase);
+    operationalRouteId = operationalRoute.id;
+  } catch {
+    return {
+      message:
+        "No pudimos asegurar la ruta operativa fija. Intenta nuevamente o revisa la configuracion interna.",
+      status: "error",
+    };
+  }
+
   const payload = {
     code: parsed.data.code,
     plate: parsed.data.plate,
-    route_id: parsed.data.routeId,
+    route_id: operationalRouteId,
     status: parsed.data.status,
   };
 
-  const supabase = await createClient();
   const query = busId
     ? supabase.from("buses").update(payload).eq("id", busId).select("id").single()
     : supabase.from("buses").insert(payload).select("id").single();
@@ -62,6 +76,8 @@ export async function saveBusAction(
   revalidatePath("/dashboard/buses");
   revalidatePath("/dashboard/daily");
   revalidatePath("/dashboard/daily/new");
+  revalidatePath("/dashboard/reports");
+  revalidatePath("/dashboard/intelligence");
 
   return {
     message: busId ? "Bus actualizado correctamente." : "Bus creado correctamente.",

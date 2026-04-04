@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import { getIntelligenceData } from "@/lib/reports";
 
 type IntelligencePageProps = {
@@ -33,16 +34,17 @@ export default async function IntelligencePage({
       <PageHeader
         badges={[
           { label: `${data.summary.anomaliesDetected} anomalias`, variant: "muted" },
+          { label: OPERATIONAL_ROUTE_LABEL, variant: "muted" },
           { label: `${data.summary.evaluatedRegistrars} registradores`, variant: "muted" },
         ]}
-        description="Detecta desviaciones de ingreso por ruta y revisa el score de confianza del registrador con una formula entendible."
+        description="Detecta desviaciones de ingreso sobre la linea fija y revisa el score de confianza del registrador con una formula entendible."
         eyebrow="Analisis"
         title="Inteligencia operativa"
       />
 
       <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardContent className="pt-6">
-          <form className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]">
+          <form className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto_auto]">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="intelligence-date-from">
                 Desde
@@ -66,24 +68,6 @@ export default async function IntelligencePage({
                 name="dateTo"
                 type="date"
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="intelligence-route">
-                Ruta
-              </label>
-              <select
-                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
-                defaultValue={data.filters.routeId ?? ""}
-                id="intelligence-route"
-                name="routeId"
-              >
-                <option value="">Todas las rutas</option>
-                {data.routeOptions.map((route) => (
-                  <option key={route.id} value={route.id}>
-                    {route.label}
-                  </option>
-                ))}
-              </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="intelligence-profile">
@@ -122,14 +106,14 @@ export default async function IntelligencePage({
       <KpiCards
         items={[
           {
-            helper: "Registros visibles fuera del rango esperado por ruta",
+            helper: "Registros visibles fuera del rango esperado para la linea fija",
             label: "Anomalias detectadas",
             tone: data.summary.anomaliesDetected > 0 ? "danger" : "success",
             value: String(data.summary.anomaliesDetected),
           },
           {
-            helper: "Rutas con al menos 5 cierres historicos y desviacion util",
-            label: "Rutas evaluables",
+            helper: "La linea fija solo se evalua con al menos 5 cierres historicos y desviacion util",
+            label: "Historico suficiente",
             value: String(data.summary.routesWithEnoughHistory),
           },
           {
@@ -155,7 +139,7 @@ export default async function IntelligencePage({
         <CardHeader>
           <CardTitle>Regla de anomalias</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Se marca anomalia cuando el ingreso del cierre supera 1.5 desviaciones estandar frente al historico de su ruta. No se evalua la ruta hasta tener al menos 5 cierres validos.
+            Se marca anomalia cuando el ingreso del cierre supera 1.5 desviaciones estandar frente al historico de la linea fija. No se evalua hasta tener al menos 5 cierres validos.
           </p>
         </CardHeader>
       </Card>
@@ -177,7 +161,6 @@ export default async function IntelligencePage({
                     <tr>
                       <th className="px-4 py-3">Fecha</th>
                       <th className="px-4 py-3">Bus</th>
-                      <th className="px-4 py-3">Ruta</th>
                       <th className="px-4 py-3 text-right">Ingreso</th>
                       <th className="px-4 py-3 text-right">Promedio</th>
                       <th className="px-4 py-3 text-right">Desv. estandar</th>
@@ -189,7 +172,6 @@ export default async function IntelligencePage({
                       <tr key={anomaly.id} className="transition-colors hover:bg-secondary/35">
                         <td className="px-4 py-4">{anomaly.recordDate}</td>
                         <td className="px-4 py-4 font-semibold">{anomaly.busCode}</td>
-                        <td className="px-4 py-4">{anomaly.routeLabel}</td>
                         <td className="px-4 py-4 text-right tabular-nums">
                           {formatCurrency(anomaly.incomeUsd)}
                         </td>
@@ -218,7 +200,7 @@ export default async function IntelligencePage({
 
         <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]">
           <CardHeader>
-            <CardTitle>Baselines por ruta</CardTitle>
+            <CardTitle>Baseline de la linea fija</CardTitle>
             <p className="text-sm text-muted-foreground">
               Promedio y desviacion estandar usados por el motor de anomalias.
             </p>

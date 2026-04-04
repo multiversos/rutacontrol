@@ -4,19 +4,20 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { saveBusAction } from "@/app/dashboard/buses/actions";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { initialFormState } from "@/lib/forms/action-state";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import type { Tables } from "@/lib/supabase/database.types";
 
 type BusFormProps = {
   bus?: Tables<"buses"> | null;
-  routes: Array<Pick<Tables<"routes">, "id" | "name">>;
 };
 
-export function BusForm({ bus, routes }: BusFormProps) {
+export function BusForm({ bus }: BusFormProps) {
   const [state, formAction] = useActionState(saveBusAction, initialFormState);
 
   return (
@@ -54,23 +55,18 @@ export function BusForm({ bus, routes }: BusFormProps) {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">
-          <Label htmlFor="bus-route">Ruta asignada</Label>
-          <Select
-            defaultValue={bus?.route_id ?? ""}
-            id="bus-route"
-            name="routeId"
-          >
-            <option value="">Selecciona una ruta</option>
-            {routes.map((route) => (
-              <option key={route.id} value={route.id}>
-                {route.name}
-              </option>
-            ))}
-          </Select>
-          {state.fieldErrors?.routeId?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.routeId[0]}</p>
-          ) : null}
+        <div className="space-y-3 rounded-[24px] border border-border/70 bg-muted/35 p-4">
+          <div className="space-y-2">
+            <Label>Linea operativa asignada</Label>
+            <div className="rounded-[20px] border border-border/80 bg-white/90 px-4 py-3">
+              <p className="text-sm font-semibold text-foreground">{OPERATIONAL_ROUTE_LABEL}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Todos los buses nuevos y editados se vinculan automaticamente a la
+                ruta fija del negocio.
+              </p>
+            </div>
+          </div>
+          <Badge variant="muted">Asignacion automatica</Badge>
         </div>
 
         <div className="space-y-2 rounded-[24px] border border-border/70 bg-muted/35 p-4">

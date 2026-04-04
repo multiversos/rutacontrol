@@ -11,11 +11,10 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency, formatNumber, getBusinessTodayDate } from "@/lib/formatters";
 import { initialFormState } from "@/lib/forms/action-state";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import type { Tables } from "@/lib/supabase/database.types";
 
-type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
-  routeName: string;
-};
+type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status">;
 
 type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record_date">;
 
@@ -137,7 +136,7 @@ export function DailyForm({
 
         <div className="space-y-5 rounded-[30px] border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.94))] p-5 shadow-soft">
           <SectionTitle
-            helper="Fecha, hora y unidad. Este bloque define el contexto operativo del cierre."
+            helper="Fecha, hora y unidad. Este bloque define el contexto operativo del cierre de la linea fija."
             title="Contexto"
           />
 
@@ -181,6 +180,10 @@ export function DailyForm({
               value={busId}
             />
             <FieldError message={state.fieldErrors?.busId?.[0]} />
+            <p className="text-sm text-muted-foreground">
+              RutaControl trabaja sobre una sola linea operativa fija:{" "}
+              <span className="font-medium text-foreground">{OPERATIONAL_ROUTE_LABEL}</span>.
+            </p>
           </div>
         </div>
 

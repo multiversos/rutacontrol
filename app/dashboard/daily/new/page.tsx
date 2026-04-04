@@ -11,21 +11,18 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireAuth } from "@/lib/auth/session";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 
 async function getDailyFormContext(recordId?: string) {
   const supabase = await createClient();
-  const [{ data: buses }, { data: routes }, { data: existingRecords }] =
-    await Promise.all([
-      supabase
-        .from("buses")
-        .select("id, code, plate, route_id, status")
-        .order("code"),
-      supabase.from("routes").select("id, name"),
-      supabase.from("daily_records").select("id, bus_id, record_date"),
-    ]);
-
-  const routeMap = new Map((routes ?? []).map((route) => [route.id, route.name]));
+  const [{ data: buses }, { data: existingRecords }] = await Promise.all([
+    supabase
+      .from("buses")
+      .select("id, code, plate, route_id, status")
+      .order("code"),
+    supabase.from("daily_records").select("id, bus_id, record_date"),
+  ]);
   const initialRecord = recordId
     ? (
         await supabase
@@ -37,10 +34,7 @@ async function getDailyFormContext(recordId?: string) {
     : null;
 
   return {
-    buses: (buses ?? []).map((bus) => ({
-      ...bus,
-      routeName: routeMap.get(bus.route_id) ?? "Ruta sin nombre",
-    })),
+    buses: buses ?? [],
     existingRecords: existingRecords ?? [],
     initialRecord,
     requestedRecordMissing: Boolean(recordId && !initialRecord),
@@ -68,12 +62,13 @@ export default async function NewDailyRecordPage({
       <PageHeader
         badges={[
           { label: context.profile.role === "admin" ? "Admin" : "Registrador", variant: "muted" },
+          { label: OPERATIONAL_ROUTE_LABEL, variant: "muted" },
           {
             label: initialRecord ? (isClosedRecord ? "Solo lectura" : "Edicion") : "Nuevo cierre",
             variant: initialRecord && isClosedRecord ? "success" : "default",
           },
         ]}
-        description="Guarda la operacion del dia y deja que la base recalcule montos, estado del cierre y hash antes de persistir."
+        description="Guarda la operacion diaria de la linea fija y deja que la base recalcule montos, estado del cierre y hash antes de persistir."
         eyebrow="Flujo diario"
         title={
           initialRecord
@@ -89,7 +84,8 @@ export default async function NewDailyRecordPage({
           <CardHeader>
             <CardTitle>Captura del cierre diario</CardTitle>
             <CardDescription>
-              Esta vista esta optimizada para cargar rapido, revisar montos en vivo y cerrar el registro con contexto claro.
+              Esta vista esta optimizada para cerrar rapido la operacion repetitiva{" "}
+              {OPERATIONAL_ROUTE_LABEL} sin distracciones innecesarias.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -118,6 +114,7 @@ export default async function NewDailyRecordPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>Linea operativa fija: {OPERATIONAL_ROUTE_LABEL}.</p>
             <p>1. Solo se permite un registro por bus y por fecha.</p>
             <p>2. El bus debe estar activo y la base valida el conflicto final para respetar seguridad y RLS.</p>
             <p>3. La diferencia se pinta en rojo si no coincide con el neto calculado.</p>

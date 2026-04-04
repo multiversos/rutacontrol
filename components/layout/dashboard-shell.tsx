@@ -20,8 +20,7 @@ type DashboardNavIcon =
   | "dashboard"
   | "intelligence"
   | "repair"
-  | "reports"
-  | "route";
+  | "reports";
 
 type DashboardShellProps = {
   children: React.ReactNode;
@@ -51,11 +50,6 @@ export function DashboardShell({
                 href: "/dashboard/daily",
                 icon: "calendar" as DashboardNavIcon,
                 label: "Registros diarios",
-              },
-              {
-                href: "/dashboard/routes",
-                icon: "route" as DashboardNavIcon,
-                label: "Rutas",
               },
               {
                 href: "/dashboard/buses",
@@ -148,7 +142,7 @@ export function DashboardShell({
                   </p>
                   <p className="mt-2 text-sm leading-6 text-primary-foreground/82">
                     {profile.role === "admin"
-                      ? "Operacion, monitoreo, finanzas y analisis reunidos en una sola consola visual."
+                      ? "Operacion, monitoreo, finanzas y analisis reunidos para una sola linea fija."
                       : "Una vista rapida, limpia y enfocada para registrar el cierre diario sin distracciones."}
                   </p>
                 </div>
@@ -192,7 +186,7 @@ export function DashboardShell({
               </h1>
               <p className="text-sm text-muted-foreground">
                 {profile.role === "admin"
-                  ? "Revisa operacion, alertas, finanzas y analisis con una navegacion mas clara."
+                  ? "Revisa operacion, alertas, finanzas y analisis de la linea fija con una navegacion mas clara."
                   : "Carga el cierre diario y consulta tus registros sin entrar al panel administrativo."}
               </p>
             </div>

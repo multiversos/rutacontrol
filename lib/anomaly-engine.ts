@@ -129,10 +129,10 @@ export function detectRouteIncomeAnomalies(options: {
       zScore > ROUTE_ANOMALY_STDDEV_THRESHOLD;
 
     const reason = !hasEnoughHistory
-      ? `Historico insuficiente: se requieren ${ROUTE_ANOMALY_MIN_OBSERVATIONS} cierres por ruta antes de evaluar anomalias.`
+      ? `Historico insuficiente: se requieren ${ROUTE_ANOMALY_MIN_OBSERVATIONS} cierres validos antes de evaluar anomalias.`
       : isAnomaly
         ? `Ingreso fuera del rango historico (${ROUTE_ANOMALY_STDDEV_THRESHOLD} desviaciones estandar).`
-        : "Ingreso dentro del rango esperado para la ruta.";
+        : "Ingreso dentro del rango esperado para la linea fija.";
 
     return {
       baseline,

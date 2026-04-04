@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { formatCurrency } from "@/lib/formatters";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import { getReportsData } from "@/lib/reports";
 
 type ReportsPageProps = {
@@ -53,16 +54,17 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       <PageHeader
         badges={[
           { label: `${data.summary.closureCount} cierres`, variant: "muted" },
+          { label: OPERATIONAL_ROUTE_LABEL, variant: "muted" },
           { label: "CSV descargable", variant: "muted" },
         ]}
-        description="Consolida cierres por bus, ruta, semana y mes sin alterar el flujo diario ya aprobado."
+        description="Consolida cierres por bus, linea fija, semana y mes sin alterar el flujo diario ya aprobado."
         eyebrow="Analisis"
         title="Reportes de rentabilidad"
       />
 
       <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
         <CardContent className="pt-6">
-          <form className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]">
+          <form className="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto_auto]">
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="reports-date-from">
                 Desde
@@ -86,24 +88,6 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 name="dateTo"
                 type="date"
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="reports-route">
-                Ruta
-              </label>
-              <select
-                className="flex h-12 w-full rounded-[20px] border border-input/90 bg-white/95 px-4 py-3 text-sm"
-                defaultValue={data.filters.routeId ?? ""}
-                id="reports-route"
-                name="routeId"
-              >
-                <option value="">Todas las rutas</option>
-                {data.routeOptions.map((route) => (
-                  <option key={route.id} value={route.id}>
-                    {route.label}
-                  </option>
-                ))}
-              </select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="reports-bus">
@@ -183,7 +167,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"
             href={buildExportUrl("route", filterParams)}
           >
-            Exportar por ruta
+            Exportar linea operativa
           </Link>
           <Link
             className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"
@@ -207,9 +191,9 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           title="Rentabilidad por bus"
         />
         <ReportTable
-          entityLabel="Ruta"
+          entityLabel="Linea"
           rows={data.profitabilityByRoute}
-          title="Rentabilidad por ruta"
+          title="Rentabilidad de la linea fija"
         />
       </section>
 

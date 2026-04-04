@@ -1,15 +1,18 @@
-import Link from "next/link";
-
-import { RouteForm } from "@/components/routes/route-form";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
+import {
+  findOperationalRouteInList,
+  OPERATIONAL_ROUTE_DESTINATION,
+  OPERATIONAL_ROUTE_LABEL,
+  OPERATIONAL_ROUTE_NAME,
+  OPERATIONAL_ROUTE_ORIGIN,
+} from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 
 async function getRoutes() {
@@ -24,102 +27,78 @@ async function getRoutes() {
   return data ?? [];
 }
 
-type RoutesPageProps = {
-  searchParams?: Promise<{
-    edit?: string;
-  }>;
-};
-
-export default async function RoutesPage({ searchParams }: RoutesPageProps) {
+export default async function RoutesPage() {
   await requireRole("admin");
-  const params = searchParams ? await searchParams : undefined;
   const routes = await getRoutes();
-  const selectedRoute = routes.find((route) => route.id === params?.edit) ?? null;
+  const operationalRoute = findOperationalRouteInList(routes);
+  const hiddenHistoricalRoutes = Math.max(
+    0,
+    routes.filter((route) => !findOperationalRouteInList([route])).length,
+  );
 
   return (
     <div className="space-y-6">
       <PageHeader
-        actions={
-          <Link
-            className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"
-            href="/dashboard/routes"
-          >
-            Nueva ruta
-          </Link>
-        }
-        badges={[{ label: `${routes.length} visibles`, variant: "muted" }]}
-        description="Administra las rutas base que luego se asignan a cada unidad."
-        eyebrow="Operacion"
-        title="Rutas"
+        badges={[
+          { label: OPERATIONAL_ROUTE_LABEL, variant: "muted" },
+          { label: "Pantalla interna", variant: "muted" },
+        ]}
+        description="RutaControl opera sobre una sola linea fija. Esta pantalla queda fuera del flujo diario y solo conserva compatibilidad interna."
+        eyebrow="Compatibilidad"
+        title="Trayecto operativo fijo"
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]">
-          <CardHeader>
-            <CardTitle>Catalogo visible</CardTitle>
-            <CardDescription>
-              Mantiene origen, destino, ingreso esperado y estado operativo de cada ruta.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {routes.length === 0 ? (
-              <p className="rounded-[28px] border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground">
-                No hay rutas visibles todavia. Cuando apliques el `seed.sql` apareceran aqui.
+      <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))]">
+        <CardHeader>
+          <CardTitle>Configuracion conservada por compatibilidad</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[28px] border border-border/80 bg-white/80 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary/70">
+              Linea fija
+            </p>
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              <p>
+                <span className="font-semibold text-foreground">Nombre:</span>{" "}
+                {OPERATIONAL_ROUTE_NAME}
               </p>
-            ) : (
-              <div className="overflow-hidden rounded-[30px] border border-border bg-card/95">
-                <table className="min-w-full divide-y divide-border text-sm">
-                  <thead className="bg-muted/65 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-3">Ruta</th>
-                      <th className="px-4 py-3">Origen</th>
-                      <th className="px-4 py-3">Destino</th>
-                      <th className="px-4 py-3 text-right">Ingreso esperado USD</th>
-                      <th className="px-4 py-3">Estado</th>
-                      <th className="px-4 py-3 text-right">Accion</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border bg-white/70">
-                    {routes.map((route) => (
-                      <tr key={route.id} className="transition-colors hover:bg-secondary/35">
-                        <td className="px-4 py-4 font-semibold">{route.name}</td>
-                        <td className="px-4 py-4">{route.origin}</td>
-                        <td className="px-4 py-4">{route.destination}</td>
-                        <td className="px-4 py-4 text-right tabular-nums">
-                          {route.expected_income ?? "--"}
-                        </td>
-                        <td className="px-4 py-4">{route.active ? "Activa" : "Inactiva"}</td>
-                        <td className="px-4 py-4 text-right">
-                          <Link
-                            className="text-sm font-semibold text-primary"
-                            href={`/dashboard/routes?edit=${route.id}`}
-                          >
-                            Editar
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              <p>
+                <span className="font-semibold text-foreground">Origen:</span>{" "}
+                {OPERATIONAL_ROUTE_ORIGIN}
+              </p>
+              <p>
+                <span className="font-semibold text-foreground">Destino:</span>{" "}
+                {OPERATIONAL_ROUTE_DESTINATION}
+              </p>
+              <p>
+                <span className="font-semibold text-foreground">Estado:</span>{" "}
+                {operationalRoute?.active ? "Activa" : "Pendiente de asegurar"}
+              </p>
+            </div>
+          </div>
 
-        <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
-          <CardHeader>
-            <CardTitle>{selectedRoute ? "Editar ruta" : "Crear ruta"}</CardTitle>
-            <CardDescription>
-              {selectedRoute
-                ? "Actualiza la configuracion operativa de esta ruta."
-                : "Registra una nueva ruta operativa para el sistema."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RouteForm key={selectedRoute?.id ?? "new-route"} route={selectedRoute} />
-          </CardContent>
-        </Card>
-      </div>
+          <div className="rounded-[28px] border border-border/80 bg-white/80 p-5 text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">Como se usa ahora</p>
+            <div className="mt-4 space-y-3">
+              <p>
+                Los buses nuevos y editados se vinculan automaticamente a la linea fija,
+                sin exponer administracion multirruta en el flujo normal.
+              </p>
+              <p>
+                {operationalRoute
+                  ? "La ruta fija ya existe en base y se mantiene como referencia interna del sistema."
+                  : "Si la ruta fija no existe todavia, el sistema la asegura automaticamente al guardar un bus."}
+              </p>
+              {hiddenHistoricalRoutes > 0 ? (
+                <p>
+                  Se conservan {hiddenHistoricalRoutes} rutas historicas fuera del flujo
+                  principal para no romper compatibilidad con datos anteriores.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

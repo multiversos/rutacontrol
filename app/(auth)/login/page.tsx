@@ -60,7 +60,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     Acceso
                   </p>
                   <p className="mt-3 text-base font-semibold text-foreground">
-                    Roles y rutas privadas
+                    Roles y modulos privados
                   </p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     Admin y registrador ven solo lo que necesitan para trabajar.

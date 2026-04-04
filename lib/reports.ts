@@ -3,6 +3,11 @@ import "server-only";
 import type { Tables } from "@/lib/supabase/database.types";
 import { detectRouteIncomeAnomalies } from "@/lib/anomaly-engine";
 import {
+  findOperationalRouteInList,
+  isOperationalRoute,
+  OPERATIONAL_ROUTE_LABEL,
+} from "@/lib/operational-route";
+import {
   buildRegistrarConfidenceScores,
   CONFIDENCE_SCORE_FORMULA,
 } from "@/lib/scoring";
@@ -116,6 +121,10 @@ function formatMonthLabel(dateValue: string) {
 }
 
 function buildRouteLabel(route: RouteRow) {
+  if (isOperationalRoute(route)) {
+    return OPERATIONAL_ROUTE_LABEL;
+  }
+
   return `${route.name} (${route.origin} -> ${route.destination})`;
 }
 
@@ -317,12 +326,15 @@ export async function getReportsData(filters: ReportFilters) {
     profiles ?? [],
     routes ?? [],
   );
+  const operationalRoute = findOperationalRouteInList(routes ?? []);
+  const resolvedRouteId = filters.routeId ?? operationalRoute?.id;
   const filteredClosedRecords = filterRecords(
     normalizedRecords,
     {
       ...filters,
       dateFrom,
       dateTo,
+      routeId: resolvedRouteId,
     },
     {
       closedOnly: true,
@@ -343,14 +355,13 @@ export async function getReportsData(filters: ReportFilters) {
       busId: filters.busId,
       dateFrom,
       dateTo,
-      routeId: filters.routeId,
+      routeId: resolvedRouteId,
     },
     profitabilityByBus,
     profitabilityByRoute,
-    routeOptions: (routes ?? []).map((route) => ({
-      id: route.id,
-      label: buildRouteLabel(route),
-    })) satisfies FilterOption[],
+    routeOptions: operationalRoute
+      ? [{ id: operationalRoute.id, label: OPERATIONAL_ROUTE_LABEL }]
+      : [],
     summary: {
       closureCount: filteredClosedRecords.length,
       differenceTotalUsd: round(
@@ -424,12 +435,15 @@ export async function getIntelligenceData(filters: IntelligenceFilters) {
     profiles ?? [],
     routes ?? [],
   );
+  const operationalRoute = findOperationalRouteInList(routes ?? []);
+  const resolvedRouteId = filters.routeId ?? operationalRoute?.id;
   const filteredRecords = filterRecords(
     normalizeRecords(visibleRecords ?? [], buses ?? [], profiles ?? [], routes ?? []),
     {
       ...filters,
       dateFrom,
       dateTo,
+      routeId: resolvedRouteId,
     },
   );
   const closedFilteredRecords = filteredRecords.filter(
@@ -485,7 +499,7 @@ export async function getIntelligenceData(filters: IntelligenceFilters) {
       dateFrom,
       dateTo,
       profileId: filters.profileId,
-      routeId: filters.routeId,
+      routeId: resolvedRouteId,
     },
     profileOptions: (profiles ?? [])
       .filter((profile) => profile.role === "registrador")
@@ -493,10 +507,9 @@ export async function getIntelligenceData(filters: IntelligenceFilters) {
         id: profile.id,
         label: profile.name,
       })) satisfies FilterOption[],
-    routeOptions: (routes ?? []).map((route) => ({
-      id: route.id,
-      label: buildRouteLabel(route),
-    })) satisfies FilterOption[],
+    routeOptions: operationalRoute
+      ? [{ id: operationalRoute.id, label: OPERATIONAL_ROUTE_LABEL }]
+      : [],
     summary: {
       anomaliesDetected: anomalyData.results.filter((entry) => entry.isAnomaly).length,
       averageConfidence:
@@ -545,7 +558,7 @@ export function buildReportCsv(options: {
           ),
         ]
       : [
-          "periodo,cierres,buses,rutas,ingreso_usd,gastos_usd,neto_usd,diferencia_usd",
+          "periodo,cierres,buses,lineas,ingreso_usd,gastos_usd,neto_usd,diferencia_usd",
           ...(options.rows as ConsolidatedClosureRow[]).map((row) =>
             [
               csvEscape(

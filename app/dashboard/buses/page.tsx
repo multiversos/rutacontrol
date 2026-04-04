@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BusForm } from "@/components/buses/bus-form";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -10,22 +11,18 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 
 async function getBusContext() {
   const supabase = await createClient();
-  const [{ data: buses }, { data: routes }] = await Promise.all([
-    supabase
-      .from("buses")
-      .select("id, code, plate, route_id, status, created_at, updated_at")
-      .order("code"),
-    supabase.from("routes").select("id, name").order("name"),
-  ]);
+  const { data: buses } = await supabase
+    .from("buses")
+    .select("id, code, plate, route_id, status, created_at, updated_at")
+    .order("code");
 
   return {
     buses: buses ?? [],
-    routeMap: new Map((routes ?? []).map((route) => [route.id, route.name])),
-    routes: routes ?? [],
   };
 }
 
@@ -38,7 +35,7 @@ type BusesPageProps = {
 export default async function BusesPage({ searchParams }: BusesPageProps) {
   await requireRole("admin");
   const params = searchParams ? await searchParams : undefined;
-  const { buses, routeMap, routes } = await getBusContext();
+  const { buses } = await getBusContext();
   const selectedBus = buses.find((bus) => bus.id === params?.edit) ?? null;
 
   return (
@@ -52,8 +49,11 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
             Nuevo bus
           </Link>
         }
-        badges={[{ label: `${buses.length} visibles`, variant: "muted" }]}
-        description="Cada unidad debe tener una ruta fija y un estado operativo claro."
+        badges={[
+          { label: `${buses.length} visibles`, variant: "muted" },
+          { label: OPERATIONAL_ROUTE_LABEL, variant: "muted" },
+        ]}
+        description="Cada unidad queda asociada internamente a la linea fija del negocio, sin configuracion manual de rutas."
         eyebrow="Operacion"
         title="Buses"
       />
@@ -63,7 +63,7 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
           <CardHeader>
             <CardTitle>Catalogo visible</CardTitle>
             <CardDescription>
-              Revisa codigo, placa, ruta asignada y estado operativo de cada unidad.
+              Revisa codigo, placa y estado operativo de cada unidad en la misma linea fija.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -78,7 +78,6 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
                     <tr>
                       <th className="px-4 py-3">Codigo</th>
                       <th className="px-4 py-3">Placa</th>
-                      <th className="px-4 py-3">Ruta</th>
                       <th className="px-4 py-3">Estado</th>
                       <th className="px-4 py-3 text-right">Accion</th>
                     </tr>
@@ -88,8 +87,11 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
                       <tr key={bus.id} className="transition-colors hover:bg-secondary/35">
                         <td className="px-4 py-4 font-semibold">{bus.code}</td>
                         <td className="px-4 py-4">{bus.plate}</td>
-                        <td className="px-4 py-4">{routeMap.get(bus.route_id) ?? bus.route_id}</td>
-                        <td className="px-4 py-4">{bus.status}</td>
+                        <td className="px-4 py-4">
+                          <Badge variant={bus.status === "active" ? "success" : "muted"}>
+                            {bus.status}
+                          </Badge>
+                        </td>
                         <td className="px-4 py-4 text-right">
                           <Link
                             className="text-sm font-semibold text-primary"
@@ -112,12 +114,12 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
             <CardTitle>{selectedBus ? "Editar bus" : "Crear bus"}</CardTitle>
             <CardDescription>
               {selectedBus
-                ? "Actualiza la unidad y su relacion con la ruta."
-                : "Registra una unidad operativa y asignale una ruta fija."}
+                ? "Actualiza la unidad. La linea fija se mantiene automaticamente."
+                : "Registra una unidad operativa sin configurar rutas manualmente."}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <BusForm key={selectedBus?.id ?? "new-bus"} bus={selectedBus} routes={routes} />
+            <BusForm key={selectedBus?.id ?? "new-bus"} bus={selectedBus} />
           </CardContent>
         </Card>
       </div>

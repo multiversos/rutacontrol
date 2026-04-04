@@ -15,6 +15,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/session";
 import { getAdminDashboardData } from "@/lib/dashboard";
 import { formatCurrency, formatDateLabel, formatDateTime } from "@/lib/formatters";
+import { OPERATIONAL_ROUTE_LABEL } from "@/lib/operational-route";
 
 type DashboardPageProps = {
   searchParams?: Promise<{
@@ -36,23 +37,24 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <PageHeader
         badges={[
           { label: `Fecha ${formatDateLabel(dashboardData.selectedDate)}`, variant: "muted" },
+          { label: OPERATIONAL_ROUTE_LABEL, variant: "muted" },
           {
             label: dashboardData.filters.busId ? "Bus filtrado" : "Todos los buses",
             variant: "muted",
           },
         ]}
-        description="Supervisa la operacion del dia, detecta diferencias abiertas y resuelve buses pendientes sin salir del panel principal."
+        description="Supervisa la operacion diaria de la linea fija, detecta diferencias abiertas y resuelve buses pendientes sin salir del panel principal."
         eyebrow="Control admin"
         title="Dashboard operativo"
       />
 
       <Card className="border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(241,245,249,0.92))]">
-        <CardHeader>
-          <CardTitle>Filtro rapido del panel</CardTitle>
-          <CardDescription>
-            Ajusta la fecha operativa y enfoca el resumen por bus sin salir del dashboard.
-          </CardDescription>
-        </CardHeader>
+          <CardHeader>
+            <CardTitle>Filtro rapido del panel</CardTitle>
+            <CardDescription>
+              Ajusta la fecha operativa y enfoca el resumen por bus dentro de la linea fija.
+            </CardDescription>
+          </CardHeader>
         <CardContent className="space-y-5">
           <form className="grid gap-4 md:grid-cols-[1fr_1fr_auto_auto]">
             <div className="space-y-2">
@@ -266,12 +268,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 label: "Deudas",
               },
               {
-                description: "Consulta rentabilidad por bus y ruta, con cierres descargables.",
+                description: "Consulta rentabilidad por bus y por la linea fija, con cierres descargables.",
                 href: "/dashboard/reports",
                 label: "Reportes",
               },
               {
-                description: "Detecta anomalias de ingreso por ruta y revisa confianza por registrador.",
+                description: "Detecta anomalias de ingreso sobre la linea fija y revisa confianza por registrador.",
                 href: "/dashboard/intelligence",
                 label: "Inteligencia",
               },
