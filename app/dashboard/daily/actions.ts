@@ -23,6 +23,10 @@ function normalizeDailyFormData(formData: FormData) {
   };
 }
 
+function toFixedOrNull(value: number | undefined, digits: number) {
+  return value == null ? null : value.toFixed(digits);
+}
+
 export async function saveDailyRecordAction(
   _previousState: FormState = initialFormState,
   formData: FormData,
@@ -130,17 +134,16 @@ export async function saveDailyRecordAction(
 
   const payload = {
     bus_id: parsed.data.busId,
-    departure_time: parsed.data.departureTime,
-    exchange_rate: parsed.data.exchangeRate.toFixed(6),
-    fuel_cost: parsed.data.fuelCost.toFixed(2),
-    income_bs: parsed.data.incomeBs.toFixed(2),
-    net_profit_usd: parsed.data.netProfitUsd.toFixed(2),
+    departure_time: parsed.data.departureTime ?? null,
+    exchange_rate: toFixedOrNull(parsed.data.exchangeRate, 6),
+    fuel_cost: toFixedOrNull(parsed.data.fuelCost, 2),
+    income_bs: toFixedOrNull(parsed.data.incomeBs, 2),
+    net_profit_usd: toFixedOrNull(parsed.data.netProfitUsd, 2),
     notes: parsed.data.notes?.trim() ? parsed.data.notes.trim() : null,
-    other_expenses: parsed.data.otherExpenses.toFixed(2),
+    other_expenses: toFixedOrNull(parsed.data.otherExpenses, 2),
     record_date: parsed.data.recordDate,
-    status: "draft" as const,
     user_id: existingOwnerId,
-    worker_payment: parsed.data.workerPayment.toFixed(2),
+    worker_payment: toFixedOrNull(parsed.data.workerPayment, 2),
   };
 
   const query = recordId
@@ -148,17 +151,23 @@ export async function saveDailyRecordAction(
         .from("daily_records")
         .update(payload)
         .eq("id", recordId)
-        .select("id")
+        .select("id, status, closed_at, closure_hash")
         .single()
-    : supabase.from("daily_records").insert(payload).select("id").single();
+    : supabase
+        .from("daily_records")
+        .insert(payload)
+        .select("id, status, closed_at, closure_hash")
+        .single();
 
-  const { error } = await query;
+  const { data: savedRecord, error } = await query;
 
   if (error) {
     return {
       message:
         error.code === "23505"
           ? "Ya existe un registro para ese bus en esa fecha."
+          : error.code === "23514"
+            ? "El registro diario no cumple las reglas operativas esperadas."
           : "No pudimos guardar el registro diario.",
       status: "error",
     };
@@ -169,9 +178,14 @@ export async function saveDailyRecordAction(
   revalidatePath("/dashboard/daily/new");
 
   return {
-    message: recordId
-      ? "Registro diario actualizado correctamente."
-      : "Registro diario guardado correctamente.",
+    message:
+      savedRecord.status === "closed"
+        ? recordId
+          ? "Registro diario actualizado y cerrado correctamente."
+          : "Registro diario guardado y cerrado automaticamente."
+        : recordId
+          ? "Registro diario actualizado como borrador."
+          : "Registro diario guardado como borrador.",
     status: "success",
   };
 }

@@ -23,6 +23,7 @@ type DailyFormProps = {
   currentUserId: string;
   existingRecords: ExistingRecordRef[];
   initialRecord?: Tables<"daily_records"> | null;
+  readOnly?: boolean;
 };
 
 export function DailyForm({
@@ -30,28 +31,31 @@ export function DailyForm({
   currentUserId,
   existingRecords,
   initialRecord,
+  readOnly = false,
 }: DailyFormProps) {
   const [state, formAction] = useActionState(saveDailyRecordAction, initialFormState);
+  const isClosedRecord = initialRecord?.status === "closed";
+  const isReadOnly = readOnly || isClosedRecord;
   const [busId, setBusId] = useState(initialRecord?.bus_id ?? "");
   const [recordDate, setRecordDate] = useState(
     initialRecord?.record_date ?? getBusinessTodayDate(),
   );
   const [departureTime, setDepartureTime] = useState(
-    initialRecord?.departure_time?.slice(0, 5) ?? "18:00",
+    initialRecord?.departure_time?.slice(0, 5) ?? "",
   );
-  const [incomeBs, setIncomeBs] = useState(initialRecord?.income_bs ?? "0.00");
+  const [incomeBs, setIncomeBs] = useState(initialRecord?.income_bs ?? "");
   const [exchangeRate, setExchangeRate] = useState(
     initialRecord?.exchange_rate ?? "",
   );
-  const [fuelCost, setFuelCost] = useState(initialRecord?.fuel_cost ?? "0.00");
+  const [fuelCost, setFuelCost] = useState(initialRecord?.fuel_cost ?? "");
   const [workerPayment, setWorkerPayment] = useState(
-    initialRecord?.worker_payment ?? "0.00",
+    initialRecord?.worker_payment ?? "",
   );
   const [otherExpenses, setOtherExpenses] = useState(
-    initialRecord?.other_expenses ?? "0.00",
+    initialRecord?.other_expenses ?? "",
   );
   const [netProfitUsd, setNetProfitUsd] = useState(
-    initialRecord?.net_profit_usd ?? "0.00",
+    initialRecord?.net_profit_usd ?? "",
   );
   const [notes, setNotes] = useState(initialRecord?.notes ?? "");
 
@@ -80,9 +84,22 @@ export function DailyForm({
     2,
   );
   const difference = roundNumeric(toNumber(netProfitUsd) - calculatedNet, 2);
+  const closureReady = [
+    busId,
+    currentUserId,
+    recordDate,
+    departureTime,
+    incomeBs,
+    exchangeRate,
+    fuelCost,
+    workerPayment,
+    otherExpenses,
+    netProfitUsd,
+  ].every((value) => value.trim().length > 0);
 
   const selectedBusBlocked = Boolean(
-    busId &&
+    !isReadOnly &&
+      busId &&
       existingRecords.some(
         (record) =>
           record.bus_id === busId &&
@@ -101,6 +118,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="record-date">Fecha operativa</Label>
             <Input
+              disabled={isReadOnly}
               id="record-date"
               name="recordDate"
               onChange={(event) => setRecordDate(event.target.value)}
@@ -117,6 +135,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="departure-time">Hora de salida</Label>
             <Input
+              disabled={isReadOnly}
               id="departure-time"
               name="departureTime"
               onChange={(event) => setDepartureTime(event.target.value)}
@@ -136,6 +155,7 @@ export function DailyForm({
           <BusSelector
             buses={buses}
             currentRecordId={initialRecord?.id ?? null}
+            disabled={isReadOnly}
             existingRecords={existingRecords}
             onChange={setBusId}
             recordDate={recordDate}
@@ -150,6 +170,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="income-bs">Ingreso en bolivares</Label>
             <Input
+              disabled={isReadOnly}
               id="income-bs"
               min="0"
               name="incomeBs"
@@ -166,6 +187,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="exchange-rate">Tasa Bs/USD</Label>
             <Input
+              disabled={isReadOnly}
               id="exchange-rate"
               min="0"
               name="exchangeRate"
@@ -186,6 +208,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="fuel-cost">Gasoil (USD)</Label>
             <Input
+              disabled={isReadOnly}
               id="fuel-cost"
               min="0"
               name="fuelCost"
@@ -202,6 +225,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="worker-payment">Pago a trabajadores (USD)</Label>
             <Input
+              disabled={isReadOnly}
               id="worker-payment"
               min="0"
               name="workerPayment"
@@ -220,6 +244,7 @@ export function DailyForm({
           <div className="space-y-2">
             <Label htmlFor="other-expenses">Otros gastos (USD)</Label>
             <Input
+              disabled={isReadOnly}
               id="other-expenses"
               min="0"
               name="otherExpenses"
@@ -239,6 +264,7 @@ export function DailyForm({
         <div className="space-y-2">
           <Label htmlFor="net-profit-usd">Neto reportado (USD)</Label>
           <Input
+            disabled={isReadOnly}
             id="net-profit-usd"
             name="netProfitUsd"
             onChange={(event) => setNetProfitUsd(event.target.value)}
@@ -256,6 +282,7 @@ export function DailyForm({
         <div className="space-y-2">
           <Label htmlFor="notes">Observaciones</Label>
           <Textarea
+            disabled={isReadOnly}
             id="notes"
             name="notes"
             onChange={(event) => setNotes(event.target.value)}
@@ -279,13 +306,26 @@ export function DailyForm({
           </p>
         ) : null}
 
-        <SubmitButton
-          className="w-full md:w-auto"
-          disabled={selectedBusBlocked || !busId}
-          pendingLabel="Guardando registro..."
-        >
-          {initialRecord ? "Guardar cambios" : "Guardar registro"}
-        </SubmitButton>
+        {isReadOnly ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            Este registro ya esta cerrado. Puedes revisarlo, pero la app no permite
+            editarlo nuevamente.
+          </div>
+        ) : (
+          <SubmitButton
+            className="w-full md:w-auto"
+            disabled={selectedBusBlocked || !busId}
+            pendingLabel="Guardando registro..."
+          >
+            {closureReady
+              ? initialRecord
+                ? "Guardar y cerrar"
+                : "Crear y cerrar"
+              : initialRecord
+                ? "Guardar borrador"
+                : "Crear borrador"}
+          </SubmitButton>
+        )}
       </div>
 
       <div className="space-y-5">
@@ -354,12 +394,48 @@ export function DailyForm({
 
         <div className="rounded-[28px] border border-border bg-card/90 p-5 shadow-soft">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Reglas activas
+            Estado del cierre
           </p>
           <div className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-            <p>1. El frontend calcula en vivo, pero la base vuelve a recalcular antes de guardar.</p>
-            <p>2. La base bloquea duplicados finales por bus y fecha, aunque el formulario no pueda anticiparlos todos.</p>
-            <p>3. El registro siempre queda en estado borrador durante Sprint 1.</p>
+            <p>
+              1. El frontend calcula en vivo, pero la base vuelve a recalcular antes
+              de guardar.
+            </p>
+            <p>
+              2. Si completas todos los campos operativos del cierre, el registro se
+              guarda directamente como cerrado.
+            </p>
+            <p>
+              3. Si falta algun dato del cierre, el registro se conserva como borrador
+              para completarlo despues.
+            </p>
+            <p>
+              4. Los registros cerrados quedan bloqueados en la app y en la base de
+              datos.
+            </p>
+            {isClosedRecord ? (
+              <>
+                <p>
+                  5. Cerrado el{" "}
+                  <span className="font-medium text-foreground">
+                    {initialRecord?.closed_at ?? "--"}
+                  </span>
+                  .
+                </p>
+                <p className="break-all font-mono text-xs text-foreground">
+                  Hash SHA-256: {initialRecord?.closure_hash ?? "--"}
+                </p>
+              </>
+            ) : closureReady ? (
+              <p className="font-medium text-emerald-700">
+                5. El registro se cerrara automaticamente al guardar.
+              </p>
+            ) : (
+              <p className="font-medium text-amber-700">
+                5. Completa todos los campos del cierre para pasar de borrador a
+                cerrado.
+              </p>
+            )}
           </div>
         </div>
       </div>

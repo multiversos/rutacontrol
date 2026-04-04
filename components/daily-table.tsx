@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatNumber, isNonZeroAmount } from "@/lib/formatters";
 
 type BusFilterOption = {
@@ -15,6 +16,7 @@ export type DailyFilters = {
 type DailyTableRecord = {
   busCode: string;
   calculatedNet: string;
+  closedAt: string | null;
   difference: string;
   exchangeRate: string;
   fuelCost: string;
@@ -144,13 +146,26 @@ export function DailyTable({
                     >
                       {formatCurrency(record.difference)}
                     </td>
-                    <td className="px-4 py-3">{record.status}</td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-1">
+                        <Badge
+                          variant={record.status === "closed" ? "success" : "warning"}
+                        >
+                          {record.status === "closed" ? "Cerrado" : "Borrador"}
+                        </Badge>
+                        {record.closedAt ? (
+                          <p className="text-xs text-muted-foreground">
+                            {record.closedAt}
+                          </p>
+                        ) : null}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         className="text-sm font-semibold text-primary"
                         href={`/dashboard/daily/new?recordId=${record.id}`}
                       >
-                        Editar
+                        {record.status === "closed" ? "Ver cierre" : "Editar"}
                       </Link>
                     </td>
                   </tr>

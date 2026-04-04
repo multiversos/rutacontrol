@@ -12,6 +12,7 @@ type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record
 type BusSelectorProps = {
   buses: BusOption[];
   currentRecordId?: string | null;
+  disabled?: boolean;
   existingRecords: ExistingRecordRef[];
   onChange: (value: string) => void;
   recordDate: string;
@@ -21,6 +22,7 @@ type BusSelectorProps = {
 export function BusSelector({
   buses,
   currentRecordId,
+  disabled = false,
   existingRecords,
   onChange,
   recordDate,
@@ -39,6 +41,7 @@ export function BusSelector({
   return (
     <div className="space-y-2">
       <Select
+        disabled={disabled}
         id="bus-selector"
         name="busId"
         onChange={(event) => onChange(event.target.value)}
