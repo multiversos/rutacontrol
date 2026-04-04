@@ -13,7 +13,8 @@
 
 - Sprint 0: cerrado
 - Sprint 1: cerrado
-- Sprint 2: no iniciado
+- Sprint 2: cerrado
+- Sprint 3: no iniciado
 
 ## Reglas para futuros agentes
 
@@ -47,9 +48,4 @@
 
 ## Proxima fase permitida
 
-Sprint 2 debe limitarse a:
-
-1. cierre automatico
-2. bloqueo post-cierre
-3. hash SHA-256
-4. diferencia de caja
+Sprint 3 todavia no esta abierto. Cualquier trabajo nuevo debe partir desde `main` despues del tag `v0.2.0-sprint2` y abrirse con alcance explicito antes de implementarse.

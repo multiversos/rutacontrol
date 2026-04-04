@@ -14,7 +14,7 @@ async function getDailyContext(filters: DailyFilters) {
   let recordsQuery = supabase
     .from("daily_records")
     .select(
-      "id, bus_id, user_id, record_date, income_bs, exchange_rate, income_usd, fuel_cost, worker_payment, other_expenses, net_profit_usd, calculated_net, difference, status",
+      "id, bus_id, user_id, record_date, income_bs, exchange_rate, income_usd, fuel_cost, worker_payment, other_expenses, net_profit_usd, calculated_net, difference, status, closed_at",
     )
     .order("record_date", { ascending: false });
 
@@ -37,18 +37,19 @@ async function getDailyContext(filters: DailyFilters) {
   const normalizedRecords = (records ?? []).map((record) => ({
     busCode: busMap.get(record.bus_id) ?? record.bus_id,
     calculatedNet: record.calculated_net,
+    closedAt: record.closed_at,
     difference: record.difference,
-    exchangeRate: record.exchange_rate,
-    fuelCost: record.fuel_cost,
+    exchangeRate: record.exchange_rate ?? "0.000000",
+    fuelCost: record.fuel_cost ?? "0.00",
     id: record.id,
-    incomeBs: record.income_bs,
+    incomeBs: record.income_bs ?? "0.00",
     incomeUsd: record.income_usd,
-    netProfitUsd: record.net_profit_usd,
-    otherExpenses: record.other_expenses,
+    netProfitUsd: record.net_profit_usd ?? "0.00",
+    otherExpenses: record.other_expenses ?? "0.00",
     recordDate: record.record_date,
     status: record.status,
     userName: profileMap.get(record.user_id) ?? undefined,
-    workerPayment: record.worker_payment,
+    workerPayment: record.worker_payment ?? "0.00",
   }));
 
   return {

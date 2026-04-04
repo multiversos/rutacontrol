@@ -60,17 +60,22 @@ export default async function NewDailyRecordPage({
   const params = searchParams ? await searchParams : undefined;
   const { buses, existingRecords, initialRecord, requestedRecordMissing } =
     await getDailyFormContext(params?.recordId ? String(params.recordId) : undefined);
+  const isClosedRecord = initialRecord?.status === "closed";
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
       <Card>
         <CardHeader>
           <CardTitle>
-            {initialRecord ? "Editar registro diario" : "Nuevo registro diario"}
+            {initialRecord
+              ? isClosedRecord
+                ? "Registro diario cerrado"
+                : "Editar registro diario"
+              : "Nuevo registro diario"}
           </CardTitle>
           <CardDescription>
             Guarda la operacion del dia y deja que la base recalcule los montos
-            derivados antes de persistir.
+            derivados, el estado del cierre y el hash antes de persistir.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -86,6 +91,7 @@ export default async function NewDailyRecordPage({
             currentUserId={context.profile.id}
             existingRecords={existingRecords}
             initialRecord={initialRecord}
+            readOnly={isClosedRecord}
           />
         </CardContent>
       </Card>
@@ -104,13 +110,22 @@ export default async function NewDailyRecordPage({
             otro registro no es visible por RLS.
           </p>
           <p>3. La diferencia se pinta en rojo si no coincide con el neto calculado.</p>
-          <p>4. El guardado ocurre como borrador; el cierre real se deja para Sprint 2.</p>
+          <p>
+            4. El cierre es automatico: si completas los campos obligatorios, el
+            registro queda cerrado y bloqueado.
+          </p>
           <div className="pt-2">
             {context.profile.role === "registrador" ? (
               <p className="pb-3 text-xs text-muted-foreground">
                 Si otro usuario ya registro el mismo bus ese dia, el bloqueo final se
                 valida al guardar para respetar seguridad y RLS.
               </p>
+            ) : null}
+            {isClosedRecord ? (
+              <ConfigAlert
+                message="El registro ya quedo cerrado. Puedes revisarlo, pero cualquier intento de edicion operativa sera rechazado."
+                title="Cierre aplicado"
+              />
             ) : null}
             <Link
               className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"

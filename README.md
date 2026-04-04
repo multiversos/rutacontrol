@@ -1,14 +1,15 @@
 # RutaControl
 
-Estado del repositorio: `Sprint 1 cerrado`.
+Estado del repositorio: `Sprint 2 cerrado`.
 
-RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El MVP actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses y registros diarios con recalculo financiero en SQL.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL y cierre automatico operativo de `daily_records`.
 
 ## Estado actual
 
 - Sprint 0: cerrado
 - Sprint 1: cerrado el 3 de abril de 2026
-- Sprint 2: no implementado todavia
+- Sprint 2: cerrado el 3 de abril de 2026
+- Sprint 3: pendiente, no iniciado
 
 ## Criterios aprobados de Sprint 1
 
@@ -27,8 +28,19 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 ## Infraestructura verificada
 
 - GitHub remoto operativo en [multiversos/rutacontrol](https://github.com/multiversos/rutacontrol)
-- Supabase real conectado con esquema, seed y smoke tests autenticados ejecutados
+- Supabase real conectado con migraciones `0001`, `0002` y `0003` aplicadas
 - Vercel produccion activo en [rutacontrol.vercel.app](https://rutacontrol.vercel.app)
+
+## Criterios aprobados de Sprint 2
+
+- `daily_records` incompletos como `draft`: PASS
+- cierre automatico a `closed`: PASS
+- persistencia de `closed_at`: PASS
+- persistencia de `closure_hash`: PASS
+- `closure_hash` inmutable tras cierre: PASS
+- bloqueo real de edicion post-cierre: PASS
+- diferencia de caja persistida correctamente: PASS
+- regresion Sprint 1: PASS
 
 ## Stack
 
@@ -76,9 +88,4 @@ npm run dev
 
 ## Siguiente fase
 
-La siguiente fase es Sprint 2. Su alcance todavia no esta implementado y debe limitarse a:
-
-1. cierre automatico
-2. bloqueo post-cierre
-3. hash SHA-256
-4. diferencia de caja
+Sprint 3 todavia no esta abierto en este release. `main` queda congelada en el cierre de Sprint 2 y cualquier nuevo alcance debe abrirse despues desde este baseline estable.
