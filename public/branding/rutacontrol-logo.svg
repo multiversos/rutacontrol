@@ -1,0 +1,25 @@
+<svg width="640" height="180" viewBox="0 0 640 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="16" y="18" width="144" height="144" rx="40" fill="url(#paint0_linear)"/>
+  <path d="M55 84C55 70.7452 65.7452 60 79 60H97C110.255 60 121 70.7452 121 84V106C121 119.255 110.255 130 97 130H79C65.7452 130 55 119.255 55 106V84Z" fill="white" fill-opacity="0.94"/>
+  <path d="M69 84C69 78.4772 73.4772 74 79 74H97C102.523 74 107 78.4772 107 84V89H69V84Z" fill="#0F766E"/>
+  <path d="M73 98H103" stroke="#0F172A" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="78" cy="112" r="6" fill="#0F172A"/>
+  <circle cx="98" cy="112" r="6" fill="#0F172A"/>
+  <path d="M37 116C37 116 52.0628 95 71.5 95C90.9372 95 106.063 116 125.5 116C144.937 116 160 95 160 95" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M224 74H372" stroke="#0F766E" stroke-width="8" stroke-linecap="round"/>
+  <path d="M224 109H406" stroke="#0F766E" stroke-width="8" stroke-linecap="round" stroke-opacity="0.2"/>
+  <path d="M388 74L406 74" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M364 109L382 109" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+  <text x="224" y="66" fill="#0F172A" font-family="Manrope, Arial, sans-serif" font-size="52" font-weight="800" letter-spacing="-1.2">
+    RutaControl
+  </text>
+  <text x="224" y="148" fill="#475569" font-family="Manrope, Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="0.24">
+    OPERACION DIARIA Y TRAZABILIDAD
+  </text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="28" y1="30" x2="162" y2="162" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+</svg>
