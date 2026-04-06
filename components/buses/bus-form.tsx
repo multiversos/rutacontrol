@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 
 import { saveBusAction, saveBusPhotoAction } from "@/app/dashboard/buses/actions";
 import { BusPhoto } from "@/components/buses/bus-photo";
+import { DeleteBusButton } from "@/components/buses/delete-bus-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import type { BusDeletionGuard } from "@/lib/bus-deletion";
 import { initialFormState } from "@/lib/forms/action-state";
 import {
   buildBusPhotoObjectPath,
@@ -25,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 type BusFormProps = {
   bus?: Tables<"buses"> | null;
+  deleteGuard?: BusDeletionGuard | null;
   photoUrl?: string | null;
 };
 
@@ -42,7 +45,7 @@ function isPhotoValid(file: File) {
   return null;
 }
 
-export function BusForm({ bus, photoUrl }: BusFormProps) {
+export function BusForm({ bus, deleteGuard, photoUrl }: BusFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
@@ -300,6 +303,15 @@ export function BusForm({ bus, photoUrl }: BusFormProps) {
         >
           {bus ? "Cancelar edicion" : "Limpiar"}
         </Link>
+        {bus ? (
+          <DeleteBusButton
+            blockers={deleteGuard?.blockers ?? []}
+            busCode={bus.code}
+            busId={bus.id}
+            canDelete={deleteGuard?.canDelete ?? false}
+            compact
+          />
+        ) : null}
       </div>
     </form>
   );

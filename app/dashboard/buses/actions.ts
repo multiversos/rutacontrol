@@ -8,6 +8,7 @@ import {
   isBusPhotoPath,
   normalizeBusPhotoPath,
 } from "@/lib/bus-photo";
+import { getBusDeletionGuard } from "@/lib/bus-deletion";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
@@ -240,6 +241,90 @@ export async function saveBusPhotoAction({
   return {
     entityId: normalizedBusId,
     message: "Foto del bus actualizada correctamente.",
+    status: "success",
+  };
+}
+
+export async function deleteBusAction(
+  _previousState: FormState = initialFormState,
+  formData: FormData,
+): Promise<FormState> {
+  void _previousState;
+  await requireRole("admin");
+
+  const busId = String(formData.get("busId") ?? "").trim();
+
+  if (!busId) {
+    return {
+      message: "No recibimos la unidad que quieres eliminar.",
+      status: "error",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: bus, error: busError } = await supabase
+    .from("buses")
+    .select("code, id, photo_path")
+    .eq("id", busId)
+    .maybeSingle();
+
+  if (busError) {
+    return {
+      message: "No pudimos verificar el bus seleccionado.",
+      status: "error",
+    };
+  }
+
+  if (!bus) {
+    revalidateBusPaths();
+
+    return {
+      message: "El bus ya no existe o ya fue eliminado.",
+      status: "success",
+    };
+  }
+
+  const guard = await getBusDeletionGuard(busId);
+
+  if (!guard.canDelete) {
+    return {
+      entityId: busId,
+      message: `No puedes eliminar esta unidad porque ya tiene historial asociado (${guard.blockers.join(", ")}). Marcalo como inactivo para conservar la trazabilidad.`,
+      status: "error",
+    };
+  }
+
+  const { error: deleteError } = await supabase.from("buses").delete().eq("id", busId);
+
+  if (deleteError) {
+    return {
+      entityId: busId,
+      message: "No pudimos eliminar el bus en este momento.",
+      status: "error",
+    };
+  }
+
+  let message = `Bus ${bus.code} eliminado definitivamente.`;
+
+  if (bus.photo_path && isBusPhotoPath(bus.photo_path, busId)) {
+    const normalizedPhotoPath = normalizeBusPhotoPath(bus.photo_path);
+
+    if (normalizedPhotoPath) {
+      const { error: removeError } = await supabase.storage
+        .from(BUS_PHOTO_BUCKET)
+        .remove([normalizedPhotoPath]);
+
+      if (removeError) {
+        message =
+          "El bus se elimino correctamente, pero no pudimos borrar su foto anterior de Storage.";
+      }
+    }
+  }
+
+  revalidateBusPaths();
+
+  return {
+    message,
     status: "success",
   };
 }

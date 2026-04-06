@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DeleteBusButton } from "@/components/buses/delete-bus-button";
 import { BusPhoto } from "@/components/buses/bus-photo";
 import { BusForm } from "@/components/buses/bus-form";
 import {
@@ -10,38 +11,73 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
+import { getBusDeletionGuardMap } from "@/lib/bus-deletion";
 import { getBusPhotoUrlMap } from "@/lib/bus-photo";
 import { isDemoBus } from "@/lib/demo-data";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 
-async function getBusContext() {
+function buildBusesPageHref(options?: {
+  edit?: string;
+  showInactive?: boolean;
+}) {
+  const searchParams = new URLSearchParams();
+
+  if (options?.edit) {
+    searchParams.set("edit", options.edit);
+  }
+
+  if (options?.showInactive) {
+    searchParams.set("showInactive", "1");
+  }
+
+  const query = searchParams.toString();
+
+  return query ? `/dashboard/buses?${query}` : "/dashboard/buses";
+}
+
+async function getBusContext(showInactive: boolean) {
   const supabase = await createClient();
   const { data: buses } = await supabase
     .from("buses")
     .select("id, code, plate, photo_path, route_id, status, created_at, updated_at")
     .order("code");
 
-  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
-  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+  const allVisibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const listedBuses = showInactive
+    ? allVisibleBuses
+    : allVisibleBuses.filter((bus) => bus.status !== "inactive");
+  const photoMap = await getBusPhotoUrlMap(supabase, allVisibleBuses);
+  const deleteGuardMap = await getBusDeletionGuardMap(
+    allVisibleBuses.map((bus) => bus.id),
+  );
 
   return {
-    buses: visibleBuses,
+    buses: listedBuses,
+    deleteGuardMap,
+    inactiveCount: allVisibleBuses.filter((bus) => bus.status === "inactive").length,
     photoMap,
+    visibleBuses: allVisibleBuses,
   };
 }
 
 type BusesPageProps = {
   searchParams?: Promise<{
     edit?: string;
+    showInactive?: string;
   }>;
 };
 
 export default async function BusesPage({ searchParams }: BusesPageProps) {
   await requireRole("admin");
   const params = searchParams ? await searchParams : undefined;
-  const { buses, photoMap } = await getBusContext();
-  const selectedBus = buses.find((bus) => bus.id === params?.edit) ?? null;
+  const showInactive = params?.showInactive === "1";
+  const { buses, deleteGuardMap, inactiveCount, photoMap, visibleBuses } =
+    await getBusContext(showInactive);
+  const selectedBus = visibleBuses.find((bus) => bus.id === params?.edit) ?? null;
+  const selectedBusDeleteGuard = selectedBus
+    ? deleteGuardMap.get(selectedBus.id) ?? null
+    : null;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -56,19 +92,44 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
                 finanzas, mantenimiento y reparaciones.
               </CardDescription>
             </div>
-            <Link
-              className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"
-              href="/dashboard/buses"
-            >
-              Nuevo bus
-            </Link>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <Link
+                className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"
+                href={buildBusesPageHref({ showInactive })}
+              >
+                Nuevo bus
+              </Link>
+              <Link
+                className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold"
+                href={buildBusesPageHref({
+                  ...((params?.edit ? { edit: params.edit } : {}) as {
+                    edit?: string;
+                  }),
+                  showInactive: !showInactive,
+                })}
+              >
+                {showInactive ? "Ocultar inactivos" : "Mostrar inactivos"}
+              </Link>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           {buses.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Todavia no hay buses reales cargados para la linea fija.
-            </p>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                {visibleBuses.length === 0
+                  ? "Todavia no hay buses reales cargados para la linea fija."
+                  : "No hay buses operativos visibles con el filtro actual."}
+              </p>
+              {!showInactive && inactiveCount > 0 ? (
+                <p>
+                  Hay {inactiveCount} unidad
+                  {inactiveCount === 1 ? "" : "es"} inactiva
+                  {inactiveCount === 1 ? "" : "s"} oculta
+                  {inactiveCount === 1 ? "" : "s"} en la lista principal.
+                </p>
+              ) : null}
+            </div>
           ) : (
             <div className="overflow-hidden rounded-3xl border border-border">
               <table className="min-w-full divide-y divide-border text-sm">
@@ -116,6 +177,12 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
                           >
                             Editar
                           </Link>
+                          <DeleteBusButton
+                            blockers={deleteGuardMap.get(bus.id)?.blockers ?? []}
+                            busCode={bus.code}
+                            busId={bus.id}
+                            canDelete={deleteGuardMap.get(bus.id)?.canDelete ?? false}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -132,7 +199,7 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
           <CardTitle>{selectedBus ? "Editar bus" : "Crear bus"}</CardTitle>
           <CardDescription>
             {selectedBus
-              ? "Actualiza la unidad, cambia su foto administrativa y mantenla lista para la operacion diaria."
+              ? "Actualiza la unidad, cambia su foto administrativa, dejala inactiva si hace falta o eliminela solo cuando no tenga historial asociado."
               : "Registra una unidad real de la linea fija y deja lista su foto administrativa desde este mismo panel."}
           </CardDescription>
         </CardHeader>
@@ -140,6 +207,7 @@ export default async function BusesPage({ searchParams }: BusesPageProps) {
           <BusForm
             key={selectedBus?.id ?? "new-bus"}
             bus={selectedBus}
+            deleteGuard={selectedBusDeleteGuard}
             photoUrl={selectedBus ? photoMap.get(selectedBus.id) ?? null : null}
           />
         </CardContent>
