@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, AlertTriangle, CalendarDays, ShieldCheck } from "lucide-react";
 
+import { BusIdentity } from "@/components/buses/bus-identity";
 import { KpiCards } from "@/components/kpi-cards";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -133,7 +134,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   <tbody className="divide-y divide-border bg-white/70">
                     {dashboardData.records.map((record) => (
                       <tr key={record.id}>
-                        <td className="px-4 py-3 font-medium">{record.busCode}</td>
+                        <td className="px-4 py-3">
+                          <BusIdentity
+                            code={record.busCode}
+                            photoUrl={record.busPhotoUrl}
+                            plate={record.busPlate}
+                            size="sm"
+                          />
+                        </td>
                         <td className="px-4 py-3">{record.userName ?? "--"}</td>
                         <td className="px-4 py-3">{formatCurrency(record.incomeUsd)}</td>
                         <td
@@ -210,8 +218,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     className="rounded-[24px] border border-destructive/20 bg-destructive/5 px-4 py-3"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-semibold">{record.busCode}</p>
+                      <div className="min-w-0">
+                        <BusIdentity
+                          code={record.busCode}
+                          photoUrl={record.busPhotoUrl}
+                          plate={record.busPlate}
+                          size="sm"
+                        />
                         <p className="text-sm text-muted-foreground">
                           {record.userName ?? "Usuario no disponible"}
                         </p>

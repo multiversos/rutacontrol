@@ -13,6 +13,7 @@ import { initialFormState } from "@/lib/forms/action-state";
 import type { Tables } from "@/lib/supabase/database.types";
 
 type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
+  photoUrl?: string | null;
   routeName: string;
 };
 
@@ -151,18 +152,22 @@ export function DailyForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="bus-selector">Bus</Label>
+          <Label id="bus-selector-label">Bus</Label>
           <BusSelector
+            ariaDescribedBy={state.fieldErrors?.busId?.[0] ? "bus-selector-error" : undefined}
             buses={buses}
             currentRecordId={initialRecord?.id ?? null}
             disabled={isReadOnly}
             existingRecords={existingRecords}
+            labelId="bus-selector-label"
             onChange={setBusId}
             recordDate={recordDate}
             value={busId}
           />
           {state.fieldErrors?.busId?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
+            <p className="text-sm text-destructive" id="bus-selector-error">
+              {state.fieldErrors.busId[0]}
+            </p>
           ) : null}
         </div>
 

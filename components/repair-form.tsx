@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { createRepairAction } from "@/app/dashboard/repairs/actions";
+import { BusSelector } from "@/components/bus-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,8 @@ import { createClient } from "@/lib/supabase/client";
 type RepairBusOption = {
   code: string;
   id: string;
+  photoUrl?: string | null;
+  plate: string;
 };
 
 type RepairFormProps = {
@@ -40,6 +43,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [state, setState] = useState<FormState>(initialFormState);
+  const [busId, setBusId] = useState("");
   const [fileLabel, setFileLabel] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -134,6 +138,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
 
           setState(result);
           formRef.current?.reset();
+          setBusId("");
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
           }
@@ -152,25 +157,54 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
   }
 
   return (
-    <form ref={formRef} className="space-y-5" onSubmit={handleSubmit}>
+    <form ref={formRef} className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="repair-bus">Bus</Label>
-        <select
-          className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
-          defaultValue=""
+        <Label id="repair-bus-label">Bus</Label>
+        <BusSelector
+          ariaDescribedBy={state.fieldErrors?.busId?.[0] ? "repair-bus-error" : undefined}
+          buses={buses}
+          emptyLabel="No hay buses activos disponibles para registrar reparaciones."
+          helperText="Selecciona la unidad correcta usando foto, codigo y placa antes de subir el comprobante."
           id="repair-bus"
-          name="busId"
-        >
-          <option value="">Selecciona un bus activo</option>
-          {buses.map((bus) => (
-            <option key={bus.id} value={bus.id}>
-              {bus.code}
-            </option>
-          ))}
-        </select>
+          labelId="repair-bus-label"
+          onChange={setBusId}
+          value={busId}
+        />
         {state.fieldErrors?.busId?.[0] ? (
-          <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
+          <p className="text-sm text-destructive" id="repair-bus-error">
+            {state.fieldErrors.busId[0]}
+          </p>
         ) : null}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(180px,0.55fr)_minmax(0,1.45fr)]">
+        <div className="space-y-2">
+          <Label htmlFor="repair-date">Fecha de reparacion</Label>
+          <Input
+            defaultValue={getBusinessTodayDate()}
+            id="repair-date"
+            name="repairDate"
+            type="date"
+          />
+          {state.fieldErrors?.repairDate?.[0] ? (
+            <p className="text-sm text-destructive">
+              {state.fieldErrors.repairDate[0]}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="repair-provider">Proveedor o taller</Label>
+          <Input
+            className="w-full"
+            id="repair-provider"
+            name="provider"
+            placeholder="Ej. Taller Los Andes"
+          />
+          {state.fieldErrors?.provider?.[0] ? (
+            <p className="text-sm text-destructive">{state.fieldErrors.provider[0]}</p>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -193,35 +227,6 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="repair-date">Fecha de reparacion</Label>
-          <Input
-            defaultValue={getBusinessTodayDate()}
-            id="repair-date"
-            name="repairDate"
-            type="date"
-          />
-          {state.fieldErrors?.repairDate?.[0] ? (
-            <p className="text-sm text-destructive">
-              {state.fieldErrors.repairDate[0]}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="repair-provider">Proveedor o taller</Label>
-          <Input
-            id="repair-provider"
-            name="provider"
-            placeholder="Ej. Taller Los Andes"
-          />
-          {state.fieldErrors?.provider?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.provider[0]}</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
           <Label htmlFor="repair-cost">Costo (USD)</Label>
           <Input
             id="repair-cost"
@@ -240,6 +245,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       <div className="space-y-2">
         <Label htmlFor="repair-description">Descripcion</Label>
         <Textarea
+          className="min-h-[144px] resize-y"
           id="repair-description"
           name="description"
           placeholder="Describe el trabajo realizado y las piezas involucradas."
@@ -251,7 +257,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
         ) : null}
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 xl:grid-cols-[minmax(180px,0.55fr)_minmax(0,1.45fr)]">
         <div className="space-y-2">
           <Label htmlFor="repair-next-service-date">Proximo servicio sugerido</Label>
           <Input
@@ -301,6 +307,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
       <div className="space-y-2">
         <Label htmlFor="repair-next-service-notes">Notas del proximo servicio</Label>
         <Textarea
+          className="min-h-[132px] resize-y"
           id="repair-next-service-notes"
           name="nextServiceNotes"
           placeholder="Ej. Revisar frenos y cambio preventivo en 30 dias."

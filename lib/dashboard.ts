@@ -2,6 +2,13 @@ import "server-only";
 
 import type { Json, Tables } from "@/lib/supabase/database.types";
 import { reconcileMissingClosureAlerts } from "@/lib/alerts";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
+import {
+  getAuditBusId,
+  getAuditRecordDate,
+  isDemoBus,
+  isOperationalRecordDate,
+} from "@/lib/demo-data";
 import {
   formatDateLabel,
   getBusinessTodayDate,
@@ -9,7 +16,7 @@ import {
 } from "@/lib/formatters";
 import { createClient } from "@/lib/supabase/server";
 
-type BusLookup = Pick<Tables<"buses">, "code" | "id" | "status">;
+type BusLookup = Pick<Tables<"buses">, "code" | "id" | "photo_path" | "plate" | "status">;
 type AuditBusLookup = Pick<Tables<"buses">, "code" | "id">;
 type ProfileLookup = Pick<Tables<"profiles">, "id" | "name">;
 type DailyRecordLookup = Pick<
@@ -64,6 +71,8 @@ export type DashboardKpiItem = {
 
 export type DashboardRecordSummary = {
   busCode: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   closedAt: string | null;
   difference: string;
   id: string;
@@ -76,6 +85,8 @@ export type DashboardRecordSummary = {
 export type NormalizedDailyRecord = {
   busCode: string;
   busId: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   calculatedNet: string;
   closedAt: string | null;
   createdAt: string;
@@ -149,9 +160,8 @@ function getAuditContext(entry: AuditLogLookup): NormalizedAuditContext {
   }
 
   return {
-    busId: typeof source.bus_id === "string" ? source.bus_id : undefined,
-    recordDate:
-      typeof source.record_date === "string" ? source.record_date : undefined,
+    busId: getAuditBusId(source) ?? undefined,
+    recordDate: getAuditRecordDate(source) ?? undefined,
     status: typeof source.status === "string" ? source.status : undefined,
   };
 }
@@ -233,13 +243,25 @@ function normalizeDailyRecords(
   records: DailyRecordLookup[],
   buses: BusLookup[],
   profiles: ProfileLookup[],
+  photoMap: Map<string, string | null>,
 ) {
-  const busMap = new Map(buses.map((bus) => [bus.id, bus.code]));
+  const busMap = new Map(
+    buses.map((bus) => [
+      bus.id,
+      {
+        code: bus.code,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        plate: bus.plate,
+      },
+    ]),
+  );
   const profileMap = new Map(profiles.map((profile) => [profile.id, profile.name]));
 
   return records.map((record) => ({
-    busCode: busMap.get(record.bus_id) ?? record.bus_id,
+    busCode: busMap.get(record.bus_id)?.code ?? record.bus_id,
     busId: record.bus_id,
+    busPhotoUrl: busMap.get(record.bus_id)?.photoUrl ?? null,
+    busPlate: busMap.get(record.bus_id)?.plate ?? null,
     calculatedNet: record.calculated_net,
     closedAt: record.closed_at,
     createdAt: record.created_at,
@@ -313,7 +335,7 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
   const [{ data: records }, { data: buses }, { data: profiles }, { data: auditEntries }] =
     await Promise.all([
       recordsQuery,
-      supabase.from("buses").select("id, code, status").order("code"),
+      supabase.from("buses").select("id, code, plate, photo_path, status").order("code"),
       supabase.from("profiles").select("id, name"),
       supabase
         .from("audit_log")
@@ -323,24 +345,33 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
         .limit(6),
     ]);
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
   const normalizedRecords = normalizeDailyRecords(
     records ?? [],
     buses ?? [],
     profiles ?? [],
+    photoMap,
   );
-  const activeBuses = (buses ?? []).filter(
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
+  const filteredRecords = normalizedRecords.filter(
+    (record) =>
+      isOperationalRecordDate(record.recordDate, selectedDate) &&
+      visibleBusIds.has(record.busId),
+  );
+  const activeBuses = visibleBuses.filter(
     (bus) => bus.status === "active" && (!filters.busId || bus.id === filters.busId),
   );
   const closedBusIds = new Set(
-    normalizedRecords
+    filteredRecords
       .filter((record) => record.status === "closed")
       .map((record) => record.busId),
   );
-  const differenceRecords = normalizedRecords.filter(
+  const differenceRecords = filteredRecords.filter(
     (record) => Math.abs(toNumber(record.difference)) >= 0.01,
   );
   const pendingBuses = activeBuses.filter((bus) => !closedBusIds.has(bus.id));
-  const totals = normalizedRecords.reduce(
+  const totals = filteredRecords.reduce(
     (accumulator, record) => ({
       incomeUsd: accumulator.incomeUsd + toNumber(record.incomeUsd),
       netCalculated: accumulator.netCalculated + toNumber(record.calculatedNet),
@@ -352,8 +383,13 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
   );
 
   return {
-    auditPreview: normalizeAuditEntries(auditEntries ?? [], buses ?? [], profiles ?? []),
-    busOptions: (buses ?? []).map((bus) => ({
+    auditPreview: normalizeAuditEntries(auditEntries ?? [], buses ?? [], profiles ?? []).filter(
+      (entry) =>
+        !entry.busCode ||
+        (!isDemoBus({ code: entry.busCode }) &&
+          isOperationalRecordDate(entry.recordDate, selectedDate)),
+    ),
+    busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
     })),
@@ -395,8 +431,10 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
       },
     ] satisfies DashboardKpiItem[],
     pendingBuses: pendingBuses.map((bus) => bus.code),
-    records: normalizedRecords.map((record) => ({
+    records: filteredRecords.map((record) => ({
       busCode: record.busCode,
+      busPhotoUrl: record.busPhotoUrl,
+      busPlate: record.busPlate,
       closedAt: record.closedAt,
       difference: record.difference,
       id: record.id,
@@ -431,18 +469,27 @@ export async function getDailyHistoryData(filters: HistoryFilterState) {
 
   const [{ data: records }, { data: buses }, { data: profiles }] = await Promise.all([
     recordsQuery,
-    supabase.from("buses").select("id, code, status").order("code"),
+    supabase.from("buses").select("id, code, plate, photo_path, status").order("code"),
     supabase.from("profiles").select("id, name"),
   ]);
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
   const normalizedRecords = normalizeDailyRecords(
     records ?? [],
     buses ?? [],
     profiles ?? [],
+    photoMap,
+  );
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
+  const filteredRecords = normalizedRecords.filter(
+    (record) =>
+      isOperationalRecordDate(record.recordDate, today) &&
+      visibleBusIds.has(record.busId),
   );
 
   return {
-    busOptions: (buses ?? []).map((bus) => ({
+    busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
     })),
@@ -451,9 +498,9 @@ export async function getDailyHistoryData(filters: HistoryFilterState) {
       dateFrom,
       dateTo,
     },
-    monthlySummary: buildSummaryRows(normalizedRecords, "month"),
-    records: normalizedRecords,
-    weeklySummary: buildSummaryRows(normalizedRecords, "week"),
+    monthlySummary: buildSummaryRows(filteredRecords, "month"),
+    records: filteredRecords,
+    weeklySummary: buildSummaryRows(filteredRecords, "week"),
   };
 }
 
@@ -478,7 +525,12 @@ export async function getDailyAuditData(filters: HistoryFilterState) {
   ]);
 
   return {
-    entries: normalizeAuditEntries(entries ?? [], buses ?? [], profiles ?? []),
+    entries: normalizeAuditEntries(entries ?? [], buses ?? [], profiles ?? []).filter(
+      (entry) =>
+        !entry.busCode ||
+        (!isDemoBus({ code: entry.busCode }) &&
+          isOperationalRecordDate(entry.recordDate, today)),
+    ),
     filters: {
       dateFrom,
       dateTo,

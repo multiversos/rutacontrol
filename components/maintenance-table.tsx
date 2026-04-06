@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BusIdentity } from "@/components/buses/bus-identity";
 import { MaintenanceStatusBadge } from "@/components/maintenance-status-badge";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -16,6 +17,8 @@ import { formatCurrency, formatDateLabel } from "@/lib/formatters";
 type MaintenanceBusOption = {
   code: string;
   id: string;
+  photoUrl?: string | null;
+  plate: string;
   status: string;
 };
 
@@ -26,6 +29,8 @@ type MaintenanceTableProps = {
   historyByBus: Array<{
     busCode: string;
     busId: string;
+    busPhotoUrl: string | null;
+    busPlate: string | null;
     dueSoonCount: number;
     overdueCount: number;
     recordCount: number;
@@ -173,7 +178,14 @@ export function MaintenanceTable({
               <tbody className="divide-y divide-border bg-white/70">
                 {currentCycles.map((cycle) => (
                   <tr key={`${cycle.maintenanceRecordId}-${cycle.componentLabel}`}>
-                    <td className="px-4 py-3 font-medium">{cycle.busCode}</td>
+                    <td className="px-4 py-3">
+                      <BusIdentity
+                        code={cycle.busCode}
+                        photoUrl={cycle.busPhotoUrl}
+                        plate={cycle.busPlate}
+                        size="sm"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="space-y-1">
                         <p>{cycle.componentLabel}</p>
@@ -240,7 +252,14 @@ export function MaintenanceTable({
               <tbody className="divide-y divide-border bg-white/70">
                 {historyByBus.map((entry) => (
                   <tr key={entry.busId}>
-                    <td className="px-4 py-3 font-medium">{entry.busCode}</td>
+                    <td className="px-4 py-3">
+                      <BusIdentity
+                        code={entry.busCode}
+                        photoUrl={entry.busPhotoUrl}
+                        plate={entry.busPlate}
+                        size="sm"
+                      />
+                    </td>
                     <td className="px-4 py-3">{entry.recordCount}</td>
                     <td className="px-4 py-3">
                       <Badge variant={entry.dueSoonCount > 0 ? "warning" : "success"}>
@@ -287,10 +306,15 @@ export function MaintenanceTable({
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
+                      <BusIdentity
+                        code={record.busCode}
+                        photoUrl={record.busPhotoUrl}
+                        plate={record.busPlate}
+                        size="sm"
+                      />
                       <Badge variant="muted">
                         {MAINTENANCE_TYPE_LABELS[record.maintenanceType]}
                       </Badge>
-                      <Badge variant="muted">{record.busCode}</Badge>
                       {record.currentCycle ? (
                         <MaintenanceStatusBadge status={record.currentCycle.status} />
                       ) : null}

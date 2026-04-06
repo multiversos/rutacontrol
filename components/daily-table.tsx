@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BusIdentity } from "@/components/buses/bus-identity";
 import { Badge } from "@/components/ui/badge";
 import {
   formatCurrency,
@@ -22,6 +23,8 @@ export type DailyFilters = {
 
 type DailyTableRecord = {
   busCode: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   calculatedNet: string;
   closedAt: string | null;
   difference: string;
@@ -147,7 +150,14 @@ export function DailyTable({
                 return (
                   <tr key={record.id}>
                     <td className="px-4 py-3">{formatDateLabel(record.recordDate)}</td>
-                    <td className="px-4 py-3 font-medium">{record.busCode}</td>
+                    <td className="px-4 py-3">
+                      <BusIdentity
+                        code={record.busCode}
+                        photoUrl={record.busPhotoUrl}
+                        plate={record.busPlate}
+                        size="sm"
+                      />
+                    </td>
                     {isAdmin ? (
                       <td className="px-4 py-3">{record.userName ?? "--"}</td>
                     ) : null}

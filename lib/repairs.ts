@@ -1,6 +1,8 @@
 import "server-only";
 
 import type { Tables } from "@/lib/supabase/database.types";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
+import { isDemoBus } from "@/lib/demo-data";
 import { getBusinessTodayDate, shiftDateString } from "@/lib/formatters";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +35,8 @@ export type RepairListItem = {
   } | null;
   busCode: string;
   busId: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   category: Tables<"repairs">["category"];
   costUsd: string;
   createdAt: string;
@@ -47,6 +51,8 @@ export type RepairListItem = {
 export type NextServiceSuggestion = {
   busCode: string;
   busId: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   nextServiceDueDate: string | null;
   notes: string | null;
   repairDate: string | null;
@@ -75,7 +81,7 @@ export async function getRepairsData(filters: RepairFilterState) {
   const [{ data: repairs, error: repairsError }, { data: buses }, { data: allRepairRows }] =
     await Promise.all([
       repairsQuery,
-      supabase.from("buses").select("id, code, status").order("code"),
+      supabase.from("buses").select("id, code, plate, photo_path, status").order("code"),
       supabase
         .from("repairs")
         .select(
@@ -104,7 +110,19 @@ export async function getRepairsData(filters: RepairFilterState) {
           .order("created_at", { ascending: false })
       : { data: [] as RepairAttachmentRow[] };
 
-  const busMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+  const busMetaMap = new Map(
+    (buses ?? []).map((bus) => [
+      bus.id,
+      {
+        code: bus.code,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        plate: bus.plate,
+      },
+    ]),
+  );
   const attachmentMap = new Map<string, RepairAttachmentRow>();
 
   (attachments ?? []).forEach((attachment) => {
@@ -124,7 +142,9 @@ export async function getRepairsData(filters: RepairFilterState) {
   );
   const signedUrlMap = new Map(signedUrlEntries);
 
-  const normalizedRepairs = (repairs ?? []).map((repair) => {
+  const normalizedRepairs = (repairs ?? [])
+    .filter((repair) => visibleBusIds.has(repair.bus_id))
+    .map((repair) => {
     const attachment = attachmentMap.get(repair.id);
 
     return {
@@ -138,8 +158,10 @@ export async function getRepairsData(filters: RepairFilterState) {
             signedUrl: signedUrlMap.get(repair.id) ?? null,
           }
         : null,
-      busCode: busMap.get(repair.bus_id) ?? repair.bus_id,
+      busCode: busMetaMap.get(repair.bus_id)?.code ?? repair.bus_id,
       busId: repair.bus_id,
+      busPhotoUrl: busMetaMap.get(repair.bus_id)?.photoUrl ?? null,
+      busPlate: busMetaMap.get(repair.bus_id)?.plate ?? null,
       category: repair.category,
       costUsd: repair.cost_usd,
       createdAt: repair.created_at,
@@ -154,12 +176,14 @@ export async function getRepairsData(filters: RepairFilterState) {
 
   const nextServiceMap = new Map<string, NextServiceSuggestion>();
 
-  (buses ?? [])
+  visibleBuses
     .filter((bus) => bus.status === "active")
     .forEach((bus) => {
       nextServiceMap.set(bus.id, {
         busCode: bus.code,
         busId: bus.id,
+        busPhotoUrl: photoMap.get(bus.id) ?? null,
+        busPlate: bus.plate,
         nextServiceDueDate: null,
         notes: null,
         repairDate: null,
@@ -178,8 +202,10 @@ export async function getRepairsData(filters: RepairFilterState) {
     }
 
     nextServiceMap.set(repair.bus_id, {
-      busCode: busMap.get(repair.bus_id) ?? repair.bus_id,
+      busCode: busMetaMap.get(repair.bus_id)?.code ?? repair.bus_id,
       busId: repair.bus_id,
+      busPhotoUrl: busMetaMap.get(repair.bus_id)?.photoUrl ?? null,
+      busPlate: busMetaMap.get(repair.bus_id)?.plate ?? null,
       nextServiceDueDate: repair.next_service_due_date,
       notes: repair.next_service_notes,
       repairDate: repair.repair_date,
@@ -187,9 +213,11 @@ export async function getRepairsData(filters: RepairFilterState) {
   });
 
   return {
-    busOptions: (buses ?? []).map((bus) => ({
+    busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
+      photoUrl: photoMap.get(bus.id) ?? null,
+      plate: bus.plate,
     })),
     filters: {
       busId: filters.busId,

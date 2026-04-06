@@ -10,21 +10,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth/session";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
+import { isDemoBus } from "@/lib/demo-data";
+import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 
 async function getDailyFormContext(recordId?: string) {
   const supabase = await createClient();
-  const [{ data: buses }, { data: routes }, { data: existingRecords }] =
-    await Promise.all([
-      supabase
-        .from("buses")
-        .select("id, code, plate, route_id, status")
-        .order("code"),
-      supabase.from("routes").select("id, name"),
-      supabase.from("daily_records").select("id, bus_id, record_date"),
-    ]);
-
-  const routeMap = new Map((routes ?? []).map((route) => [route.id, route.name]));
+  const [{ data: buses }, { data: existingRecords }] = await Promise.all([
+    supabase
+      .from("buses")
+      .select("id, code, plate, photo_path, route_id, status")
+      .order("code"),
+    supabase.from("daily_records").select("id, bus_id, record_date"),
+  ]);
   const initialRecord = recordId
     ? (
         await supabase
@@ -35,11 +34,16 @@ async function getDailyFormContext(recordId?: string) {
       ).data
     : null;
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+
   return {
-    buses: (buses ?? []).map((bus) => ({
-      ...bus,
-      routeName: routeMap.get(bus.route_id) ?? "Ruta sin nombre",
-    })),
+    buses: visibleBuses
+      .map((bus) => ({
+        ...bus,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        routeName: OPERATIONAL_ROUTE.label,
+      })),
     existingRecords: existingRecords ?? [],
     initialRecord,
     requestedRecordMissing: Boolean(recordId && !initialRecord),
@@ -106,12 +110,16 @@ export default async function NewDailyRecordPage({
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>1. Solo se permite un registro por bus y por fecha.</p>
           <p>
-            2. El bus debe estar activo; la base valida el conflicto final si
-            otro registro no es visible por RLS.
+            2. La linea fija {OPERATIONAL_ROUTE.label} ya se aplica automaticamente;
+            aqui solo eliges la unidad y completas el cierre.
           </p>
           <p>3. La diferencia se pinta en rojo si no coincide con el neto calculado.</p>
           <p>
-            4. El cierre es automatico: si completas los campos obligatorios, el
+            4. El bus debe estar activo; la base valida el conflicto final si
+            otro registro no es visible por RLS.
+          </p>
+          <p>
+            5. El cierre es automatico: si completas los campos obligatorios, el
             registro queda cerrado y bloqueado.
           </p>
           <div className="pt-2">

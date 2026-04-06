@@ -1,6 +1,11 @@
 import "server-only";
 
 import type { Tables } from "@/lib/supabase/database.types";
+import {
+  isArchivedCleanupAlert,
+  isDemoBus,
+  isDemoText,
+} from "@/lib/demo-data";
 import { getBusinessTodayDate, shiftDateString } from "@/lib/formatters";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +17,7 @@ type AlertLookup = Pick<
   | "daily_record_id"
   | "id"
   | "message"
+  | "metadata"
   | "profile_id"
   | "read"
   | "read_at"
@@ -116,7 +122,7 @@ export async function getAlertsData(filters: Partial<AlertFilters>) {
   let alertsQuery = supabase
     .from("alerts")
     .select(
-      "id, alert_type, severity, message, read, read_at, created_at, daily_record_id, bus_id, profile_id",
+      "id, alert_type, severity, message, read, read_at, created_at, daily_record_id, bus_id, profile_id, metadata",
     )
     .gte("created_at", `${dateFrom}T00:00:00Z`)
     .lte("created_at", `${dateTo}T23:59:59.999Z`)
@@ -153,9 +159,33 @@ export async function getAlertsData(filters: Partial<AlertFilters>) {
     throw alertsError;
   }
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
+
   return {
-    alerts: normalizeAlerts(alerts ?? [], buses ?? [], profiles ?? []),
-    busOptions: (buses ?? []).map((bus) => ({
+    alerts: normalizeAlerts(alerts ?? [], buses ?? [], profiles ?? []).filter(
+      (alert, index) => {
+        const source = alerts?.[index];
+        if (!source) {
+          return false;
+        }
+
+        if (isArchivedCleanupAlert(source.metadata)) {
+          return false;
+        }
+
+        if (alert.busCode && isDemoText(alert.busCode)) {
+          return false;
+        }
+
+        if (source.bus_id && !visibleBusIds.has(source.bus_id)) {
+          return false;
+        }
+
+        return !isDemoText(alert.message);
+      },
+    ),
+    busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
     })),

@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 
 import { saveMaintenanceAction } from "@/app/dashboard/maintenance/actions";
+import { BusSelector } from "@/components/bus-selector";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -15,6 +16,8 @@ import { MAINTENANCE_POSITION_LABELS, MAINTENANCE_TYPE_LABELS } from "@/lib/main
 type MaintenanceBusOption = {
   code: string;
   id: string;
+  photoUrl?: string | null;
+  plate: string;
   status: string;
 };
 
@@ -51,25 +54,32 @@ const wheelFields = [
 
 export function MaintenanceForm({ buses }: MaintenanceFormProps) {
   const [state, formAction] = useActionState(saveMaintenanceAction, initialFormState);
+  const [busId, setBusId] = useState("");
   const [maintenanceType, setMaintenanceType] =
     useState<keyof typeof MAINTENANCE_TYPE_LABELS>("oil_change");
   const isBrakePads = maintenanceType === "brake_pads";
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className="space-y-6">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="maintenance-bus">Bus</Label>
-          <Select defaultValue="" id="maintenance-bus" name="busId">
-            <option value="">Selecciona un bus</option>
-            {buses.map((bus) => (
-              <option key={bus.id} value={bus.id}>
-                {bus.code}
-              </option>
-            ))}
-          </Select>
+          <Label id="maintenance-bus-label">Bus</Label>
+          <BusSelector
+            ariaDescribedBy={
+              state.fieldErrors?.busId?.[0] ? "maintenance-bus-error" : undefined
+            }
+            buses={buses}
+            emptyLabel="No hay buses activos listos para mantenimiento."
+            helperText="Selecciona la unidad correcta usando foto, codigo y placa antes de registrar el mantenimiento."
+            id="maintenance-bus"
+            labelId="maintenance-bus-label"
+            onChange={setBusId}
+            value={busId}
+          />
           {state.fieldErrors?.busId?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
+            <p className="text-sm text-destructive" id="maintenance-bus-error">
+              {state.fieldErrors.busId[0]}
+            </p>
           ) : null}
         </div>
 
@@ -99,7 +109,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
         </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-[minmax(180px,0.55fr)_minmax(0,1.45fr)]">
         <div className="space-y-2">
           <Label htmlFor="maintenance-service-date">Fecha del mantenimiento</Label>
           <Input
@@ -118,6 +128,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
         <div className="space-y-2">
           <Label htmlFor="maintenance-provider">Proveedor o taller</Label>
           <Input
+            className="w-full"
             id="maintenance-provider"
             name="provider"
             placeholder="Ej. Taller El Mojan"
@@ -174,6 +185,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
       <div className="space-y-2">
         <Label htmlFor="maintenance-description">Descripcion</Label>
         <Textarea
+          className="min-h-[144px] resize-y"
           id="maintenance-description"
           name="description"
           placeholder="Ej. Cambio completo de aceite con filtro nuevo y revision basica."
@@ -188,6 +200,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
       <div className="space-y-2">
         <Label htmlFor="maintenance-notes">Observaciones</Label>
         <Textarea
+          className="min-h-[132px] resize-y"
           id="maintenance-notes"
           name="notes"
           placeholder="Notas internas, comportamiento del bus o seguimiento pendiente."
@@ -207,7 +220,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             {wheelFields.map((wheel) => (
               <div
                 key={wheel.position}
@@ -245,6 +258,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
                 <div className="space-y-2">
                   <Label htmlFor={`${wheel.position}-notes`}>Observaciones de la rueda</Label>
                   <Textarea
+                    className="min-h-[110px] resize-y"
                     id={`${wheel.position}-notes`}
                     name={wheel.notesField}
                     placeholder="Ej. desgaste previo, proveedor o hallazgos."
@@ -265,7 +279,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-[minmax(180px,0.55fr)_minmax(0,1.45fr)]">
           <div className="space-y-2">
             <Label htmlFor="maintenance-debt-amount">Saldo pendiente (USD)</Label>
             <Input
@@ -286,6 +300,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
           <div className="space-y-2">
             <Label htmlFor="maintenance-debt-creditor">Acreedor o taller</Label>
             <Input
+              className="w-full"
               id="maintenance-debt-creditor"
               name="debtCreditor"
               placeholder="Ej. Repuestos El Terminal"
@@ -298,7 +313,7 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="max-w-sm space-y-2">
           <Label htmlFor="maintenance-debt-due-date">Fecha comprometida de pago</Label>
           <Input
             defaultValue={getBusinessTodayDate()}

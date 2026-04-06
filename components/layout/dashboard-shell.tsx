@@ -1,12 +1,10 @@
 import Link from "next/link";
-import {
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { signOutAction } from "@/app/dashboard/actions";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { getDefaultDashboardPath } from "@/lib/auth/routing";
 import { ROLE_LABELS, type Profile } from "@/lib/auth/types";
 
@@ -32,16 +30,11 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const navItems =
     profile.role === "admin"
-        ? [
+      ? [
           {
             href: "/dashboard",
             icon: "dashboard" as DashboardNavIcon,
             label: "Resumen",
-          },
-          {
-            href: "/dashboard/routes",
-            icon: "route" as DashboardNavIcon,
-            label: "Rutas",
           },
           {
             href: "/dashboard/buses",
@@ -99,34 +92,36 @@ export function DashboardShell({
 
   return (
     <div className="surface-grid min-h-screen bg-[length:22px_22px]">
-      <div className="mx-auto grid min-h-screen max-w-7xl gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-6">
-        <aside className="rounded-[32px] border border-border/80 bg-card/90 p-5 shadow-soft backdrop-blur">
+      <div className="mx-auto grid min-h-screen max-w-[1600px] gap-4 px-3 py-3 lg:grid-cols-[244px_minmax(0,1fr)] lg:px-4 xl:grid-cols-[236px_minmax(0,1fr)]">
+        <aside className="rounded-[30px] border border-border/80 bg-card/90 p-4 shadow-soft backdrop-blur">
           <div className="space-y-6">
             <Link
               className="block"
               href={getDefaultDashboardPath(profile.role)}
             >
-              <div className="space-y-2 rounded-[28px] bg-primary px-5 py-6 text-primary-foreground">
+              <div className="space-y-2 rounded-[24px] bg-primary px-4 py-5 text-primary-foreground">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-foreground/70">
                   RutaControl
                 </p>
                 <div>
-                  <p className="text-2xl font-semibold">Operacion protegida</p>
-                  <p className="mt-1 text-sm text-primary-foreground/80">
-                    Operacion diaria, historial, auditoria, alertas internas, deudas, reparaciones y mantenimiento visibles para administracion.
+                  <p className="text-xl font-semibold">Operacion protegida</p>
+                  <p className="mt-1 text-[13px] leading-5 text-primary-foreground/80">
+                    Linea fija El Mojan{" "}
+                    <span aria-hidden="true">&lt;-&gt;</span> Maracaibo con
+                    operacion diaria, historial, auditoria, alertas internas,
+                    deudas, reparaciones y mantenimiento visibles para
+                    administracion.
                   </p>
                 </div>
               </div>
             </Link>
 
-            <div className="space-y-3 rounded-[28px] border border-border/80 bg-muted/40 p-4">
+            <div className="space-y-3 rounded-[24px] border border-border/80 bg-muted/40 p-3.5">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                 Sesion
               </p>
               <div className="space-y-2">
-                <p className="text-base font-semibold">
-                  {profile.name}
-                </p>
+                <p className="text-base font-semibold">{profile.name}</p>
                 <p className="text-sm text-muted-foreground">
                   {profile.email}
                 </p>

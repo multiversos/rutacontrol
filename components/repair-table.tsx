@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BusIdentity } from "@/components/buses/bus-identity";
 import { Badge } from "@/components/ui/badge";
 import type { RepairFilterState, RepairListItem } from "@/lib/repairs";
 import {
@@ -12,6 +13,8 @@ import {
 type RepairBusOption = {
   code: string;
   id: string;
+  photoUrl?: string | null;
+  plate: string;
 };
 
 type RepairTableProps = {
@@ -124,7 +127,14 @@ export function RepairTable({ busOptions, filters, repairs }: RepairTableProps) 
                       </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-medium">{repair.busCode}</td>
+                  <td className="px-4 py-3">
+                    <BusIdentity
+                      code={repair.busCode}
+                      photoUrl={repair.busPhotoUrl}
+                      plate={repair.busPlate}
+                      size="sm"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <Badge variant="muted">{categoryLabels[repair.category]}</Badge>
                   </td>

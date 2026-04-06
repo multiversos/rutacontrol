@@ -80,21 +80,23 @@ export default async function MaintenancePage({
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <MaintenanceTable
-          busOptions={maintenanceData.busOptions}
-          currentCycles={maintenanceData.currentCycles}
-          filters={{
-            busId: maintenanceData.filters.busId ?? "",
-            dateFrom: maintenanceData.filters.dateFrom!,
-            dateTo: maintenanceData.filters.dateTo!,
-            status: maintenanceData.filters.status!,
-          }}
-          historyByBus={maintenanceData.historyByBus}
-          maintenanceRecords={maintenanceData.maintenanceRecords}
-        />
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(460px,1.12fr)] 2xl:grid-cols-[minmax(0,0.84fr)_minmax(540px,1.16fr)]">
+        <div className="min-w-0">
+          <MaintenanceTable
+            busOptions={maintenanceData.busOptions}
+            currentCycles={maintenanceData.currentCycles}
+            filters={{
+              busId: maintenanceData.filters.busId ?? "",
+              dateFrom: maintenanceData.filters.dateFrom!,
+              dateTo: maintenanceData.filters.dateTo!,
+              status: maintenanceData.filters.status!,
+            }}
+            historyByBus={maintenanceData.historyByBus}
+            maintenanceRecords={maintenanceData.maintenanceRecords}
+          />
+        </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-5">
           {!maintenanceData.migrationReady ? (
             <Card className="border-amber-200 bg-amber-50/70">
               <CardHeader>
@@ -112,7 +114,8 @@ export default async function MaintenancePage({
               <CardTitle>Registrar mantenimiento</CardTitle>
               <CardDescription>
                 Usa este formulario para dejar trazabilidad por bus, por rueda y por
-                deuda sin depender de calculos manuales.
+                deuda sin depender de calculos manuales. El panel se mantuvo ancho
+                para que los campos largos se lean y escriban con comodidad.
               </CardDescription>
             </CardHeader>
             <CardContent>
