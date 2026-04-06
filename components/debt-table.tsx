@@ -35,8 +35,8 @@ function getPayHref(status: DebtStatusFilter, debtId: string) {
 
 export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
   return (
-    <div className="space-y-5">
-      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[1fr_auto_auto]">
+    <div className="min-w-0 space-y-5">
+      <form className="grid gap-4 rounded-[28px] border border-border bg-card/90 p-5 shadow-soft md:grid-cols-[minmax(0,1fr)_auto_auto]">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="debts-status">
             Estado
@@ -75,7 +75,7 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-[28px] border border-border bg-card/90 shadow-soft">
-          <table className="min-w-full divide-y divide-border text-sm">
+          <table className="min-w-[980px] divide-y divide-border text-sm xl:min-w-full">
             <thead className="bg-muted/60 text-left text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Acreedor</th>
@@ -99,7 +99,9 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
                   }
                 >
                   <td className="px-4 py-3 font-medium">{debt.creditor}</td>
-                  <td className="px-4 py-3">{debt.description}</td>
+                  <td className="max-w-[16rem] px-4 py-3 align-top">
+                    <p className="line-clamp-3 leading-6">{debt.description}</p>
+                  </td>
                   <td className="px-4 py-3">
                     {debt.busId && debt.busCode ? (
                       <BusIdentity
@@ -116,13 +118,17 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
                   <td className="px-4 py-3">
                     {debt.dailyRecordLabel ?? "Sin relacion"}
                   </td>
-                  <td className="px-4 py-3">{formatCurrency(debt.amountUsd)}</td>
-                  <td className="px-4 py-3">{formatCurrency(debt.amountPaidUsd)}</td>
-                  <td className="px-4 py-3 font-semibold">
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {formatCurrency(debt.amountUsd)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    {formatCurrency(debt.amountPaidUsd)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold">
                     {formatCurrency(debt.balanceDueUsd)}
                   </td>
                   <td className="px-4 py-3">{getDebtStatusBadge(debt.status)}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3">
                     {debt.dueDate ? formatDateLabel(debt.dueDate) : "--"}
                   </td>
                   <td className="px-4 py-3 text-right">

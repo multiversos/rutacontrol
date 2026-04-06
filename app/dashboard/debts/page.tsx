@@ -79,16 +79,18 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <DebtTable
-          debts={debtsData.debts}
-          status={debtsData.filters.status}
-          {...(debtsData.filters.payDebtId
-            ? { selectedDebtId: debtsData.filters.payDebtId }
-            : {})}
-        />
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] 2xl:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]">
+        <div className="min-w-0">
+          <DebtTable
+            debts={debtsData.debts}
+            status={debtsData.filters.status}
+            {...(debtsData.filters.payDebtId
+              ? { selectedDebtId: debtsData.filters.payDebtId }
+              : {})}
+          />
+        </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {!debtsData.migrationReady ? (
             <Card className="border-amber-200 bg-amber-50/70">
               <CardHeader>
@@ -109,7 +111,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                 registros diarios.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0">
               {debtsData.migrationReady ? (
                 <DebtForm
                   busOptions={debtsData.busOptions}

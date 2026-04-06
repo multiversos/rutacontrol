@@ -73,7 +73,7 @@ export function BusSelector({
           aria-describedby={describedBy || undefined}
           aria-invalid={selectedBusBlocked}
           aria-labelledby={labelId}
-          className="grid gap-3 sm:grid-cols-2"
+          className="grid gap-3 xl:grid-cols-2"
           id={id}
           role="radiogroup"
         >
@@ -87,7 +87,7 @@ export function BusSelector({
               <button
                 aria-checked={isSelected}
                 className={cn(
-                  "rounded-3xl border px-4 py-3 text-left transition-colors",
+                  "min-w-0 overflow-hidden rounded-3xl border px-4 py-3 text-left transition-colors",
                   isSelected
                     ? "border-primary bg-primary/5 shadow-soft"
                     : "border-border bg-white/85 hover:border-primary/40 hover:bg-primary/5",
@@ -99,16 +99,18 @@ export function BusSelector({
                 role="radio"
                 type="button"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
                   <BusIdentity
+                    className="min-w-0"
                     code={bus.code}
                     photoUrl={bus.photoUrl ?? null}
                     plate={bus.plate}
                     secondaryText={bus.routeName ?? null}
                     size="sm"
+                    wrap
                   />
 
-                  <div className="flex flex-wrap justify-end gap-2">
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
                     {isSelected ? <Badge variant="success">Seleccionado</Badge> : null}
                     {blocked ? (
                       <Badge className="bg-destructive/10 text-destructive" variant="muted">

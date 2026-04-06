@@ -24,10 +24,14 @@ export function DebtForm({ busOptions, recordOptions }: DebtFormProps) {
   const busErrorId = useId();
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} className="min-w-0 space-y-6">
       <div className="space-y-2">
         <Label htmlFor="debt-creditor">Acreedor</Label>
-        <Input id="debt-creditor" name="creditor" placeholder="Proveedor, taller o tercero" />
+        <Input
+          id="debt-creditor"
+          name="creditor"
+          placeholder="Proveedor, taller o tercero"
+        />
         {state.fieldErrors?.creditor?.[0] ? (
           <p className="text-sm text-destructive">{state.fieldErrors.creditor[0]}</p>
         ) : null}
@@ -36,6 +40,7 @@ export function DebtForm({ busOptions, recordOptions }: DebtFormProps) {
       <div className="space-y-2">
         <Label htmlFor="debt-description">Descripcion</Label>
         <Textarea
+          className="min-h-28 resize-y"
           id="debt-description"
           name="description"
           placeholder="Detalle operativo de la deuda o compromiso pendiente."
@@ -47,7 +52,7 @@ export function DebtForm({ busOptions, recordOptions }: DebtFormProps) {
         ) : null}
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="debt-amount">Monto original (USD)</Label>
           <Input
@@ -79,8 +84,8 @@ export function DebtForm({ busOptions, recordOptions }: DebtFormProps) {
         </div>
       </div>
 
-      <div className="space-y-3 rounded-3xl border border-border/80 bg-white/80 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="min-w-0 space-y-4 rounded-3xl border border-border/80 bg-white/80 p-5 md:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <Label id={busLabelId}>Bus asociado</Label>
             <p className="text-sm text-muted-foreground">
@@ -89,7 +94,7 @@ export function DebtForm({ busOptions, recordOptions }: DebtFormProps) {
             </p>
           </div>
           <button
-            className="inline-flex h-10 items-center justify-center rounded-full border border-border px-4 text-sm font-semibold"
+            className="inline-flex h-10 w-full items-center justify-center rounded-full border border-border px-4 text-sm font-semibold sm:w-auto"
             onClick={() => setSelectedBusId("")}
             type="button"
           >
