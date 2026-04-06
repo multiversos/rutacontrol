@@ -1,6 +1,5 @@
-import { ShieldCheck } from "lucide-react";
-
 import { LoginForm } from "@/components/auth/login-form";
+import { AppBrand } from "@/components/branding/app-brand";
 import { ConfigAlert } from "@/components/layout/config-alert";
 import {
   Card,
@@ -35,8 +34,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-center gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-[32px] border border-border/80 bg-card/90 p-8 shadow-soft backdrop-blur lg:p-10">
           <div className="space-y-6">
+            <AppBrand
+              description="Control operativo, financiero y de mantenimiento para la linea fija El Mojan <-> Maracaibo."
+              href="/"
+              priority
+              size="hero"
+            />
+
             <div className="inline-flex rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground">
-              Sprint 1: MVP operable
+              Acceso interno
             </div>
             <div className="space-y-4">
               <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
@@ -81,9 +87,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <section>
           <Card>
             <CardHeader className="space-y-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
               <div className="space-y-2">
                 <CardTitle>Acceso interno</CardTitle>
                 <CardDescription>

@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { LogOut } from "lucide-react";
 
 import { signOutAction } from "@/app/dashboard/actions";
+import { AppBrand } from "@/components/branding/app-brand";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,26 +95,11 @@ export function DashboardShell({
       <div className="mx-auto grid min-h-screen max-w-[1600px] gap-4 px-3 py-3 lg:grid-cols-[244px_minmax(0,1fr)] lg:px-4 xl:grid-cols-[236px_minmax(0,1fr)]">
         <aside className="rounded-[30px] border border-border/80 bg-card/90 p-4 shadow-soft backdrop-blur">
           <div className="space-y-6">
-            <Link
-              className="block"
+            <AppBrand
+              description="Linea fija El Mojan <-> Maracaibo con operacion diaria, historial, auditoria, alertas internas, deudas, reparaciones y mantenimiento visibles para administracion."
               href={getDefaultDashboardPath(profile.role)}
-            >
-              <div className="space-y-2 rounded-[24px] bg-primary px-4 py-5 text-primary-foreground">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-foreground/70">
-                  RutaControl
-                </p>
-                <div>
-                  <p className="text-xl font-semibold">Operacion protegida</p>
-                  <p className="mt-1 text-[13px] leading-5 text-primary-foreground/80">
-                    Linea fija El Mojan{" "}
-                    <span aria-hidden="true">&lt;-&gt;</span> Maracaibo con
-                    operacion diaria, historial, auditoria, alertas internas,
-                    deudas, reparaciones y mantenimiento visibles para
-                    administracion.
-                  </p>
-                </div>
-              </div>
-            </Link>
+              size="sidebar"
+            />
 
             <div className="space-y-3 rounded-[24px] border border-border/80 bg-muted/40 p-3.5">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">

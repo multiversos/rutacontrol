@@ -295,6 +295,7 @@ export type Database = {
           amount_paid_usd: string;
           amount_usd: string;
           balance_due_usd: string;
+          bus_id: string | null;
           created_at: string;
           created_by: string;
           creditor: string;
@@ -309,6 +310,7 @@ export type Database = {
           amount_paid_usd?: string;
           amount_usd: string;
           balance_due_usd?: string;
+          bus_id?: string | null;
           created_at?: string;
           created_by: string;
           creditor: string;
@@ -323,6 +325,7 @@ export type Database = {
           amount_paid_usd?: string;
           amount_usd?: string;
           balance_due_usd?: string;
+          bus_id?: string | null;
           created_at?: string;
           created_by?: string;
           creditor?: string;
@@ -334,6 +337,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "debts_bus_id_fkey";
+            columns: ["bus_id"];
+            isOneToOne: false;
+            referencedRelation: "buses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "debts_created_by_fkey";
             columns: ["created_by"];

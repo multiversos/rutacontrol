@@ -64,6 +64,7 @@ type DebtRow = Pick<
   | "amount_paid_usd"
   | "amount_usd"
   | "balance_due_usd"
+  | "bus_id"
   | "created_at"
   | "creditor"
   | "daily_record_id"
@@ -520,12 +521,13 @@ export async function getBusProfileData(
   const maintenanceDebtIds = Array.from(maintenanceLabelMap.keys());
   const recordIds = allOperationRecords.map((record) => record.id);
 
-  const [{ data: dailyDebts }, { data: maintenanceDebts }] = await Promise.all([
+  const [{ data: dailyDebts }, { data: maintenanceDebts }, { data: directBusDebts }] =
+    await Promise.all([
     recordIds.length > 0
       ? supabase
           .from("debts")
           .select(
-            "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, daily_record_id, due_date, created_at",
+            "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, bus_id, daily_record_id, due_date, created_at",
           )
           .in("daily_record_id", recordIds)
       : Promise.resolve({ data: [] as DebtRow[] }),
@@ -533,16 +535,24 @@ export async function getBusProfileData(
       ? supabase
           .from("debts")
           .select(
-            "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, daily_record_id, due_date, created_at",
+            "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, bus_id, daily_record_id, due_date, created_at",
           )
           .in("id", maintenanceDebtIds)
       : Promise.resolve({ data: [] as DebtRow[] }),
+    supabase
+      .from("debts")
+      .select(
+        "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, bus_id, daily_record_id, due_date, created_at",
+      )
+      .eq("bus_id", bus.id),
   ]);
 
   const associatedDebtMap = new Map<string, DebtRow>();
-  [...(dailyDebts ?? []), ...(maintenanceDebts ?? [])].forEach((debt) => {
+  [...(dailyDebts ?? []), ...(maintenanceDebts ?? []), ...(directBusDebts ?? [])].forEach(
+    (debt) => {
     associatedDebtMap.set(debt.id, debt);
-  });
+    },
+  );
 
   const associatedDebtIds = Array.from(associatedDebtMap.keys());
   const { data: debtPayments } =
@@ -584,7 +594,9 @@ export async function getBusProfileData(
         maintenanceLabelMap.get(debt.id) ??
         (debt.daily_record_id
           ? recordLabelMap.get(debt.daily_record_id) ?? "Registro diario"
-          : "Relacion manual"),
+          : debt.bus_id
+            ? "Bus asociado"
+            : "Relacion manual"),
       status: debt.status,
     }))
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
