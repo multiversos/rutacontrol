@@ -63,17 +63,23 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
     <form action={formAction} className="space-y-6">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="maintenance-bus">Bus</Label>
+          <Label id="maintenance-bus-label">Bus</Label>
           <BusSelector
+            ariaDescribedBy={
+              state.fieldErrors?.busId?.[0] ? "maintenance-bus-error" : undefined
+            }
             buses={buses}
             emptyLabel="No hay buses activos listos para mantenimiento."
             helperText="Selecciona la unidad correcta usando foto, codigo y placa antes de registrar el mantenimiento."
             id="maintenance-bus"
+            labelId="maintenance-bus-label"
             onChange={setBusId}
             value={busId}
           />
           {state.fieldErrors?.busId?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
+            <p className="text-sm text-destructive" id="maintenance-bus-error">
+              {state.fieldErrors.busId[0]}
+            </p>
           ) : null}
         </div>
 

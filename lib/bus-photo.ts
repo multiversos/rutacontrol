@@ -25,6 +25,19 @@ export function sanitizeBusPhotoFileName(fileName: string) {
     .replace(/^-|-$/g, "");
 }
 
+export function normalizeBusPhotoPath(photoPath: string) {
+  return photoPath.trim().replace(/\\/g, "/").replace(/^\/+/, "");
+}
+
+export function isBusPhotoPath(photoPath: string, busId?: string) {
+  const normalizedPath = normalizeBusPhotoPath(photoPath);
+  const expectedPrefix = busId
+    ? `${BUS_PHOTO_PREFIX}/${busId}/`
+    : `${BUS_PHOTO_PREFIX}/`;
+
+  return normalizedPath.startsWith(expectedPrefix);
+}
+
 export function buildBusPhotoObjectPath(busId: string, fileName: string) {
   const safeFileName = sanitizeBusPhotoFileName(fileName) || "bus-photo.webp";
   return `${BUS_PHOTO_PREFIX}/${busId}/${Date.now()}-${crypto.randomUUID()}-${safeFileName}`;
@@ -38,9 +51,16 @@ export async function getSignedBusPhotoUrl(
     return null;
   }
 
+  if (!isBusPhotoPath(photoPath)) {
+    return null;
+  }
+
   const { data, error } = await supabase.storage
     .from(BUS_PHOTO_BUCKET)
-    .createSignedUrl(photoPath, BUS_PHOTO_SIGNED_URL_TTL_SECONDS);
+    .createSignedUrl(
+      normalizeBusPhotoPath(photoPath),
+      BUS_PHOTO_SIGNED_URL_TTL_SECONDS,
+    );
 
   if (error) {
     return null;

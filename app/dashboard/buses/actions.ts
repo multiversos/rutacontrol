@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 
 import { requireRole } from "@/lib/auth/session";
-import { BUS_PHOTO_BUCKET } from "@/lib/bus-photo";
+import {
+  BUS_PHOTO_BUCKET,
+  isBusPhotoPath,
+  normalizeBusPhotoPath,
+} from "@/lib/bus-photo";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
@@ -150,11 +154,19 @@ export async function saveBusPhotoAction({
   await requireRole("admin");
 
   const normalizedBusId = busId.trim();
-  const normalizedPhotoPath = photoPath.trim();
+  const normalizedPhotoPath = normalizeBusPhotoPath(photoPath);
 
   if (!normalizedBusId || !normalizedPhotoPath) {
     return {
       message: "Faltan datos para guardar la foto del bus.",
+      status: "error",
+    };
+  }
+
+  if (!isBusPhotoPath(normalizedPhotoPath, normalizedBusId)) {
+    return {
+      message:
+        "La foto no pertenece a la ruta segura esperada para esta unidad.",
       status: "error",
     };
   }
@@ -199,9 +211,24 @@ export async function saveBusPhotoAction({
   }
 
   if (previousPhotoPath && previousPhotoPath !== normalizedPhotoPath) {
+    const previousSafePath = isBusPhotoPath(previousPhotoPath, normalizedBusId)
+      ? normalizeBusPhotoPath(previousPhotoPath)
+      : null;
+
+    if (!previousSafePath) {
+      revalidateBusPaths(normalizedBusId);
+
+      return {
+        entityId: normalizedBusId,
+        message:
+          "Foto del bus actualizada correctamente. La referencia anterior no estaba en el prefijo esperado y se omitio su limpieza automatica.",
+        status: "success",
+      };
+    }
+
     const { error: removeError } = await supabase.storage
       .from(BUS_PHOTO_BUCKET)
-      .remove([previousPhotoPath]);
+      .remove([previousSafePath]);
 
     if (removeError) {
       console.error("No pudimos eliminar la foto anterior del bus.", removeError);

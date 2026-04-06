@@ -159,17 +159,21 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
   return (
     <form ref={formRef} className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="repair-bus">Bus</Label>
+        <Label id="repair-bus-label">Bus</Label>
         <BusSelector
+          ariaDescribedBy={state.fieldErrors?.busId?.[0] ? "repair-bus-error" : undefined}
           buses={buses}
           emptyLabel="No hay buses activos disponibles para registrar reparaciones."
           helperText="Selecciona la unidad correcta usando foto, codigo y placa antes de subir el comprobante."
           id="repair-bus"
+          labelId="repair-bus-label"
           onChange={setBusId}
           value={busId}
         />
         {state.fieldErrors?.busId?.[0] ? (
-          <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
+          <p className="text-sm text-destructive" id="repair-bus-error">
+            {state.fieldErrors.busId[0]}
+          </p>
         ) : null}
       </div>
 

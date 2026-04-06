@@ -14,6 +14,7 @@ type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate"> & {
 type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record_date">;
 
 type BusSelectorProps = {
+  ariaDescribedBy?: string | undefined;
   buses: BusOption[];
   currentRecordId?: string | null;
   disabled?: boolean;
@@ -21,6 +22,7 @@ type BusSelectorProps = {
   existingRecords?: ExistingRecordRef[];
   helperText?: string;
   id?: string;
+  labelId?: string | undefined;
   name?: string;
   onChange: (value: string) => void;
   recordDate?: string;
@@ -28,6 +30,7 @@ type BusSelectorProps = {
 };
 
 export function BusSelector({
+  ariaDescribedBy,
   buses,
   currentRecordId,
   disabled = false,
@@ -35,6 +38,7 @@ export function BusSelector({
   existingRecords = [],
   helperText = "Selecciona la unidad correcta usando foto, codigo y placa. La base confirma el bloqueo final al guardar.",
   id = "bus-selector",
+  labelId = `${id}-label`,
   name = "busId",
   onChange,
   recordDate,
@@ -49,10 +53,15 @@ export function BusSelector({
     );
 
   const selectedBusBlocked = value ? isBlocked(value) : false;
+  const helperId = `${id}-helper`;
+  const statusId = `${id}-status`;
+  const describedBy = [selectedBusBlocked ? statusId : helperId, ariaDescribedBy]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="space-y-3">
-      <input id={id} name={name} type="hidden" value={value} />
+      <input id={`${id}-value`} name={name} type="hidden" value={value} />
 
       {buses.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
@@ -61,7 +70,11 @@ export function BusSelector({
       ) : (
         <div
           aria-disabled={disabled}
+          aria-describedby={describedBy || undefined}
+          aria-invalid={selectedBusBlocked}
+          aria-labelledby={labelId}
           className="grid gap-3 sm:grid-cols-2"
+          id={id}
           role="radiogroup"
         >
           {buses.map((bus) => {
@@ -112,11 +125,11 @@ export function BusSelector({
       )}
 
       {selectedBusBlocked ? (
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-destructive" id={statusId}>
           El bus seleccionado ya tiene un registro para esta fecha.
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground" id={helperId}>
           {helperText}
         </p>
       )}
