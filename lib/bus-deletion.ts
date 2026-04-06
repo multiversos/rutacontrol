@@ -257,6 +257,7 @@ export async function getBusDeletionGuardMap(busIds: string[]) {
     { data: expenses, error: expensesError },
     { data: repairAttachments, error: repairAttachmentsError },
     { data: maintenanceItems, error: maintenanceItemsError },
+    { data: debtsFromBus, error: debtsFromBusError },
     { data: debtsFromRecords, error: debtsFromRecordsError },
     { data: debtsFromMaintenance, error: debtsFromMaintenanceError },
   ] = await Promise.all([
@@ -278,6 +279,7 @@ export async function getBusDeletionGuardMap(busIds: string[]) {
           .select("maintenance_record_id")
           .in("maintenance_record_id", maintenanceRecordIds)
       : Promise.resolve({ data: [], error: null }),
+    supabase.from("debts").select("bus_id, id").in("bus_id", normalizedBusIds),
     dailyRecordIds.length > 0
       ? supabase
           .from("debts")
@@ -299,6 +301,10 @@ export async function getBusDeletionGuardMap(busIds: string[]) {
 
   if (maintenanceItemsError) {
     throw maintenanceItemsError;
+  }
+
+  if (debtsFromBusError) {
+    throw debtsFromBusError;
   }
 
   if (debtsFromRecordsError) {
@@ -347,6 +353,16 @@ export async function getBusDeletionGuardMap(busIds: string[]) {
   });
 
   const debtIdsByBus = new Map<string, Set<string>>();
+
+  debtsFromBus?.forEach((debt) => {
+    if (!debt.bus_id) {
+      return;
+    }
+
+    const current = debtIdsByBus.get(debt.bus_id) ?? new Set<string>();
+    current.add(debt.id);
+    debtIdsByBus.set(debt.bus_id, current);
+  });
 
   debtsFromRecords?.forEach((debt) => {
     const busId = debt.daily_record_id

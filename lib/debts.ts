@@ -1,17 +1,39 @@
 import "server-only";
 
-import type { Tables } from "@/lib/supabase/database.types";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
 import {
   isDemoBus,
   isDemoDebtRecord,
   isOperationalRecordDate,
 } from "@/lib/demo-data";
 import { getBusinessTodayDate } from "@/lib/formatters";
+import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
+import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
 type DebtPaymentRow = Pick<
   Tables<"debt_payments">,
   "amount_usd" | "created_at" | "id" | "notes" | "payment_date"
+>;
+
+type DebtRow = Pick<
+  Tables<"debts">,
+  | "amount_paid_usd"
+  | "amount_usd"
+  | "balance_due_usd"
+  | "bus_id"
+  | "created_at"
+  | "creditor"
+  | "daily_record_id"
+  | "description"
+  | "due_date"
+  | "id"
+  | "status"
+>;
+
+type BusLookup = Pick<
+  Tables<"buses">,
+  "code" | "id" | "photo_path" | "plate" | "status"
 >;
 
 export type DebtStatusFilter = "all" | Tables<"debts">["status"];
@@ -20,6 +42,10 @@ export type DebtListItem = {
   amountPaidUsd: string;
   amountUsd: string;
   balanceDueUsd: string;
+  busCode: string | null;
+  busId: string | null;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   createdAt: string;
   creditor: string;
   dailyRecordId: string | null;
@@ -39,9 +65,81 @@ export type DebtPaymentListItem = {
 };
 
 export type DebtRecordOption = {
+  busId: string;
   id: string;
   label: string;
 };
+
+export type DebtBusOption = {
+  code: string;
+  id: string;
+  photoUrl: string | null;
+  plate: string;
+  routeName: string;
+  status: Tables<"buses">["status"];
+};
+
+function resolveBusDetails(
+  busMap: Map<
+    string,
+    {
+      code: string;
+      photoUrl: string | null;
+      plate: string;
+      status: Tables<"buses">["status"];
+    }
+  >,
+  busId: string | null,
+) {
+  if (!busId) {
+    return {
+      busCode: null,
+      busId: null,
+      busPhotoUrl: null,
+      busPlate: null,
+    };
+  }
+
+  const bus = busMap.get(busId);
+
+  return {
+    busCode: bus?.code ?? busId,
+    busId,
+    busPhotoUrl: bus?.photoUrl ?? null,
+    busPlate: bus?.plate ?? null,
+  };
+}
+
+function normalizeDebt(
+  debt: DebtRow,
+  busMap: Map<
+    string,
+    {
+      code: string;
+      photoUrl: string | null;
+      plate: string;
+      status: Tables<"buses">["status"];
+    }
+  >,
+  recordMap: Map<string, string>,
+) {
+  return {
+    amountPaidUsd: debt.amount_paid_usd,
+    amountUsd: debt.amount_usd,
+    balanceDueUsd: debt.balance_due_usd,
+    ...resolveBusDetails(busMap, debt.bus_id),
+    createdAt: debt.created_at,
+    creditor: debt.creditor,
+    dailyRecordId: debt.daily_record_id,
+    dailyRecordLabel: debt.daily_record_id
+      ? (recordMap.get(debt.daily_record_id) ?? debt.daily_record_id)
+      : null,
+    description: debt.description,
+    dueDate: debt.due_date,
+    id: debt.id,
+    status: debt.status,
+  } satisfies DebtListItem;
+}
 
 export async function getDebtsData(filters: {
   payDebtId?: string;
@@ -54,7 +152,7 @@ export async function getDebtsData(filters: {
   let debtsQuery = supabase
     .from("debts")
     .select(
-      "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, daily_record_id, due_date, created_at",
+      "id, creditor, description, amount_usd, amount_paid_usd, balance_due_usd, status, bus_id, daily_record_id, due_date, created_at",
     )
     .order("created_at", { ascending: false });
 
@@ -70,19 +168,36 @@ export async function getDebtsData(filters: {
         .select("id, bus_id, record_date")
         .order("record_date", { ascending: false })
         .limit(80),
-      supabase.from("buses").select("id, code").order("code"),
+      supabase
+        .from("buses")
+        .select("id, code, plate, photo_path, status")
+        .order("code"),
     ]);
 
   const migrationReady =
-    !debtsError || !["42P01", "PGRST205"].includes(debtsError.code ?? "");
+    !debtsError ||
+    !["42P01", "42703", "PGRST204", "PGRST205"].includes(debtsError.code ?? "");
 
   if (debtsError && migrationReady) {
     throw debtsError;
   }
 
   const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const activeBusOptions = visibleBuses.filter((bus) => bus.status === "active");
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses as BusLookup[]);
   const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
-  const busMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
+  const busMap = new Map(
+    (buses ?? []).map((bus) => [
+      bus.id,
+      {
+        code: bus.code,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        plate: bus.plate,
+        status: bus.status,
+      },
+    ]),
+  );
+
   const recordMap = new Map(
     (recentRecords ?? [])
       .filter(
@@ -91,9 +206,9 @@ export async function getDebtsData(filters: {
           isOperationalRecordDate(record.record_date, today),
       )
       .map((record) => [
-      record.id,
-      `${busMap.get(record.bus_id) ?? record.bus_id} - ${record.record_date}`,
-    ]),
+        record.id,
+        `${busMap.get(record.bus_id)?.code ?? record.bus_id} - ${record.record_date}`,
+      ]),
   );
 
   const debtRecordIds = Array.from(
@@ -113,7 +228,7 @@ export async function getDebtsData(filters: {
     (linkedRecords ?? []).forEach((record) => {
       recordMap.set(
         record.id,
-        `${busMap.get(record.bus_id) ?? record.bus_id} - ${record.record_date}`,
+        `${busMap.get(record.bus_id)?.code ?? record.bus_id} - ${record.record_date}`,
       );
     });
   }
@@ -131,21 +246,7 @@ export async function getDebtsData(filters: {
 
   const normalizedDebts = (debts ?? [])
     .filter((debt) => !isDemoDebtRecord(debt))
-    .map((debt) => ({
-    amountPaidUsd: debt.amount_paid_usd,
-    amountUsd: debt.amount_usd,
-    balanceDueUsd: debt.balance_due_usd,
-    createdAt: debt.created_at,
-    creditor: debt.creditor,
-    dailyRecordId: debt.daily_record_id,
-    dailyRecordLabel: debt.daily_record_id
-      ? recordMap.get(debt.daily_record_id) ?? debt.daily_record_id
-      : null,
-    description: debt.description,
-    dueDate: debt.due_date,
-    id: debt.id,
-    status: debt.status,
-  })) satisfies DebtListItem[];
+    .map((debt) => normalizeDebt(debt, busMap, recordMap));
 
   const summary = normalizedDebts.reduce(
     (accumulator, debt) => ({
@@ -169,6 +270,14 @@ export async function getDebtsData(filters: {
   );
 
   return {
+    busOptions: activeBusOptions.map((bus) => ({
+      code: bus.code,
+      id: bus.id,
+      photoUrl: photoMap.get(bus.id) ?? null,
+      plate: bus.plate,
+      routeName: OPERATIONAL_ROUTE.label,
+      status: bus.status,
+    })) satisfies DebtBusOption[],
     debts: normalizedDebts,
     filters: {
       payDebtId: filters.payDebtId,
@@ -182,29 +291,15 @@ export async function getDebtsData(filters: {
       notes: payment.notes,
       paymentDate: payment.payment_date,
     })) satisfies DebtPaymentListItem[],
-    recordOptions: (recentRecords ?? []).map((record) => ({
-      id: record.id,
-      label: recordMap.get(record.id) ?? record.id,
-    })) satisfies DebtRecordOption[],
+    recordOptions: (recentRecords ?? [])
+      .filter((record) => visibleBusIds.has(record.bus_id))
+      .map((record) => ({
+        busId: record.bus_id,
+        id: record.id,
+        label: recordMap.get(record.id) ?? record.id,
+      })) satisfies DebtRecordOption[],
     selectedDebt:
-      selectedDebt == null
-        ? null
-        : ({
-            amountPaidUsd: selectedDebt.amount_paid_usd,
-            amountUsd: selectedDebt.amount_usd,
-            balanceDueUsd: selectedDebt.balance_due_usd,
-            createdAt: selectedDebt.created_at,
-            creditor: selectedDebt.creditor,
-            dailyRecordId: selectedDebt.daily_record_id,
-            dailyRecordLabel: selectedDebt.daily_record_id
-              ? recordMap.get(selectedDebt.daily_record_id) ??
-                selectedDebt.daily_record_id
-              : null,
-            description: selectedDebt.description,
-            dueDate: selectedDebt.due_date,
-            id: selectedDebt.id,
-            status: selectedDebt.status,
-          } satisfies DebtListItem),
+      selectedDebt == null ? null : normalizeDebt(selectedDebt, busMap, recordMap),
     summary,
   };
 }

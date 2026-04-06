@@ -111,7 +111,10 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
             </CardHeader>
             <CardContent>
               {debtsData.migrationReady ? (
-                <DebtForm recordOptions={debtsData.recordOptions} />
+                <DebtForm
+                  busOptions={debtsData.busOptions}
+                  recordOptions={debtsData.recordOptions}
+                />
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
                   Aplica la migracion de Sprint 5 para habilitar la persistencia de

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BusIdentity } from "@/components/buses/bus-identity";
 import { Badge } from "@/components/ui/badge";
 import type { DebtListItem, DebtStatusFilter } from "@/lib/debts";
 import { formatCurrency, formatDateLabel } from "@/lib/formatters";
@@ -79,6 +80,7 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
               <tr>
                 <th className="px-4 py-3">Acreedor</th>
                 <th className="px-4 py-3">Descripcion</th>
+                <th className="px-4 py-3">Bus</th>
                 <th className="px-4 py-3">Registro</th>
                 <th className="px-4 py-3">Monto</th>
                 <th className="px-4 py-3">Abonado</th>
@@ -98,6 +100,19 @@ export function DebtTable({ debts, selectedDebtId, status }: DebtTableProps) {
                 >
                   <td className="px-4 py-3 font-medium">{debt.creditor}</td>
                   <td className="px-4 py-3">{debt.description}</td>
+                  <td className="px-4 py-3">
+                    {debt.busId && debt.busCode ? (
+                      <BusIdentity
+                        code={debt.busCode}
+                        photoUrl={debt.busPhotoUrl}
+                        plate={debt.busPlate}
+                        secondaryText="Deuda asociada"
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="text-muted-foreground">Sin relacion</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {debt.dailyRecordLabel ?? "Sin relacion"}
                   </td>

@@ -15,6 +15,7 @@ const optionalField = <T extends z.ZodTypeAny>(schema: T) =>
 
 export const debtSchema = z.object({
   amountUsd: z.coerce.number().positive("El monto debe ser mayor a cero."),
+  busId: optionalField(z.string().uuid("Selecciona un bus valido.")),
   creditor: z
     .string()
     .trim()
