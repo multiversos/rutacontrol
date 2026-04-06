@@ -1,3 +1,4 @@
+import { BusIdentity } from "@/components/buses/bus-identity";
 import { RepairForm } from "@/components/repair-form";
 import { RepairTable } from "@/components/repair-table";
 import { KpiCards } from "@/components/kpi-cards";
@@ -148,7 +149,14 @@ export default async function RepairsPage({ searchParams }: RepairsPageProps) {
               <tbody className="divide-y divide-border bg-white/70">
                 {repairsData.suggestedServices.map((service) => (
                   <tr key={service.busId}>
-                    <td className="px-4 py-3 font-medium">{service.busCode}</td>
+                    <td className="px-4 py-3">
+                      <BusIdentity
+                        code={service.busCode}
+                        photoUrl={service.busPhotoUrl}
+                        plate={service.busPlate}
+                        size="sm"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       {service.nextServiceDueDate ? (
                         <Badge variant="warning">

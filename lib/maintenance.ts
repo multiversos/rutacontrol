@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Database, Enums, Tables } from "@/lib/supabase/database.types";
 import { reconcileMaintenanceAlerts } from "@/lib/alerts";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
 import { isDemoBus } from "@/lib/demo-data";
 import { getBusinessTodayDate, shiftDateString } from "@/lib/formatters";
 import {
@@ -22,6 +23,8 @@ export type MaintenanceFilters = {
 export type MaintenanceCycleItem = {
   busCode: string;
   busId: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   componentLabel: string;
   componentPosition: Enums<"maintenance_component_position"> | null;
   debt: {
@@ -57,6 +60,8 @@ export type MaintenanceHistoryItem = {
 export type MaintenanceRecordListItem = {
   busCode: string;
   busId: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   createdAt: string;
   debt: MaintenanceCycleItem["debt"];
   description: string;
@@ -106,16 +111,19 @@ function getCycleLabel(
 
 function normalizeCycle(
   cycle: CurrentMaintenanceCycleRow,
-  busCodeMap: Map<string, string>,
+  busMetaMap: Map<string, { code: string; photoUrl: string | null; plate: string | null }>,
   debtMap: Map<string, MaintenanceCycleItem["debt"]>,
 ): MaintenanceCycleItem {
+  const busMeta = busMetaMap.get(cycle.bus_id);
   const expectedWorkDays = cycle.expected_work_days ?? 0;
   const workedDays = cycle.worked_days ?? 0;
   const remainingWorkDays = Math.max(expectedWorkDays - workedDays, 0);
 
   return {
-    busCode: busCodeMap.get(cycle.bus_id) ?? cycle.bus_id,
+    busCode: busMeta?.code ?? cycle.bus_id,
     busId: cycle.bus_id,
+    busPhotoUrl: busMeta?.photoUrl ?? null,
+    busPlate: busMeta?.plate ?? null,
     componentLabel: getCycleLabel(
       cycle.maintenance_type,
       cycle.component_name,
@@ -167,7 +175,7 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
     { data: cyclesData, error: cyclesError },
   ] = await Promise.all([
     recordsQuery,
-    supabase.from("buses").select("id, code, status").order("code"),
+    supabase.from("buses").select("id, code, plate, photo_path, status").order("code"),
     supabase.rpc("current_maintenance_cycles", {
       _record_date: dateTo,
     }),
@@ -187,7 +195,17 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
 
   const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
   const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
-  const busCodeMap = new Map((buses ?? []).map((bus) => [bus.id, bus.code]));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+  const busMetaMap = new Map(
+    (buses ?? []).map((bus) => [
+      bus.id,
+      {
+        code: bus.code,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        plate: bus.plate,
+      },
+    ]),
+  );
   const debtMap = new Map<string, MaintenanceCycleItem["debt"]>();
 
   (maintenanceRecords ?? []).forEach((record) => {
@@ -206,7 +224,7 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
   });
 
   let currentCycles = (cyclesData ?? []).map((cycle) =>
-    normalizeCycle(cycle, busCodeMap, debtMap),
+    normalizeCycle(cycle, busMetaMap, debtMap),
   );
 
   if (busId) {
@@ -229,7 +247,7 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
       .filter((cycle) => cycle.maintenance_item_id)
       .map((cycle) => [
         cycle.maintenance_item_id!,
-        normalizeCycle(cycle, busCodeMap, debtMap),
+        normalizeCycle(cycle, busMetaMap, debtMap),
       ] as const),
   );
 
@@ -252,8 +270,10 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
       : [];
 
     return {
-      busCode: busCodeMap.get(record.bus_id) ?? record.bus_id,
+      busCode: busMetaMap.get(record.bus_id)?.code ?? record.bus_id,
       busId: record.bus_id,
+      busPhotoUrl: busMetaMap.get(record.bus_id)?.photoUrl ?? null,
+      busPlate: busMetaMap.get(record.bus_id)?.plate ?? null,
       createdAt: record.created_at,
       debt,
       description: record.description,
@@ -296,6 +316,8 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
       const current = groups.get(record.busId) ?? {
         busCode: record.busCode,
         busId: record.busId,
+        busPhotoUrl: record.busPhotoUrl,
+        busPlate: record.busPlate,
         dueSoonCount: 0,
         overdueCount: 0,
         recordCount: 0,
@@ -310,13 +332,15 @@ export async function getMaintenanceData(filters: MaintenanceFilters) {
       );
       groups.set(record.busId, current);
       return groups;
-    }, new Map<string, { busId: string; busCode: string; dueSoonCount: number; overdueCount: number; recordCount: number }>()),
+    }, new Map<string, { busId: string; busCode: string; busPhotoUrl: string | null; busPlate: string | null; dueSoonCount: number; overdueCount: number; recordCount: number }>()),
   ).map(([, value]) => value);
 
   return {
     busOptions: visibleBuses.map((bus) => ({
       code: bus.code,
       id: bus.id,
+      photoUrl: photoMap.get(bus.id) ?? null,
+      plate: bus.plate,
       status: bus.status,
     })),
     currentCycles,

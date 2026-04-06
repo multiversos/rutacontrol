@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Json, Tables } from "@/lib/supabase/database.types";
 import { reconcileMissingClosureAlerts } from "@/lib/alerts";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
 import {
   getAuditBusId,
   getAuditRecordDate,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/formatters";
 import { createClient } from "@/lib/supabase/server";
 
-type BusLookup = Pick<Tables<"buses">, "code" | "id" | "status">;
+type BusLookup = Pick<Tables<"buses">, "code" | "id" | "photo_path" | "plate" | "status">;
 type AuditBusLookup = Pick<Tables<"buses">, "code" | "id">;
 type ProfileLookup = Pick<Tables<"profiles">, "id" | "name">;
 type DailyRecordLookup = Pick<
@@ -70,6 +71,8 @@ export type DashboardKpiItem = {
 
 export type DashboardRecordSummary = {
   busCode: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   closedAt: string | null;
   difference: string;
   id: string;
@@ -82,6 +85,8 @@ export type DashboardRecordSummary = {
 export type NormalizedDailyRecord = {
   busCode: string;
   busId: string;
+  busPhotoUrl: string | null;
+  busPlate: string | null;
   calculatedNet: string;
   closedAt: string | null;
   createdAt: string;
@@ -238,13 +243,25 @@ function normalizeDailyRecords(
   records: DailyRecordLookup[],
   buses: BusLookup[],
   profiles: ProfileLookup[],
+  photoMap: Map<string, string | null>,
 ) {
-  const busMap = new Map(buses.map((bus) => [bus.id, bus.code]));
+  const busMap = new Map(
+    buses.map((bus) => [
+      bus.id,
+      {
+        code: bus.code,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        plate: bus.plate,
+      },
+    ]),
+  );
   const profileMap = new Map(profiles.map((profile) => [profile.id, profile.name]));
 
   return records.map((record) => ({
-    busCode: busMap.get(record.bus_id) ?? record.bus_id,
+    busCode: busMap.get(record.bus_id)?.code ?? record.bus_id,
     busId: record.bus_id,
+    busPhotoUrl: busMap.get(record.bus_id)?.photoUrl ?? null,
+    busPlate: busMap.get(record.bus_id)?.plate ?? null,
     calculatedNet: record.calculated_net,
     closedAt: record.closed_at,
     createdAt: record.created_at,
@@ -318,7 +335,7 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
   const [{ data: records }, { data: buses }, { data: profiles }, { data: auditEntries }] =
     await Promise.all([
       recordsQuery,
-      supabase.from("buses").select("id, code, status").order("code"),
+      supabase.from("buses").select("id, code, plate, photo_path, status").order("code"),
       supabase.from("profiles").select("id, name"),
       supabase
         .from("audit_log")
@@ -328,12 +345,14 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
         .limit(6),
     ]);
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
   const normalizedRecords = normalizeDailyRecords(
     records ?? [],
     buses ?? [],
     profiles ?? [],
+    photoMap,
   );
-  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
   const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
   const filteredRecords = normalizedRecords.filter(
     (record) =>
@@ -414,6 +433,8 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
     pendingBuses: pendingBuses.map((bus) => bus.code),
     records: filteredRecords.map((record) => ({
       busCode: record.busCode,
+      busPhotoUrl: record.busPhotoUrl,
+      busPlate: record.busPlate,
       closedAt: record.closedAt,
       difference: record.difference,
       id: record.id,
@@ -448,16 +469,18 @@ export async function getDailyHistoryData(filters: HistoryFilterState) {
 
   const [{ data: records }, { data: buses }, { data: profiles }] = await Promise.all([
     recordsQuery,
-    supabase.from("buses").select("id, code, status").order("code"),
+    supabase.from("buses").select("id, code, plate, photo_path, status").order("code"),
     supabase.from("profiles").select("id, name"),
   ]);
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
   const normalizedRecords = normalizeDailyRecords(
     records ?? [],
     buses ?? [],
     profiles ?? [],
+    photoMap,
   );
-  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
   const visibleBusIds = new Set(visibleBuses.map((bus) => bus.id));
   const filteredRecords = normalizedRecords.filter(
     (record) =>

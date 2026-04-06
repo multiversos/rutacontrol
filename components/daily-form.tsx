@@ -13,6 +13,7 @@ import { initialFormState } from "@/lib/forms/action-state";
 import type { Tables } from "@/lib/supabase/database.types";
 
 type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
+  photoUrl?: string | null;
   routeName: string;
 };
 

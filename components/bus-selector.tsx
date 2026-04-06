@@ -1,10 +1,14 @@
 "use client";
 
-import { Select } from "@/components/ui/select";
+import { BusIdentity } from "@/components/buses/bus-identity";
+import { Badge } from "@/components/ui/badge";
 import type { Tables } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
-type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
-  routeName: string;
+type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate"> & {
+  photoUrl?: string | null;
+  routeName?: string;
+  status?: Tables<"buses">["status"] | string;
 };
 
 type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record_date">;
@@ -13,9 +17,13 @@ type BusSelectorProps = {
   buses: BusOption[];
   currentRecordId?: string | null;
   disabled?: boolean;
-  existingRecords: ExistingRecordRef[];
+  emptyLabel?: string;
+  existingRecords?: ExistingRecordRef[];
+  helperText?: string;
+  id?: string;
+  name?: string;
   onChange: (value: string) => void;
-  recordDate: string;
+  recordDate?: string;
   value: string;
 };
 
@@ -23,7 +31,11 @@ export function BusSelector({
   buses,
   currentRecordId,
   disabled = false,
-  existingRecords,
+  emptyLabel = "No hay buses disponibles para seleccionar.",
+  existingRecords = [],
+  helperText = "Selecciona la unidad correcta usando foto, codigo y placa. La base confirma el bloqueo final al guardar.",
+  id = "bus-selector",
+  name = "busId",
   onChange,
   recordDate,
   value,
@@ -39,29 +51,65 @@ export function BusSelector({
   const selectedBusBlocked = value ? isBlocked(value) : false;
 
   return (
-    <div className="space-y-2">
-      <Select
-        disabled={disabled}
-        id="bus-selector"
-        name="busId"
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        <option value="">Selecciona un bus</option>
-        {buses.map((bus) => {
-          const blocked = isBlocked(bus.id);
-          const disabled =
-            blocked || (bus.status !== "active" && bus.id !== value);
+    <div className="space-y-3">
+      <input id={id} name={name} type="hidden" value={value} />
 
-          return (
-            <option disabled={disabled} key={bus.id} value={bus.id}>
-              {bus.code} - {bus.routeName} - {bus.plate}
-              {blocked ? " - Ya registrado" : ""}
-              {bus.status !== "active" ? " - No disponible" : ""}
-            </option>
-          );
-        })}
-      </Select>
+      {buses.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          {emptyLabel}
+        </div>
+      ) : (
+        <div
+          aria-disabled={disabled}
+          className="grid gap-3 sm:grid-cols-2"
+          role="radiogroup"
+        >
+          {buses.map((bus) => {
+            const blocked = recordDate ? isBlocked(bus.id) : false;
+            const unavailable = (bus.status ?? "active") !== "active" && bus.id !== value;
+            const isSelected = bus.id === value;
+            const optionDisabled = disabled || blocked || unavailable;
+
+            return (
+              <button
+                aria-checked={isSelected}
+                className={cn(
+                  "rounded-3xl border px-4 py-3 text-left transition-colors",
+                  isSelected
+                    ? "border-primary bg-primary/5 shadow-soft"
+                    : "border-border bg-white/85 hover:border-primary/40 hover:bg-primary/5",
+                  optionDisabled && "cursor-not-allowed opacity-60",
+                )}
+                disabled={optionDisabled}
+                key={bus.id}
+                onClick={() => onChange(bus.id)}
+                role="radio"
+                type="button"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <BusIdentity
+                    code={bus.code}
+                    photoUrl={bus.photoUrl ?? null}
+                    plate={bus.plate}
+                    secondaryText={bus.routeName ?? null}
+                    size="sm"
+                  />
+
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {isSelected ? <Badge variant="success">Seleccionado</Badge> : null}
+                    {blocked ? (
+                      <Badge className="bg-destructive/10 text-destructive" variant="muted">
+                        Ya registrado
+                      </Badge>
+                    ) : null}
+                    {unavailable ? <Badge variant="warning">No disponible</Badge> : null}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {selectedBusBlocked ? (
         <p className="text-sm text-destructive">
@@ -69,8 +117,7 @@ export function BusSelector({
         </p>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Solo se habilitan unidades activas y sin choques visibles para tu alcance
-          actual. La base confirma el bloqueo final al guardar.
+          {helperText}
         </p>
       )}
     </div>

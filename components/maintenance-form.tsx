@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 
 import { saveMaintenanceAction } from "@/app/dashboard/maintenance/actions";
+import { BusSelector } from "@/components/bus-selector";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -15,6 +16,8 @@ import { MAINTENANCE_POSITION_LABELS, MAINTENANCE_TYPE_LABELS } from "@/lib/main
 type MaintenanceBusOption = {
   code: string;
   id: string;
+  photoUrl?: string | null;
+  plate: string;
   status: string;
 };
 
@@ -51,6 +54,7 @@ const wheelFields = [
 
 export function MaintenanceForm({ buses }: MaintenanceFormProps) {
   const [state, formAction] = useActionState(saveMaintenanceAction, initialFormState);
+  const [busId, setBusId] = useState("");
   const [maintenanceType, setMaintenanceType] =
     useState<keyof typeof MAINTENANCE_TYPE_LABELS>("oil_change");
   const isBrakePads = maintenanceType === "brake_pads";
@@ -60,14 +64,14 @@ export function MaintenanceForm({ buses }: MaintenanceFormProps) {
       <div className="grid gap-5 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="maintenance-bus">Bus</Label>
-          <Select defaultValue="" id="maintenance-bus" name="busId">
-            <option value="">Selecciona un bus</option>
-            {buses.map((bus) => (
-              <option key={bus.id} value={bus.id}>
-                {bus.code}
-              </option>
-            ))}
-          </Select>
+          <BusSelector
+            buses={buses}
+            emptyLabel="No hay buses activos listos para mantenimiento."
+            helperText="Selecciona la unidad correcta usando foto, codigo y placa antes de registrar el mantenimiento."
+            id="maintenance-bus"
+            onChange={setBusId}
+            value={busId}
+          />
           {state.fieldErrors?.busId?.[0] ? (
             <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
           ) : null}

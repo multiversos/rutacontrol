@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth/session";
+import { getBusPhotoUrlMap } from "@/lib/bus-photo";
 import { isDemoBus } from "@/lib/demo-data";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +20,7 @@ async function getDailyFormContext(recordId?: string) {
   const [{ data: buses }, { data: existingRecords }] = await Promise.all([
     supabase
       .from("buses")
-      .select("id, code, plate, route_id, status")
+      .select("id, code, plate, photo_path, route_id, status")
       .order("code"),
     supabase.from("daily_records").select("id, bus_id, record_date"),
   ]);
@@ -33,13 +34,16 @@ async function getDailyFormContext(recordId?: string) {
       ).data
     : null;
 
+  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+
   return {
-    buses: (buses ?? [])
-      .filter((bus) => !isDemoBus(bus))
+    buses: visibleBuses
       .map((bus) => ({
-      ...bus,
-      routeName: OPERATIONAL_ROUTE.label,
-    })),
+        ...bus,
+        photoUrl: photoMap.get(bus.id) ?? null,
+        routeName: OPERATIONAL_ROUTE.label,
+      })),
     existingRecords: existingRecords ?? [],
     initialRecord,
     requestedRecordMissing: Boolean(recordId && !initialRecord),

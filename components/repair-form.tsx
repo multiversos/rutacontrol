@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { createRepairAction } from "@/app/dashboard/repairs/actions";
+import { BusSelector } from "@/components/bus-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,8 @@ import { createClient } from "@/lib/supabase/client";
 type RepairBusOption = {
   code: string;
   id: string;
+  photoUrl?: string | null;
+  plate: string;
 };
 
 type RepairFormProps = {
@@ -40,6 +43,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [state, setState] = useState<FormState>(initialFormState);
+  const [busId, setBusId] = useState("");
   const [fileLabel, setFileLabel] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -134,6 +138,7 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
 
           setState(result);
           formRef.current?.reset();
+          setBusId("");
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
           }
@@ -155,19 +160,14 @@ export function RepairForm({ buses, currentUserId }: RepairFormProps) {
     <form ref={formRef} className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <Label htmlFor="repair-bus">Bus</Label>
-        <select
-          className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
-          defaultValue=""
+        <BusSelector
+          buses={buses}
+          emptyLabel="No hay buses activos disponibles para registrar reparaciones."
+          helperText="Selecciona la unidad correcta usando foto, codigo y placa antes de subir el comprobante."
           id="repair-bus"
-          name="busId"
-        >
-          <option value="">Selecciona un bus activo</option>
-          {buses.map((bus) => (
-            <option key={bus.id} value={bus.id}>
-              {bus.code}
-            </option>
-          ))}
-        </select>
+          onChange={setBusId}
+          value={busId}
+        />
         {state.fieldErrors?.busId?.[0] ? (
           <p className="text-sm text-destructive">{state.fieldErrors.busId[0]}</p>
         ) : null}
