@@ -27,7 +27,14 @@ type DebtStatus = Tables<"debts">["status"];
 
 type BusRow = Pick<
   Tables<"buses">,
-  "code" | "created_at" | "id" | "plate" | "route_id" | "status" | "updated_at"
+  | "code"
+  | "created_at"
+  | "id"
+  | "photo_path"
+  | "plate"
+  | "route_id"
+  | "status"
+  | "updated_at"
 >;
 
 type RouteRow = Pick<
@@ -422,7 +429,7 @@ export async function getBusProfileData(
 
   const { data: bus } = await supabase
     .from("buses")
-    .select("id, code, plate, route_id, status, created_at, updated_at")
+    .select("id, code, plate, photo_path, route_id, status, created_at, updated_at")
     .eq("id", busId)
     .maybeSingle();
 
@@ -473,7 +480,7 @@ export async function getBusProfileData(
       readState: "all",
       severity: "all",
     }),
-    getBusPhotoUrlMap(supabase, [busId]),
+    getBusPhotoUrlMap(supabase, [{ id: busId, photo_path: bus.photo_path }]),
   ]);
 
   const userIds = Array.from(

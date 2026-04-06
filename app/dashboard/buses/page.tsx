@@ -19,14 +19,11 @@ async function getBusContext() {
   const supabase = await createClient();
   const { data: buses } = await supabase
     .from("buses")
-    .select("id, code, plate, route_id, status, created_at, updated_at")
+    .select("id, code, plate, photo_path, route_id, status, created_at, updated_at")
     .order("code");
 
   const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
-  const photoMap = await getBusPhotoUrlMap(
-    supabase,
-    visibleBuses.map((bus) => bus.id),
-  );
+  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
 
   return {
     buses: visibleBuses,

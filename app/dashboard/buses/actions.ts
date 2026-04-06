@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireRole } from "@/lib/auth/session";
+import { BUS_PHOTO_BUCKET } from "@/lib/bus-photo";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
@@ -72,6 +73,17 @@ async function ensureOperationalRouteId() {
   return insertedRoute.id;
 }
 
+function revalidateBusPaths(busId?: string | null) {
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/buses");
+  revalidatePath("/dashboard/daily");
+  revalidatePath("/dashboard/daily/new");
+
+  if (busId) {
+    revalidatePath(`/dashboard/buses/${busId}`);
+  }
+}
+
 export async function saveBusAction(
   _previousState: FormState = initialFormState,
   formData: FormData,
@@ -115,19 +127,92 @@ export async function saveBusAction(
     };
   }
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/buses");
-  revalidatePath("/dashboard/daily");
-  revalidatePath("/dashboard/daily/new");
-  if (data?.id) {
-    revalidatePath(`/dashboard/buses/${data.id}`);
-  }
+  revalidateBusPaths(data?.id);
 
   return {
     entityId: data?.id,
     message: busId
       ? "Bus actualizado correctamente. La linea fija quedo asignada automaticamente."
       : "Bus creado correctamente. La linea fija quedo asignada automaticamente.",
+    status: "success",
+  };
+}
+
+type SaveBusPhotoInput = {
+  busId: string;
+  photoPath: string;
+};
+
+export async function saveBusPhotoAction({
+  busId,
+  photoPath,
+}: SaveBusPhotoInput): Promise<FormState> {
+  await requireRole("admin");
+
+  const normalizedBusId = busId.trim();
+  const normalizedPhotoPath = photoPath.trim();
+
+  if (!normalizedBusId || !normalizedPhotoPath) {
+    return {
+      message: "Faltan datos para guardar la foto del bus.",
+      status: "error",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: bus, error: busError } = await supabase
+    .from("buses")
+    .select("id, photo_path")
+    .eq("id", normalizedBusId)
+    .maybeSingle();
+
+  if (busError || !bus) {
+    return {
+      message: "No encontramos el bus para asociarle la foto.",
+      status: "error",
+    };
+  }
+
+  const { error: signedUrlError } = await supabase.storage
+    .from(BUS_PHOTO_BUCKET)
+    .createSignedUrl(normalizedPhotoPath, 60);
+
+  if (signedUrlError) {
+    return {
+      message:
+        "La foto subida no esta disponible en Storage. Intenta subirla nuevamente.",
+      status: "error",
+    };
+  }
+
+  const previousPhotoPath = bus.photo_path;
+  const { error: updateError } = await supabase
+    .from("buses")
+    .update({ photo_path: normalizedPhotoPath })
+    .eq("id", normalizedBusId);
+
+  if (updateError) {
+    return {
+      message: "No pudimos guardar la referencia de la foto del bus.",
+      status: "error",
+    };
+  }
+
+  if (previousPhotoPath && previousPhotoPath !== normalizedPhotoPath) {
+    const { error: removeError } = await supabase.storage
+      .from(BUS_PHOTO_BUCKET)
+      .remove([previousPhotoPath]);
+
+    if (removeError) {
+      console.error("No pudimos eliminar la foto anterior del bus.", removeError);
+    }
+  }
+
+  revalidateBusPaths(normalizedBusId);
+
+  return {
+    entityId: normalizedBusId,
+    message: "Foto del bus actualizada correctamente.",
     status: "success",
   };
 }

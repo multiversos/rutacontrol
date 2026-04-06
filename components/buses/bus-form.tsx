@@ -5,14 +5,19 @@ import type { FormEvent } from "react";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { saveBusAction } from "@/app/dashboard/buses/actions";
+import { saveBusAction, saveBusPhotoAction } from "@/app/dashboard/buses/actions";
 import { BusPhoto } from "@/components/buses/bus-photo";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { initialFormState } from "@/lib/forms/action-state";
-import { BUS_PHOTO_BUCKET, getBusPhotoObjectPath } from "@/lib/bus-photo";
+import {
+  buildBusPhotoObjectPath,
+  BUS_PHOTO_ACCEPTED_TYPES,
+  BUS_PHOTO_BUCKET,
+  BUS_PHOTO_MAX_SIZE_BYTES,
+} from "@/lib/bus-photo";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -23,18 +28,14 @@ type BusFormProps = {
   photoUrl?: string | null;
 };
 
-const ACCEPTED_PHOTO_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+const ACCEPTED_PHOTO_TYPES = new Set<string>(BUS_PHOTO_ACCEPTED_TYPES);
 
 function isPhotoValid(file: File) {
   if (!ACCEPTED_PHOTO_TYPES.has(file.type)) {
     return "Solo se aceptan JPG, PNG o WEBP.";
   }
 
-  if (file.size > 5 * 1024 * 1024) {
+  if (file.size > BUS_PHOTO_MAX_SIZE_BYTES) {
     return "La foto supera el limite de 5 MB.";
   }
 
@@ -46,6 +47,7 @@ export function BusForm({ bus, photoUrl }: BusFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const [fileLabel, setFileLabel] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState(initialFormState);
 
@@ -79,23 +81,61 @@ export function BusForm({ bus, photoUrl }: BusFormProps) {
 
           if (selectedFile && resolvedBusId) {
             const supabase = createClient();
-            const objectPath = getBusPhotoObjectPath(resolvedBusId);
-            await supabase.storage.from(BUS_PHOTO_BUCKET).remove([objectPath]);
-            const { error: uploadError } = await supabase.storage
-              .from(BUS_PHOTO_BUCKET)
-              .upload(objectPath, selectedFile, {
-                cacheControl: "3600",
-                contentType: selectedFile.type,
-                upsert: false,
+            const objectPath = buildBusPhotoObjectPath(
+              resolvedBusId,
+              selectedFile.name,
+            );
+            try {
+              setIsUploading(true);
+              const { error: uploadError } = await supabase.storage
+                .from(BUS_PHOTO_BUCKET)
+                .upload(objectPath, selectedFile, {
+                  cacheControl: "3600",
+                  contentType: selectedFile.type,
+                  upsert: false,
+                });
+
+              if (uploadError) {
+                setIsUploading(false);
+                setState({
+                  entityId: resolvedBusId,
+                  message:
+                    "Guardamos el bus, pero no pudimos subir la foto. Intenta otra vez con JPG, PNG o WEBP menor a 5 MB.",
+                  status: "error",
+                });
+                router.refresh();
+                return;
+              }
+
+              const photoResult = await saveBusPhotoAction({
+                busId: resolvedBusId,
+                photoPath: objectPath,
               });
 
-            if (uploadError) {
+              if (photoResult.status !== "success") {
+                setIsUploading(false);
+                await supabase.storage.from(BUS_PHOTO_BUCKET).remove([objectPath]);
+                setState({
+                  entityId: resolvedBusId,
+                  message:
+                    photoResult.message ??
+                    "Guardamos el bus, pero no pudimos asociar la foto.",
+                  status: "error",
+                });
+                router.refresh();
+                return;
+              }
+
+              setIsUploading(false);
+            } catch {
               setState({
                 entityId: resolvedBusId,
                 message:
-                  "Guardamos el bus, pero no pudimos subir la foto a Storage.",
+                  "Guardamos el bus, pero ocurrio un problema al subir o asociar la foto. La imagen temporal fue descartada.",
                 status: "error",
               });
+              await supabase.storage.from(BUS_PHOTO_BUCKET).remove([objectPath]);
+              setIsUploading(false);
               router.refresh();
               return;
             }
@@ -126,6 +166,7 @@ export function BusForm({ bus, photoUrl }: BusFormProps) {
           setFileLabel("");
         })
         .catch(() => {
+          setIsUploading(false);
           setState({
             message: "No pudimos guardar el bus en este momento.",
             status: "error",
@@ -244,8 +285,14 @@ export function BusForm({ bus, photoUrl }: BusFormProps) {
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <Button disabled={isPending} type="submit">
-          {isPending ? "Guardando..." : bus ? "Guardar cambios" : "Crear bus"}
+        <Button disabled={isPending || isUploading} type="submit">
+          {isUploading
+            ? "Subiendo foto..."
+            : isPending
+              ? "Guardando..."
+              : bus
+                ? "Guardar cambios"
+                : "Crear bus"}
         </Button>
         <Link
           className={cn(buttonVariants({ variant: "outline" }))}

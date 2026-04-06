@@ -123,6 +123,7 @@ export type Database = {
           created_at: string;
           id: string;
           plate: string;
+          photo_path: string | null;
           route_id: string;
           status: Database["public"]["Enums"]["bus_status"];
           updated_at: string;
@@ -132,6 +133,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           plate: string;
+          photo_path?: string | null;
           route_id: string;
           status?: Database["public"]["Enums"]["bus_status"];
           updated_at?: string;
@@ -141,6 +143,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           plate?: string;
+          photo_path?: string | null;
           route_id?: string;
           status?: Database["public"]["Enums"]["bus_status"];
           updated_at?: string;
