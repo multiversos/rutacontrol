@@ -18,8 +18,8 @@ const containerClassMap = {
 } as const;
 
 const logoSizeClassMap = {
-  hero: "w-full max-w-[360px]",
-  sidebar: "w-full max-w-[188px]",
+  hero: "w-full max-w-[420px]",
+  sidebar: "w-full max-w-[210px]",
 } as const;
 
 function AppBrandContent({
@@ -32,12 +32,12 @@ function AppBrandContent({
     <div className={cn("space-y-4", containerClassMap[size], className)}>
       <div className={cn("relative", logoSizeClassMap[size])}>
         <Image
-          alt="Logo de RutaControl"
+          alt="Logo de Colectivos La Rosita"
           className="h-auto w-full object-contain"
-          height={180}
+          height={1037}
           priority={priority}
-          src="/branding/rutacontrol-logo.svg"
-          width={640}
+          src="/branding/logo-colectivos-la-rosita.png"
+          width={1515}
         />
       </div>
 
