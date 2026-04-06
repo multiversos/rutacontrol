@@ -14,6 +14,8 @@ import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 import { busSchema } from "@/lib/validators/bus";
 
+type BusAuditEventName = "bus_deleted" | "bus_delete_blocked";
+
 function normalizeBusFormData(formData: FormData) {
   return {
     code: String(formData.get("code") ?? "").trim().toUpperCase(),
@@ -86,6 +88,49 @@ function revalidateBusPaths(busId?: string | null) {
 
   if (busId) {
     revalidatePath(`/dashboard/buses/${busId}`);
+  }
+}
+
+type RecordBusAuditEventInput = {
+  bus: {
+    code: string;
+    id: string;
+    photo_path: string | null;
+  };
+  event: BusAuditEventName;
+  profileId: string;
+  blockers?: string[];
+};
+
+async function recordBusAuditEvent({
+  bus,
+  event,
+  profileId,
+  blockers,
+}: RecordBusAuditEventInput) {
+  const supabase = await createClient();
+
+  const payload =
+    event === "bus_delete_blocked"
+      ? {
+          audit_event: event,
+          blockers: blockers ?? [],
+        }
+      : {
+          audit_event: event,
+        };
+
+  const { error } = await supabase.from("audit_log").insert({
+    action: "update",
+    new_values: payload,
+    old_values: bus,
+    record_id: bus.id,
+    table_name: "buses",
+    user_id: profileId,
+  });
+
+  if (error) {
+    console.error("No pudimos registrar el evento de auditoria del bus.", error);
   }
 }
 
@@ -250,7 +295,7 @@ export async function deleteBusAction(
   formData: FormData,
 ): Promise<FormState> {
   void _previousState;
-  await requireRole("admin");
+  const { profile } = await requireRole("admin");
 
   const busId = String(formData.get("busId") ?? "").trim();
 
@@ -287,12 +332,25 @@ export async function deleteBusAction(
   const guard = await getBusDeletionGuard(busId);
 
   if (!guard.canDelete) {
+    await recordBusAuditEvent({
+      blockers: guard.blockers,
+      bus,
+      event: "bus_delete_blocked",
+      profileId: profile.id,
+    });
+
     return {
       entityId: busId,
       message: `No puedes eliminar esta unidad porque ya tiene historial asociado (${guard.blockers.join(", ")}). Marcalo como inactivo para conservar la trazabilidad.`,
       status: "error",
     };
   }
+
+  await recordBusAuditEvent({
+    bus,
+    event: "bus_deleted",
+    profileId: profile.id,
+  });
 
   const { error: deleteError } = await supabase.from("buses").delete().eq("id", busId);
 
