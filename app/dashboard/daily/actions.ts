@@ -9,6 +9,14 @@ import {
   dailyRecordSchema,
   type DailyRecordInput,
 } from "@/lib/validators/daily-record";
+import type { TablesInsert, TablesUpdate } from "@/lib/supabase/database.types";
+
+type SupabaseLikeError = {
+  code?: string;
+  details?: string;
+  hint?: string;
+  message?: string;
+};
 
 function normalizeDailyFormData(formData: FormData) {
   return {
@@ -89,6 +97,55 @@ function buildDailyRecordAuditValues(record: DailyRecordAuditSnapshot) {
     user_id: record.user_id,
     worker_payment: record.worker_payment,
   };
+}
+
+function formatSupabaseError(error: SupabaseLikeError | null | undefined) {
+  if (!error) {
+    return null;
+  }
+
+  const code = error.code?.trim();
+  const message = error.message?.trim();
+  const hint = error.hint?.trim();
+  const details = error.details?.trim();
+
+  return [code ? `[${code}]` : null, message, hint, details]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getDailyRecordPersistenceMessage(
+  error: SupabaseLikeError,
+  isEditing: boolean,
+) {
+  if (error.code === "23505") {
+    return "Ese bus ya tiene un registro para la fecha seleccionada. Cambia el bus o la fecha.";
+  }
+
+  if (error.code === "23514") {
+    if (error.message?.includes("Daily records require an active bus")) {
+      return "Solo puedes mover el registro a un bus activo. Si corriges un registro historico, manten la misma unidad o activa el bus antes de cambiarlo.";
+    }
+
+    return "El registro diario no cumple las reglas operativas esperadas.";
+  }
+
+  if (error.code === "42501") {
+    return isEditing
+      ? "Tu sesion no tiene permisos para corregir este registro diario."
+      : "Tu sesion no tiene permisos para crear este registro diario.";
+  }
+
+  if (
+    error.message?.includes("No se puede modificar un registro diario cerrado")
+  ) {
+    return "La base todavia esta bloqueando correcciones sobre registros cerrados. Aplica la migracion 0013_fix_closed_daily_record_admin_updates.sql y vuelve a intentar.";
+  }
+
+  return (
+    formatSupabaseError(error) ??
+    "No pudimos guardar el registro diario por un error inesperado."
+  );
 }
 
 async function reconcileDailyRecordDates(
@@ -213,7 +270,15 @@ export async function saveDailyRecordAction(
     duplicateQuery = duplicateQuery.neq("id", recordId);
   }
 
-  const { data: duplicateRecord } = await duplicateQuery.maybeSingle();
+  const { data: duplicateRecord, error: duplicateError } =
+    await duplicateQuery.maybeSingle();
+
+  if (duplicateError) {
+    return {
+      message: getDailyRecordPersistenceMessage(duplicateError, Boolean(recordId)),
+      status: "error",
+    };
+  }
 
   if (duplicateRecord) {
     return {
@@ -223,8 +288,7 @@ export async function saveDailyRecordAction(
     };
   }
 
-  const payload = {
-    bus_id: parsed.data.busId,
+  const basePayload = {
     departure_time: parsed.data.departureTime ?? null,
     exchange_rate: toFixedOrNull(parsed.data.exchangeRate, 6),
     fuel_cost: toFixedOrNull(parsed.data.fuelCost, 2),
@@ -235,18 +299,26 @@ export async function saveDailyRecordAction(
     record_date: parsed.data.recordDate,
     user_id: existingOwnerId,
     worker_payment: toFixedOrNull(parsed.data.workerPayment, 2),
+  } satisfies Omit<TablesUpdate<"daily_records">, "bus_id">;
+  const updatePayload: TablesUpdate<"daily_records"> =
+    recordId && existingRecord && parsed.data.busId === existingRecord.bus_id
+      ? basePayload
+      : { ...basePayload, bus_id: parsed.data.busId };
+  const insertPayload: TablesInsert<"daily_records"> = {
+    ...basePayload,
+    bus_id: parsed.data.busId,
   };
 
   const query = recordId
     ? supabase
         .from("daily_records")
-        .update(payload)
+        .update(updatePayload)
         .eq("id", recordId)
         .select(dailyRecordAuditSelect)
         .single()
     : supabase
         .from("daily_records")
-        .insert(payload)
+        .insert(insertPayload)
         .select(dailyRecordAuditSelect)
         .single();
 
@@ -254,15 +326,12 @@ export async function saveDailyRecordAction(
 
   if (error) {
     return {
-      message:
-        error.code === "23505"
-          ? "Ya existe un registro para ese bus en esa fecha."
-          : error.code === "23514"
-            ? "El registro diario no cumple las reglas operativas esperadas."
-          : "No pudimos guardar el registro diario.",
+      message: getDailyRecordPersistenceMessage(error, Boolean(recordId)),
       status: "error",
     };
   }
+
+  let followUpMessage: string | null = null;
 
   if (recordId && existingRecord) {
     const { error: auditError } = await supabase.rpc(
@@ -283,12 +352,23 @@ export async function saveDailyRecordAction(
         "No pudimos registrar la auditoria explicita del ajuste diario.",
         auditError,
       );
+      followUpMessage =
+        "La correccion se guardo, pero no pudimos registrar la auditoria explicita del cambio.";
     }
 
-    await reconcileDailyRecordDates(supabase, [
-      existingRecord.record_date,
-      savedRecord.record_date,
-    ]);
+    try {
+      await reconcileDailyRecordDates(supabase, [
+        existingRecord.record_date,
+        savedRecord.record_date,
+      ]);
+    } catch (reconcileError) {
+      console.error(
+        "No pudimos reconciliar alertas despues de corregir el registro diario.",
+        reconcileError,
+      );
+      followUpMessage =
+        "La correccion se guardo, pero no pudimos reconciliar alertas ni diferencias automaticamente.";
+    }
   }
 
   revalidatePath("/dashboard");
@@ -306,13 +386,14 @@ export async function saveDailyRecordAction(
 
   return {
     message:
-      savedRecord.status === "closed"
+      followUpMessage ??
+      (savedRecord.status === "closed"
         ? recordId
           ? "Registro diario corregido y recalculado correctamente."
           : "Registro diario guardado y cerrado automaticamente."
         : recordId
           ? "Registro diario actualizado como borrador."
-          : "Registro diario guardado como borrador.",
+          : "Registro diario guardado como borrador."),
     status: "success",
   };
 }
