@@ -28,6 +28,18 @@ type DailyFormProps = {
   readOnly?: boolean;
 };
 
+function toInputValue(value: string | number | null | undefined) {
+  if (value == null) {
+    return "";
+  }
+
+  return typeof value === "string" ? value : String(value);
+}
+
+function hasFilledInput(value: string | number | null | undefined) {
+  return toInputValue(value).trim().length > 0;
+}
+
 export function DailyForm({
   allowClosedEditing = false,
   buses,
@@ -44,23 +56,23 @@ export function DailyForm({
     initialRecord?.record_date ?? getBusinessTodayDate(),
   );
   const [departureTime, setDepartureTime] = useState(
-    initialRecord?.departure_time?.slice(0, 5) ?? "",
+    toInputValue(initialRecord?.departure_time).slice(0, 5),
   );
-  const [incomeBs, setIncomeBs] = useState(initialRecord?.income_bs ?? "");
+  const [incomeBs, setIncomeBs] = useState(toInputValue(initialRecord?.income_bs));
   const [exchangeRate, setExchangeRate] = useState(
-    initialRecord?.exchange_rate ?? "",
+    toInputValue(initialRecord?.exchange_rate),
   );
-  const [fuelCost, setFuelCost] = useState(initialRecord?.fuel_cost ?? "");
+  const [fuelCost, setFuelCost] = useState(toInputValue(initialRecord?.fuel_cost));
   const [workerPayment, setWorkerPayment] = useState(
-    initialRecord?.worker_payment ?? "",
+    toInputValue(initialRecord?.worker_payment),
   );
   const [otherExpenses, setOtherExpenses] = useState(
-    initialRecord?.other_expenses ?? "",
+    toInputValue(initialRecord?.other_expenses),
   );
   const [netProfitUsd, setNetProfitUsd] = useState(
-    initialRecord?.net_profit_usd ?? "",
+    toInputValue(initialRecord?.net_profit_usd),
   );
-  const [notes, setNotes] = useState(initialRecord?.notes ?? "");
+  const [notes, setNotes] = useState(toInputValue(initialRecord?.notes));
 
   const toNumber = (value: string) => {
     const parsed = Number.parseFloat(value);
@@ -98,7 +110,7 @@ export function DailyForm({
     workerPayment,
     otherExpenses,
     netProfitUsd,
-  ].every((value) => value.trim().length > 0);
+  ].every((value) => hasFilledInput(value));
 
   const selectedBusBlocked = Boolean(
     !isReadOnly &&

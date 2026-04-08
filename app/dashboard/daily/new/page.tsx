@@ -15,39 +15,87 @@ import { isDemoBus } from "@/lib/demo-data";
 import { OPERATIONAL_ROUTE } from "@/lib/operational-route";
 import { createClient } from "@/lib/supabase/server";
 
-async function getDailyFormContext(recordId?: string) {
+type DailyFormContext = {
+  buses: Array<{
+    code: string;
+    id: string;
+    photoUrl: string | null;
+    plate: string;
+    routeName: string;
+    status: "active" | "inactive" | "maintenance";
+  }>;
+  existingRecords: Array<{
+    bus_id: string;
+    id: string;
+    record_date: string;
+  }>;
+  initialRecord: Awaited<ReturnType<typeof getInitialRecord>> | null;
+  loadError: string | null;
+  requestedRecordMissing: boolean;
+};
+
+async function getInitialRecord(recordId: string) {
   const supabase = await createClient();
-  const [{ data: buses }, { data: existingRecords }] = await Promise.all([
-    supabase
-      .from("buses")
-      .select("id, code, plate, photo_path, route_id, status")
-      .order("code"),
-    supabase.from("daily_records").select("id, bus_id, record_date"),
-  ]);
-  const initialRecord = recordId
-    ? (
-        await supabase
-          .from("daily_records")
-          .select("*")
-          .eq("id", recordId)
-          .maybeSingle()
-      ).data
-    : null;
+  const { data, error } = await supabase
+    .from("daily_records")
+    .select("*")
+    .eq("id", recordId)
+    .maybeSingle();
 
-  const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
-  const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+  if (error) {
+    throw error;
+  }
 
-  return {
-    buses: visibleBuses
-      .map((bus) => ({
+  return data;
+}
+
+async function getDailyFormContext(recordId?: string) {
+  try {
+    const supabase = await createClient();
+    const [{ data: buses, error: busesError }, { data: existingRecords, error: recordsError }] =
+      await Promise.all([
+        supabase
+          .from("buses")
+          .select("id, code, plate, photo_path, route_id, status")
+          .order("code"),
+        supabase.from("daily_records").select("id, bus_id, record_date"),
+      ]);
+
+    if (busesError) {
+      throw busesError;
+    }
+
+    if (recordsError) {
+      throw recordsError;
+    }
+
+    const initialRecord = recordId ? await getInitialRecord(recordId) : null;
+    const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
+    const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
+
+    return {
+      buses: visibleBuses.map((bus) => ({
         ...bus,
         photoUrl: photoMap.get(bus.id) ?? null,
         routeName: OPERATIONAL_ROUTE.label,
       })),
-    existingRecords: existingRecords ?? [],
-    initialRecord,
-    requestedRecordMissing: Boolean(recordId && !initialRecord),
-  };
+      existingRecords: existingRecords ?? [],
+      initialRecord,
+      loadError: null,
+      requestedRecordMissing: Boolean(recordId && !initialRecord),
+    } satisfies DailyFormContext;
+  } catch (error) {
+    console.error("No pudimos preparar el contexto del formulario diario.", error);
+
+    return {
+      buses: [],
+      existingRecords: [],
+      initialRecord: null,
+      loadError:
+        "No pudimos cargar este registro diario en este momento. Intenta volver al historial y reabrirlo.",
+      requestedRecordMissing: Boolean(recordId),
+    } satisfies DailyFormContext;
+  }
 }
 
 type NewDailyRecordPageProps = {
@@ -62,12 +110,20 @@ export default async function NewDailyRecordPage({
   const context = await requireAuth();
 
   const params = searchParams ? await searchParams : undefined;
-  const { buses, existingRecords, initialRecord, requestedRecordMissing } =
+  const {
+    buses,
+    existingRecords,
+    initialRecord,
+    loadError,
+    requestedRecordMissing,
+  } =
     await getDailyFormContext(params?.recordId ? String(params.recordId) : undefined);
+  const requestedRecordId = params?.recordId ? String(params.recordId) : undefined;
   const isClosedRecord = initialRecord?.status === "closed";
   const isEditingExistingRecord = Boolean(initialRecord);
   const adminCanEditExisting = context.profile.role === "admin";
   const editBlockedForRole = isEditingExistingRecord && !adminCanEditExisting;
+  const formUnavailable = Boolean(loadError) || Boolean(requestedRecordId && !initialRecord);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
@@ -87,6 +143,12 @@ export default async function NewDailyRecordPage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {loadError ? (
+            <ConfigAlert
+              message={loadError}
+              title="No pudimos abrir esta edicion"
+            />
+          ) : null}
           {requestedRecordMissing ? (
             <ConfigAlert
               message="No pudimos cargar el registro solicitado. Puede que no exista o que no tengas permisos para editarlo."
@@ -99,15 +161,17 @@ export default async function NewDailyRecordPage({
               title="Edicion restringida"
             />
           ) : null}
-          <DailyForm
-            key={initialRecord?.id ?? "new-daily-record"}
-            buses={buses}
-            allowClosedEditing={adminCanEditExisting}
-            currentUserId={context.profile.id}
-            existingRecords={existingRecords}
-            initialRecord={initialRecord}
-            readOnly={editBlockedForRole}
-          />
+          {formUnavailable ? null : (
+            <DailyForm
+              key={initialRecord?.id ?? "new-daily-record"}
+              buses={buses}
+              allowClosedEditing={adminCanEditExisting}
+              currentUserId={context.profile.id}
+              existingRecords={existingRecords}
+              initialRecord={initialRecord}
+              readOnly={editBlockedForRole}
+            />
+          )}
         </CardContent>
       </Card>
 
