@@ -137,7 +137,7 @@ export function DailyTable({
                 <th className="px-4 py-3">Neto calculado</th>
                 <th className="px-4 py-3">Diferencia</th>
                 <th className="px-4 py-3">Estado</th>
-                <th className="px-4 py-3 text-right">Accion</th>
+                {isAdmin ? <th className="px-4 py-3 text-right">Accion</th> : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-border bg-white/70">
@@ -190,14 +190,16 @@ export function DailyTable({
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        className="text-sm font-semibold text-primary"
-                        href={`/dashboard/daily/new?recordId=${record.id}`}
-                      >
-                        {record.status === "closed" ? "Ver cierre" : "Editar"}
-                      </Link>
-                    </td>
+                    {isAdmin ? (
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          className="text-sm font-semibold text-primary"
+                          href={`/dashboard/daily/new?recordId=${record.id}`}
+                        >
+                          Editar
+                        </Link>
+                      </td>
+                    ) : null}
                   </tr>
                 );
               })}

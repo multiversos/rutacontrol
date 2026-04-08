@@ -65,6 +65,9 @@ export default async function NewDailyRecordPage({
   const { buses, existingRecords, initialRecord, requestedRecordMissing } =
     await getDailyFormContext(params?.recordId ? String(params.recordId) : undefined);
   const isClosedRecord = initialRecord?.status === "closed";
+  const isEditingExistingRecord = Boolean(initialRecord);
+  const adminCanEditExisting = context.profile.role === "admin";
+  const editBlockedForRole = isEditingExistingRecord && !adminCanEditExisting;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
@@ -72,14 +75,15 @@ export default async function NewDailyRecordPage({
         <CardHeader>
           <CardTitle>
             {initialRecord
-              ? isClosedRecord
-                ? "Registro diario cerrado"
-                : "Editar registro diario"
+              ? adminCanEditExisting
+                ? "Editar registro diario"
+                : "Registro diario existente"
               : "Nuevo registro diario"}
           </CardTitle>
           <CardDescription>
-            Guarda la operacion del dia y deja que la base recalcule los montos
-            derivados, el estado del cierre y el hash antes de persistir.
+            {adminCanEditExisting && initialRecord
+              ? "Corrige el registro desde servidor y deja que la base recalcule montos, alertas y hash de cierre antes de persistir."
+              : "Guarda la operacion del dia y deja que la base recalcule los montos derivados, el estado del cierre y el hash antes de persistir."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -89,13 +93,20 @@ export default async function NewDailyRecordPage({
               title="Registro no disponible"
             />
           ) : null}
+          {editBlockedForRole ? (
+            <ConfigAlert
+              message="Solo el administrador puede corregir registros ya creados. El registrador puede crear nuevos cierres, pero no editar existentes."
+              title="Edicion restringida"
+            />
+          ) : null}
           <DailyForm
             key={initialRecord?.id ?? "new-daily-record"}
             buses={buses}
+            allowClosedEditing={adminCanEditExisting}
             currentUserId={context.profile.id}
             existingRecords={existingRecords}
             initialRecord={initialRecord}
-            readOnly={isClosedRecord}
+            readOnly={editBlockedForRole}
           />
         </CardContent>
       </Card>
@@ -129,7 +140,13 @@ export default async function NewDailyRecordPage({
                 valida al guardar para respetar seguridad y RLS.
               </p>
             ) : null}
-            {isClosedRecord ? (
+            {isClosedRecord && adminCanEditExisting ? (
+              <ConfigAlert
+                message="Como admin puedes corregir este cierre. Al guardar, el sistema recalcula diferencia, alertas y hash sin perder la fecha original de cierre."
+                title="Correccion administrativa habilitada"
+              />
+            ) : null}
+            {isClosedRecord && !adminCanEditExisting ? (
               <ConfigAlert
                 message="El registro ya quedo cerrado. Puedes revisarlo, pero cualquier intento de edicion operativa sera rechazado."
                 title="Cierre aplicado"

@@ -698,14 +698,22 @@ export type Database = {
     Views: {
       [_ in never]: never;
     };
-    Functions: {
-      create_login_alert: {
-        Args: Record<PropertyKey, never>;
-        Returns: string | null;
-      };
-      create_repair_with_receipt: {
-        Args: {
-          _bucket_name?: string | null;
+      Functions: {
+        create_login_alert: {
+          Args: Record<PropertyKey, never>;
+          Returns: string | null;
+        };
+        log_daily_record_update_event: {
+          Args: {
+            _new_values?: Json;
+            _old_values?: Json;
+            _record_id: string;
+          };
+          Returns: string;
+        };
+        create_repair_with_receipt: {
+          Args: {
+            _bucket_name?: string | null;
           _bus_id: string;
           _category: Database["public"]["Enums"]["repair_category"];
           _content_type?: string | null;

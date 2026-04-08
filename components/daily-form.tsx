@@ -20,6 +20,7 @@ type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
 type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record_date">;
 
 type DailyFormProps = {
+  allowClosedEditing?: boolean;
   buses: BusOption[];
   currentUserId: string;
   existingRecords: ExistingRecordRef[];
@@ -28,6 +29,7 @@ type DailyFormProps = {
 };
 
 export function DailyForm({
+  allowClosedEditing = false,
   buses,
   currentUserId,
   existingRecords,
@@ -36,7 +38,7 @@ export function DailyForm({
 }: DailyFormProps) {
   const [state, formAction] = useActionState(saveDailyRecordAction, initialFormState);
   const isClosedRecord = initialRecord?.status === "closed";
-  const isReadOnly = readOnly || isClosedRecord;
+  const isReadOnly = readOnly || (isClosedRecord && !allowClosedEditing);
   const [busId, setBusId] = useState(initialRecord?.bus_id ?? "");
   const [recordDate, setRecordDate] = useState(
     initialRecord?.record_date ?? getBusinessTodayDate(),
@@ -313,8 +315,9 @@ export function DailyForm({
 
         {isReadOnly ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Este registro ya esta cerrado. Puedes revisarlo, pero la app no permite
-            editarlo nuevamente.
+            {isClosedRecord
+              ? "Este registro ya esta cerrado. Solo el administrador puede corregirlo."
+              : "Este registro no esta disponible para editarse desde esta sesion."}
           </div>
         ) : (
           <SubmitButton
@@ -322,12 +325,14 @@ export function DailyForm({
             disabled={selectedBusBlocked || !busId}
             pendingLabel="Guardando registro..."
           >
-            {closureReady
-              ? initialRecord
-                ? "Guardar y cerrar"
-                : "Crear y cerrar"
-              : initialRecord
-                ? "Guardar borrador"
+            {initialRecord
+              ? isClosedRecord
+                ? "Guardar correccion"
+                : closureReady
+                  ? "Guardar y cerrar"
+                  : "Guardar borrador"
+              : closureReady
+                ? "Crear y cerrar"
                 : "Crear borrador"}
           </SubmitButton>
         )}
@@ -416,7 +421,7 @@ export function DailyForm({
             </p>
             <p>
               4. Los registros cerrados quedan bloqueados en la app y en la base de
-              datos.
+              datos para el registrador; el admin puede corregirlos desde esta vista.
             </p>
             {isClosedRecord ? (
               <>
