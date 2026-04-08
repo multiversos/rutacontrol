@@ -5,6 +5,7 @@ import { BusDebtSummary } from "@/components/bus-debt-summary";
 import { BusFinancialSummary } from "@/components/bus-financial-summary";
 import { BusMaintenanceHistory } from "@/components/bus-maintenance-history";
 import { BusOperationalHistory } from "@/components/bus-operational-history";
+import { BusPeriodHistory } from "@/components/bus-period-history";
 import { BusProfileHeader } from "@/components/bus-profile-header";
 import { BusProfileKpis } from "@/components/bus-profile-kpis";
 import { BusRepairHistory } from "@/components/bus-repair-history";
@@ -53,6 +54,10 @@ export default async function BusProfilePage({
       <BusOperationalHistory
         filters={profile.filters}
         records={profile.operationHistory}
+      />
+      <BusPeriodHistory
+        monthly={profile.periodSummaries.monthly}
+        weekly={profile.periodSummaries.weekly}
       />
       <BusFinancialSummary summary={profile.financialSummary} />
       <BusMaintenanceHistory
