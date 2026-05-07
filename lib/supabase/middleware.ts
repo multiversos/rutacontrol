@@ -27,6 +27,22 @@ function isInvalidSessionError(errorMessage?: string) {
   return /expired|invalid|jwt|session|token/i.test(errorMessage ?? "");
 }
 
+function clearSupabaseAuthCookies(request: NextRequest, response: NextResponse) {
+  request.cookies
+    .getAll()
+    .filter(
+      (cookie) =>
+        cookie.name.startsWith("sb-") && cookie.name.includes("auth-token"),
+    )
+    .forEach((cookie) => {
+      request.cookies.delete(cookie.name);
+      response.cookies.set(cookie.name, "", {
+        maxAge: 0,
+        path: "/",
+      });
+    });
+}
+
 export async function updateSession(
   request: NextRequest,
 ): Promise<MiddlewareSessionResult> {
@@ -65,17 +81,17 @@ export async function updateSession(
   });
 
   const hasAuthCookie = hasSupabaseAuthCookie(request);
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   let authIssue: LoginErrorCode | null =
-    claimsError && hasAuthCookie && isInvalidSessionError(claimsError.message)
+    userError && hasAuthCookie && isInvalidSessionError(userError.message)
       ? "session-expired"
       : null;
 
-  let userId =
-    !authIssue && typeof claimsData?.claims?.sub === "string"
-      ? claimsData.claims.sub
-      : null;
+  let userId = !authIssue && user ? user.id : null;
   let role: AppRole | null = null;
 
   if (userId) {
@@ -94,14 +110,19 @@ export async function updateSession(
     }
 
     if (authIssue) {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        clearSupabaseAuthCookies(request, response);
+      }
+
       userId = null;
       role = null;
     }
   }
 
   if (authIssue === "session-expired") {
-    await supabase.auth.signOut();
+    clearSupabaseAuthCookies(request, response);
   }
 
   return {
