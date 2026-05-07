@@ -15,10 +15,53 @@ import { formatCurrency, formatDateLabel, formatDateTime } from "@/lib/formatter
 
 type DebtsPageProps = {
   searchParams?: Promise<{
+    amountUsd?: string;
+    bus?: string;
+    busId?: string;
+    creditor?: string;
+    dailyRecordId?: string;
+    description?: string;
+    dueDate?: string;
     pay?: string;
+    recordId?: string;
+    samantha?: string;
     status?: string;
   }>;
 };
+
+function cleanText(value: string | undefined, maxLength = 500) {
+  const text = String(value ?? "").trim();
+  return text ? text.slice(0, maxLength) : undefined;
+}
+
+function cleanDate(value: string | undefined) {
+  const text = cleanText(value);
+  return text && /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : undefined;
+}
+
+function cleanNumber(value: string | undefined) {
+  const text = cleanText(value);
+  return text && /^\d+(\.\d+)?$/.test(text) ? text : undefined;
+}
+
+function normalizeLookup(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function findBusId(
+  buses: Array<{ code: string; id: string; plate: string }>,
+  busLookup: string | undefined,
+) {
+  const lookup = cleanText(busLookup);
+  if (!lookup) return undefined;
+
+  const normalized = normalizeLookup(lookup);
+  return buses.find((bus) => {
+    return [bus.id, bus.code, bus.plate].some((candidate) => {
+      return normalizeLookup(candidate) === normalized;
+    });
+  })?.id;
+}
 
 export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   await requireRole("admin");
@@ -33,6 +76,16 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
     ...(params?.pay ? { payDebtId: String(params.pay) } : {}),
     status,
   });
+  const samanthaDefaults = params?.samantha
+    ? {
+        amountUsd: cleanNumber(params.amountUsd),
+        busId: findBusId(debtsData.busOptions, params.busId ?? params.bus),
+        creditor: cleanText(params.creditor, 160),
+        dailyRecordId: cleanText(params.dailyRecordId ?? params.recordId),
+        description: cleanText(params.description, 500),
+        dueDate: cleanDate(params.dueDate),
+      }
+    : {};
 
   return (
     <div className="space-y-6">
@@ -79,16 +132,18 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <DebtTable
-          debts={debtsData.debts}
-          status={debtsData.filters.status}
-          {...(debtsData.filters.payDebtId
-            ? { selectedDebtId: debtsData.filters.payDebtId }
-            : {})}
-        />
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] 2xl:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]">
+        <div className="min-w-0">
+          <DebtTable
+            debts={debtsData.debts}
+            status={debtsData.filters.status}
+            {...(debtsData.filters.payDebtId
+              ? { selectedDebtId: debtsData.filters.payDebtId }
+              : {})}
+          />
+        </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {!debtsData.migrationReady ? (
             <Card className="border-amber-200 bg-amber-50/70">
               <CardHeader>
@@ -109,10 +164,16 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                 registros diarios.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0">
               {debtsData.migrationReady ? (
                 <DebtForm
                   busOptions={debtsData.busOptions}
+                  defaultAmountUsd={samanthaDefaults.amountUsd}
+                  defaultBusId={samanthaDefaults.busId}
+                  defaultCreditor={samanthaDefaults.creditor}
+                  defaultDescription={samanthaDefaults.description}
+                  defaultDueDate={samanthaDefaults.dueDate}
+                  defaultRecordId={samanthaDefaults.dailyRecordId}
                   recordOptions={debtsData.recordOptions}
                 />
               ) : (

@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
+
+import { CapacitorSetup } from "@/components/native/capacitor-setup";
 
 import "./globals.css";
 
@@ -14,6 +16,13 @@ export const metadata: Metadata = {
     "Control operativo y financiero interno para empresas de transporte de pasajeros.",
 };
 
+export const viewport: Viewport = {
+  initialScale: 1,
+  themeColor: "#0f4a73",
+  viewportFit: "cover",
+  width: "device-width",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
       >
+        <CapacitorSetup />
         {children}
       </body>
     </html>

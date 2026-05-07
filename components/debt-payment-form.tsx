@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { registerDebtPaymentAction } from "@/app/dashboard/debts/actions";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -10,25 +11,47 @@ import { Textarea } from "@/components/ui/textarea";
 import type { DebtListItem } from "@/lib/debts";
 import { formatCurrency, getBusinessTodayDate } from "@/lib/formatters";
 import { initialFormState } from "@/lib/forms/action-state";
+import { cn } from "@/lib/utils";
 
 type DebtPaymentFormProps = {
   debt: DebtListItem;
+  mode?: "desktop" | "mobile";
 };
 
-export function DebtPaymentForm({ debt }: DebtPaymentFormProps) {
+export function DebtPaymentForm({
+  debt,
+  mode = "desktop",
+}: DebtPaymentFormProps) {
   const [state, formAction] = useActionState(
     registerDebtPaymentAction,
     initialFormState,
   );
   const disabled = debt.status === "paid";
+  const isMobile = mode === "mobile";
 
   return (
     <form action={formAction} className="space-y-5">
       <input name="debtId" type="hidden" value={debt.id} />
 
-      <div className="rounded-2xl border border-border bg-muted/40 p-4 text-sm">
-        <p className="font-semibold">{debt.creditor}</p>
-        <p className="mt-1 text-muted-foreground">{debt.description}</p>
+      <div
+        className={cn(
+          "rounded-2xl border border-border bg-muted/40 p-4 text-sm",
+          isMobile && "rounded-[24px] border-slate-200/80 bg-slate-50/75",
+        )}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-semibold">{debt.creditor}</p>
+            <p className="mt-1 text-muted-foreground">{debt.description}</p>
+          </div>
+          <Badge variant={debt.status === "paid" ? "success" : "warning"}>
+            {debt.status === "paid"
+              ? "Saldada"
+              : debt.status === "partial"
+                ? "Parcial"
+                : "Pendiente"}
+          </Badge>
+        </div>
         <p className="mt-3 text-muted-foreground">
           Saldo pendiente:{" "}
           <span className="font-semibold text-foreground">
@@ -37,12 +60,13 @@ export function DebtPaymentForm({ debt }: DebtPaymentFormProps) {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="debt-payment-amount">Abono (USD)</Label>
           <Input
             disabled={disabled}
             id="debt-payment-amount"
+            inputMode="decimal"
             min="0"
             name="amountUsd"
             placeholder="35.00"

@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
+
 import { BusIdentity } from "@/components/buses/bus-identity";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import type { Tables } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -22,10 +25,13 @@ type BusSelectorProps = {
   existingRecords?: ExistingRecordRef[];
   helperText?: string;
   id?: string;
+  layout?: "grid" | "list";
   labelId?: string | undefined;
   name?: string;
   onChange: (value: string) => void;
   recordDate?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
   value: string;
 };
 
@@ -38,12 +44,16 @@ export function BusSelector({
   existingRecords = [],
   helperText = "Selecciona la unidad correcta usando foto, codigo y placa. La base confirma el bloqueo final al guardar.",
   id = "bus-selector",
+  layout = "grid",
   labelId = `${id}-label`,
   name = "busId",
   onChange,
   recordDate,
+  searchable = false,
+  searchPlaceholder = "Buscar por codigo o placa",
   value,
 }: BusSelectorProps) {
+  const [query, setQuery] = useState("");
   const isBlocked = (busId: string) =>
     existingRecords.some(
       (record) =>
@@ -53,7 +63,22 @@ export function BusSelector({
     );
 
   const selectedBusBlocked = value ? isBlocked(value) : false;
+  const normalizedQuery = query.trim().toLowerCase();
+  const selectedBus = buses.find((bus) => bus.id === value) ?? null;
+  const filteredBuses = buses.filter((bus) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    const haystack = [bus.code, bus.plate, bus.routeName]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(normalizedQuery);
+  });
   const helperId = `${id}-helper`;
+  const searchId = `${id}-search`;
   const statusId = `${id}-status`;
   const describedBy = [selectedBusBlocked ? statusId : helperId, ariaDescribedBy]
     .filter(Boolean)
@@ -63,9 +88,40 @@ export function BusSelector({
     <div className="space-y-3">
       <input id={`${id}-value`} name={name} type="hidden" value={value} />
 
+      {searchable ? (
+        <div className="space-y-2">
+          <Input
+            autoComplete="off"
+            id={searchId}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={searchPlaceholder}
+            type="search"
+            value={query}
+          />
+          {selectedBus ? (
+            <div className="flex items-center justify-between gap-3 rounded-[22px] border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+              <BusIdentity
+                className="min-w-0"
+                code={selectedBus.code}
+                photoUrl={selectedBus.photoUrl ?? null}
+                plate={selectedBus.plate}
+                secondaryText={selectedBus.routeName ?? null}
+                size="sm"
+                wrap
+              />
+              <Badge variant="success">Seleccionado</Badge>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {buses.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           {emptyLabel}
+        </div>
+      ) : filteredBuses.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          No encontramos buses con ese criterio. Prueba con otro codigo o placa.
         </div>
       ) : (
         <div
@@ -73,11 +129,14 @@ export function BusSelector({
           aria-describedby={describedBy || undefined}
           aria-invalid={selectedBusBlocked}
           aria-labelledby={labelId}
-          className="grid gap-3 sm:grid-cols-2"
+          className={cn(
+            "grid max-h-[360px] auto-rows-min gap-3 overflow-y-auto overscroll-contain pr-1",
+            layout === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1",
+          )}
           id={id}
           role="radiogroup"
         >
-          {buses.map((bus) => {
+          {filteredBuses.map((bus) => {
             const blocked = recordDate ? isBlocked(bus.id) : false;
             const unavailable = (bus.status ?? "active") !== "active" && bus.id !== value;
             const isSelected = bus.id === value;
@@ -87,7 +146,7 @@ export function BusSelector({
               <button
                 aria-checked={isSelected}
                 className={cn(
-                  "rounded-3xl border px-4 py-3 text-left transition-colors",
+                  "flex h-auto min-h-[72px] w-full min-w-0 items-center overflow-hidden rounded-[22px] border px-4 py-3 text-left transition-colors",
                   isSelected
                     ? "border-primary bg-primary/5 shadow-soft"
                     : "border-border bg-white/85 hover:border-primary/40 hover:bg-primary/5",
@@ -99,16 +158,18 @@ export function BusSelector({
                 role="radio"
                 type="button"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                   <BusIdentity
+                    className="min-w-0"
                     code={bus.code}
                     photoUrl={bus.photoUrl ?? null}
                     plate={bus.plate}
                     secondaryText={bus.routeName ?? null}
                     size="sm"
+                    wrap
                   />
 
-                  <div className="flex flex-wrap justify-end gap-2">
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
                     {isSelected ? <Badge variant="success">Seleccionado</Badge> : null}
                     {blocked ? (
                       <Badge className="bg-destructive/10 text-destructive" variant="muted">
@@ -130,7 +191,9 @@ export function BusSelector({
         </p>
       ) : (
         <p className="text-sm text-muted-foreground" id={helperId}>
-          {helperText}
+          {searchable
+            ? `${filteredBuses.length} bus${filteredBuses.length === 1 ? "" : "es"} visible${filteredBuses.length === 1 ? "" : "s"}. ${helperText}`
+            : helperText}
         </p>
       )}
     </div>

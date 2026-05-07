@@ -8,6 +8,7 @@ type BusIdentityProps = {
   plate?: string | null;
   secondaryText?: string | null;
   size?: "md" | "sm";
+  wrap?: boolean;
 };
 
 export function BusIdentity({
@@ -17,6 +18,7 @@ export function BusIdentity({
   plate,
   secondaryText,
   size = "sm",
+  wrap = false,
 }: BusIdentityProps) {
   const metaLine = [plate ? `Placa ${plate}` : null, secondaryText]
     .filter(Boolean)
@@ -26,9 +28,23 @@ export function BusIdentity({
     <div className={cn("flex items-center gap-3", className)}>
       <BusPhoto code={code} photoUrl={photoUrl ?? null} size={size} />
       <div className="min-w-0 space-y-1">
-        <p className="truncate font-semibold text-foreground">{code}</p>
+        <p
+          className={cn(
+            "font-semibold text-foreground",
+            wrap ? "break-words leading-5" : "truncate",
+          )}
+        >
+          {code}
+        </p>
         {metaLine ? (
-          <p className="truncate text-xs text-muted-foreground">{metaLine}</p>
+          <p
+            className={cn(
+              "text-xs text-muted-foreground",
+              wrap ? "break-words whitespace-normal leading-5" : "truncate",
+            )}
+          >
+            {metaLine}
+          </p>
         ) : null}
       </div>
     </div>

@@ -183,6 +183,19 @@ export type BusProfileFinancialSummary = {
   openDebtUsd: number;
 };
 
+export type BusProfilePeriodSummary = {
+  closedRecordCount: number;
+  daysOperated: number;
+  differenceUsd: number;
+  expenseUsd: number;
+  incomeUsd: number;
+  netUsd: number;
+  periodEnd: string;
+  periodLabel: string;
+  periodStart: string;
+  recordCount: number;
+};
+
 export type BusProfileKpi = {
   helper: string;
   label: string;
@@ -207,6 +220,10 @@ export type BusProfileData = {
     componentHistory: BusProfileComponentSection[];
     currentCycles: MaintenanceCycleItem[];
     maintenanceRecords: MaintenanceRecordListItem[];
+  };
+  periodSummaries: {
+    monthly: BusProfilePeriodSummary[];
+    weekly: BusProfilePeriodSummary[];
   };
   operationHistory: BusProfileOperationalRecord[];
   repairs: {
@@ -255,6 +272,165 @@ function getRouteStatusLabel(route: RouteRow | null) {
   }
 
   return route.active ? "Ruta operativa" : "Ruta inactiva";
+}
+
+function parseUtcDate(dateString: string) {
+  return new Date(`${dateString}T00:00:00Z`);
+}
+
+function toIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getWeekStart(dateString: string) {
+  const date = parseUtcDate(dateString);
+  const weekday = date.getUTCDay();
+  const offset = (weekday + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - offset);
+
+  return date;
+}
+
+function getWeekEnd(weekStart: Date) {
+  const date = new Date(weekStart);
+  date.setUTCDate(date.getUTCDate() + 6);
+
+  return date;
+}
+
+function getMonthStart(dateString: string) {
+  const date = parseUtcDate(dateString);
+  date.setUTCDate(1);
+
+  return date;
+}
+
+function getMonthEnd(monthStart: Date) {
+  const date = new Date(monthStart);
+  date.setUTCMonth(date.getUTCMonth() + 1, 0);
+
+  return date;
+}
+
+function formatShortMonthDay(dateString: string) {
+  return new Intl.DateTimeFormat("es-VE", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  })
+    .format(parseUtcDate(dateString))
+    .replace(".", "");
+}
+
+function formatDayNumber(dateString: string) {
+  return new Intl.DateTimeFormat("es-VE", {
+    day: "2-digit",
+    timeZone: "UTC",
+  }).format(parseUtcDate(dateString));
+}
+
+function formatShortMonthYear(dateString: string) {
+  return new Intl.DateTimeFormat("es-VE", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric",
+  })
+    .format(parseUtcDate(dateString))
+    .replace(".", "");
+}
+
+function formatMonthYearLabel(dateString: string) {
+  const label = new Intl.DateTimeFormat("es-VE", {
+    month: "long",
+    timeZone: "UTC",
+    year: "numeric",
+  }).format(parseUtcDate(dateString));
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function buildWeeklyLabel(periodStart: string, periodEnd: string) {
+  const startDate = parseUtcDate(periodStart);
+  const endDate = parseUtcDate(periodEnd);
+  const sameMonth =
+    startDate.getUTCMonth() === endDate.getUTCMonth() &&
+    startDate.getUTCFullYear() === endDate.getUTCFullYear();
+  const sameYear = startDate.getUTCFullYear() === endDate.getUTCFullYear();
+
+  if (sameMonth) {
+    return `Semana del lun ${formatDayNumber(periodStart)} al dom ${formatShortMonthDay(periodEnd)} ${endDate.getUTCFullYear()}`;
+  }
+
+  if (sameYear) {
+    return `Semana del lun ${formatShortMonthDay(periodStart)} al dom ${formatShortMonthDay(periodEnd)} ${endDate.getUTCFullYear()}`;
+  }
+
+  return `Semana del lun ${formatShortMonthYear(periodStart)} al dom ${formatShortMonthYear(periodEnd)}`;
+}
+
+function buildPeriodSummaries(
+  records: BusProfileOperationalRecord[],
+  period: "month" | "week",
+) {
+  const groupedPeriods = new Map<
+    string,
+    Omit<BusProfilePeriodSummary, "daysOperated" | "periodLabel"> & {
+      recordDates: Set<string>;
+    }
+  >();
+
+  records.forEach((record) => {
+    const periodStartDate =
+      period === "week"
+        ? getWeekStart(record.recordDate)
+        : getMonthStart(record.recordDate);
+    const periodEndDate =
+      period === "week"
+        ? getWeekEnd(periodStartDate)
+        : getMonthEnd(periodStartDate);
+    const periodStart = toIsoDate(periodStartDate);
+    const periodEnd = toIsoDate(periodEndDate);
+    const currentPeriod = groupedPeriods.get(periodStart) ?? {
+      closedRecordCount: 0,
+      differenceUsd: 0,
+      expenseUsd: 0,
+      incomeUsd: 0,
+      netUsd: 0,
+      periodEnd,
+      periodStart,
+      recordCount: 0,
+      recordDates: new Set<string>(),
+    };
+
+    currentPeriod.closedRecordCount += record.status === "closed" ? 1 : 0;
+    currentPeriod.differenceUsd += toNumber(record.difference);
+    currentPeriod.expenseUsd += record.expenseUsd;
+    currentPeriod.incomeUsd += toNumber(record.incomeUsd);
+    currentPeriod.netUsd += toNumber(record.netUsd);
+    currentPeriod.recordCount += 1;
+    currentPeriod.recordDates.add(record.recordDate);
+
+    groupedPeriods.set(periodStart, currentPeriod);
+  });
+
+  return Array.from(groupedPeriods.values())
+    .map((summary) => ({
+      closedRecordCount: summary.closedRecordCount,
+      daysOperated: summary.recordDates.size,
+      differenceUsd: summary.differenceUsd,
+      expenseUsd: summary.expenseUsd,
+      incomeUsd: summary.incomeUsd,
+      netUsd: summary.netUsd,
+      periodEnd: summary.periodEnd,
+      periodLabel:
+        period === "week"
+          ? buildWeeklyLabel(summary.periodStart, summary.periodEnd)
+          : formatMonthYearLabel(summary.periodStart),
+      periodStart: summary.periodStart,
+      recordCount: summary.recordCount,
+    }))
+    .sort((left, right) => right.periodStart.localeCompare(left.periodStart));
 }
 
 function getNextMaintenance(cycles: MaintenanceCycleItem[]) {
@@ -339,7 +515,7 @@ function buildOperationRecord(
     difference: record.difference,
     expenseUsd: Math.max(incomeUsd - netUsd, 0),
     id: record.id,
-    incomeUsd: record.income_usd,
+    incomeUsd: record.income_usd ?? "0.00",
     netUsd: record.calculated_net,
     recordDate: record.record_date,
     status: record.status,
@@ -508,6 +684,8 @@ export async function getBusProfileData(
 
     return true;
   });
+  const weeklySummary = buildPeriodSummaries(operationHistory, "week");
+  const monthlySummary = buildPeriodSummaries(operationHistory, "month");
 
   const closedRecords = allOperationRecords.filter((record) => record.status === "closed");
   const recentWorkedDays = closedRecords.filter(
@@ -739,6 +917,10 @@ export async function getBusProfileData(
       componentHistory,
       currentCycles: maintenanceData.currentCycles,
       maintenanceRecords: maintenanceData.maintenanceRecords,
+    },
+    periodSummaries: {
+      monthly: monthlySummary,
+      weekly: weeklySummary,
     },
     operationHistory,
     repairs: {

@@ -1,64 +1,146 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 
 import { saveDailyRecordAction } from "@/app/dashboard/daily/actions";
 import { BusSelector } from "@/components/bus-selector";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
-import { formatCurrency, formatNumber, getBusinessTodayDate } from "@/lib/formatters";
+import {
+  formatCurrency,
+  getBusinessTodayDate,
+} from "@/lib/formatters";
 import { initialFormState } from "@/lib/forms/action-state";
 import type { Tables } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
-type BusOption = Pick<Tables<"buses">, "code" | "id" | "plate" | "status"> & {
+export type DailyFormBusOption = Pick<
+  Tables<"buses">,
+  "code" | "id" | "plate" | "status"
+> & {
   photoUrl?: string | null;
   routeName: string;
 };
 
-type ExistingRecordRef = Pick<Tables<"daily_records">, "bus_id" | "id" | "record_date">;
+export type DailyFormExistingRecordRef = Pick<
+  Tables<"daily_records">,
+  "bus_id" | "id" | "record_date"
+>;
 
-type DailyFormProps = {
-  buses: BusOption[];
-  currentUserId: string;
-  existingRecords: ExistingRecordRef[];
-  initialRecord?: Tables<"daily_records"> | null;
-  readOnly?: boolean;
+export type DailyFormInitialValues = {
+  busId?: string | undefined;
+  departureTime?: string | undefined;
+  fuelCost?: string | undefined;
+  incomeUsd?: string | undefined;
+  notes?: string | undefined;
+  otherExpenses?: string | undefined;
+  recordDate?: string | undefined;
+  workerPayment?: string | undefined;
 };
 
+type DailyFormProps = {
+  allowClosedEditing?: boolean;
+  buses: DailyFormBusOption[];
+  createAnotherHref?: string;
+  currentUserId: string;
+  existingRecords: DailyFormExistingRecordRef[];
+  initialValues?: DailyFormInitialValues | undefined;
+  initialRecord?: Tables<"daily_records"> | null;
+  mode?: "desktop" | "mobile";
+  readOnly?: boolean;
+  successContinueHref?: string;
+  successContinueLabel?: string;
+};
+
+type SectionBlockProps = {
+  children: React.ReactNode;
+  description?: string;
+  mobile?: boolean;
+  title: string;
+};
+
+function SectionBlock({
+  children,
+  description,
+  mobile = false,
+  title,
+}: SectionBlockProps) {
+  return (
+    <section
+      className={cn(
+        "space-y-4",
+        mobile && "rounded-[24px] border border-slate-200/80 bg-slate-50/75 p-4",
+      )}
+    >
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold tracking-tight text-foreground">
+          {title}
+        </h3>
+        {description ? (
+          <p className="text-sm leading-6 text-muted-foreground">{description}</p>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function toInputValue(value: string | number | null | undefined) {
+  if (value == null) {
+    return "";
+  }
+
+  return typeof value === "string" ? value : String(value);
+}
+
+function hasFilledInput(value: string | number | null | undefined) {
+  return toInputValue(value).trim().length > 0;
+}
+
 export function DailyForm({
+  allowClosedEditing = false,
   buses,
+  createAnotherHref = "/dashboard/daily/new",
   currentUserId,
   existingRecords,
+  initialValues,
   initialRecord,
+  mode = "desktop",
   readOnly = false,
+  successContinueHref = "/dashboard/daily",
+  successContinueLabel = "Ver historial",
 }: DailyFormProps) {
   const [state, formAction] = useActionState(saveDailyRecordAction, initialFormState);
+  const isMobile = mode === "mobile";
   const isClosedRecord = initialRecord?.status === "closed";
-  const isReadOnly = readOnly || isClosedRecord;
-  const [busId, setBusId] = useState(initialRecord?.bus_id ?? "");
+  const isReadOnly = readOnly || (isClosedRecord && !allowClosedEditing);
+  const [busId, setBusId] = useState(initialRecord?.bus_id ?? initialValues?.busId ?? "");
   const [recordDate, setRecordDate] = useState(
-    initialRecord?.record_date ?? getBusinessTodayDate(),
+    initialRecord?.record_date ?? initialValues?.recordDate ?? getBusinessTodayDate(),
   );
   const [departureTime, setDepartureTime] = useState(
-    initialRecord?.departure_time?.slice(0, 5) ?? "",
+    (toInputValue(initialRecord?.departure_time) || initialValues?.departureTime || "").slice(0, 5),
   );
-  const [incomeBs, setIncomeBs] = useState(initialRecord?.income_bs ?? "");
-  const [exchangeRate, setExchangeRate] = useState(
-    initialRecord?.exchange_rate ?? "",
+  const [incomeUsd, setIncomeUsd] = useState(
+    toInputValue(initialRecord?.income_usd) || initialValues?.incomeUsd || "",
   );
-  const [fuelCost, setFuelCost] = useState(initialRecord?.fuel_cost ?? "");
+  const [fuelCost, setFuelCost] = useState(
+    toInputValue(initialRecord?.fuel_cost) || initialValues?.fuelCost || "",
+  );
   const [workerPayment, setWorkerPayment] = useState(
-    initialRecord?.worker_payment ?? "",
+    toInputValue(initialRecord?.worker_payment) || initialValues?.workerPayment || "",
   );
   const [otherExpenses, setOtherExpenses] = useState(
-    initialRecord?.other_expenses ?? "",
+    toInputValue(initialRecord?.other_expenses) || initialValues?.otherExpenses || "",
   );
-  const [netProfitUsd, setNetProfitUsd] = useState(
-    initialRecord?.net_profit_usd ?? "",
+  const [notes, setNotes] = useState(
+    toInputValue(initialRecord?.notes) || initialValues?.notes || "",
   );
-  const [notes, setNotes] = useState(initialRecord?.notes ?? "");
 
   const toNumber = (value: string) => {
     const parsed = Number.parseFloat(value);
@@ -73,30 +155,23 @@ export function DailyForm({
     return (value < 0 ? -rounded : rounded) / factor;
   };
 
-  const incomeUsd =
-    toNumber(exchangeRate) > 0
-      ? roundNumeric(toNumber(incomeBs) / toNumber(exchangeRate), 2)
-      : 0;
   const calculatedNet = roundNumeric(
-    incomeUsd -
+    toNumber(incomeUsd) -
       toNumber(fuelCost) -
       toNumber(workerPayment) -
       toNumber(otherExpenses),
     2,
   );
-  const difference = roundNumeric(toNumber(netProfitUsd) - calculatedNet, 2);
   const closureReady = [
     busId,
     currentUserId,
     recordDate,
     departureTime,
-    incomeBs,
-    exchangeRate,
+    incomeUsd,
     fuelCost,
     workerPayment,
     otherExpenses,
-    netProfitUsd,
-  ].every((value) => value.trim().length > 0);
+  ].every((value) => hasFilledInput(value));
 
   const selectedBusBlocked = Boolean(
     !isReadOnly &&
@@ -108,229 +183,303 @@ export function DailyForm({
           record.id !== initialRecord?.id,
       ),
   );
+  const isCreateSuccess = state.status === "success" && !initialRecord;
 
   return (
-    <form action={formAction} className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+    <form
+      action={formAction}
+      className={cn(
+        isMobile
+          ? "space-y-4"
+          : "grid items-start gap-6 xl:grid-cols-[1.05fr_0.95fr]",
+      )}
+    >
       <input name="recordId" type="hidden" value={initialRecord?.id ?? ""} />
       <input name="userId" type="hidden" value={currentUserId} />
 
-      <div className="space-y-5 rounded-[28px] border border-border bg-white/70 p-5">
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="record-date">Fecha operativa</Label>
-            <Input
-              disabled={isReadOnly}
-              id="record-date"
-              name="recordDate"
-              onChange={(event) => setRecordDate(event.target.value)}
-              type="date"
-              value={recordDate}
-            />
-            {state.fieldErrors?.recordDate?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.recordDate[0]}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="departure-time">Hora de salida</Label>
-            <Input
-              disabled={isReadOnly}
-              id="departure-time"
-              name="departureTime"
-              onChange={(event) => setDepartureTime(event.target.value)}
-              type="time"
-              value={departureTime}
-            />
-            {state.fieldErrors?.departureTime?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.departureTime[0]}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label id="bus-selector-label">Bus</Label>
-          <BusSelector
-            ariaDescribedBy={state.fieldErrors?.busId?.[0] ? "bus-selector-error" : undefined}
-            buses={buses}
-            currentRecordId={initialRecord?.id ?? null}
-            disabled={isReadOnly}
-            existingRecords={existingRecords}
-            labelId="bus-selector-label"
-            onChange={setBusId}
-            recordDate={recordDate}
-            value={busId}
-          />
-          {state.fieldErrors?.busId?.[0] ? (
-            <p className="text-sm text-destructive" id="bus-selector-error">
-              {state.fieldErrors.busId[0]}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="income-bs">Ingreso en bolivares</Label>
-            <Input
-              disabled={isReadOnly}
-              id="income-bs"
-              min="0"
-              name="incomeBs"
-              onChange={(event) => setIncomeBs(event.target.value)}
-              step="0.01"
-              type="number"
-              value={incomeBs}
-            />
-            {state.fieldErrors?.incomeBs?.[0] ? (
-              <p className="text-sm text-destructive">{state.fieldErrors.incomeBs[0]}</p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="exchange-rate">Tasa Bs/USD</Label>
-            <Input
-              disabled={isReadOnly}
-              id="exchange-rate"
-              min="0"
-              name="exchangeRate"
-              onChange={(event) => setExchangeRate(event.target.value)}
-              step="0.000001"
-              type="number"
-              value={exchangeRate}
-            />
-            {state.fieldErrors?.exchangeRate?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.exchangeRate[0]}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          <div className="space-y-2">
-            <Label htmlFor="fuel-cost">Gasoil (USD)</Label>
-            <Input
-              disabled={isReadOnly}
-              id="fuel-cost"
-              min="0"
-              name="fuelCost"
-              onChange={(event) => setFuelCost(event.target.value)}
-              step="0.01"
-              type="number"
-              value={fuelCost}
-            />
-            {state.fieldErrors?.fuelCost?.[0] ? (
-              <p className="text-sm text-destructive">{state.fieldErrors.fuelCost[0]}</p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="worker-payment">Pago a trabajadores (USD)</Label>
-            <Input
-              disabled={isReadOnly}
-              id="worker-payment"
-              min="0"
-              name="workerPayment"
-              onChange={(event) => setWorkerPayment(event.target.value)}
-              step="0.01"
-              type="number"
-              value={workerPayment}
-            />
-            {state.fieldErrors?.workerPayment?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.workerPayment[0]}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="other-expenses">Otros gastos (USD)</Label>
-            <Input
-              disabled={isReadOnly}
-              id="other-expenses"
-              min="0"
-              name="otherExpenses"
-              onChange={(event) => setOtherExpenses(event.target.value)}
-              step="0.01"
-              type="number"
-              value={otherExpenses}
-            />
-            {state.fieldErrors?.otherExpenses?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.otherExpenses[0]}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="net-profit-usd">Neto reportado (USD)</Label>
-          <Input
-            disabled={isReadOnly}
-            id="net-profit-usd"
-            name="netProfitUsd"
-            onChange={(event) => setNetProfitUsd(event.target.value)}
-            step="0.01"
-            type="number"
-            value={netProfitUsd}
-          />
-          {state.fieldErrors?.netProfitUsd?.[0] ? (
-            <p className="text-sm text-destructive">
-              {state.fieldErrors.netProfitUsd[0]}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="notes">Observaciones</Label>
-          <Textarea
-            disabled={isReadOnly}
-            id="notes"
-            name="notes"
-            onChange={(event) => setNotes(event.target.value)}
-            placeholder="Observaciones del dia, incidencias o contexto adicional."
-            value={notes}
-          />
-          {state.fieldErrors?.notes?.[0] ? (
-            <p className="text-sm text-destructive">{state.fieldErrors.notes[0]}</p>
-          ) : null}
-        </div>
-
-        {state.message ? (
-          <p
-            className={
-              state.status === "success"
-                ? "rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
-                : "rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive"
-            }
-          >
-            {state.message}
-          </p>
-        ) : null}
-
-        {isReadOnly ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Este registro ya esta cerrado. Puedes revisarlo, pero la app no permite
-            editarlo nuevamente.
-          </div>
-        ) : (
-          <SubmitButton
-            className="w-full md:w-auto"
-            disabled={selectedBusBlocked || !busId}
-            pendingLabel="Guardando registro..."
-          >
-            {closureReady
-              ? initialRecord
-                ? "Guardar y cerrar"
-                : "Crear y cerrar"
-              : initialRecord
-                ? "Guardar borrador"
-                : "Crear borrador"}
-          </SubmitButton>
+      <div
+        className={cn(
+          "space-y-5 rounded-[28px] border border-border p-5",
+          isMobile ? "bg-white/88 shadow-soft" : "bg-white/70",
         )}
+      >
+        <SectionBlock
+          description="Fecha operativa y hora de salida del cierre diario."
+          mobile={isMobile}
+          title="Operacion del dia"
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="record-date">Fecha operativa</Label>
+              <Input
+                disabled={isReadOnly}
+                id="record-date"
+                name="recordDate"
+                onChange={(event) => setRecordDate(event.target.value)}
+                type="date"
+                value={recordDate}
+              />
+              {state.fieldErrors?.recordDate?.[0] ? (
+                <p className="text-sm text-destructive">
+                  {state.fieldErrors.recordDate[0]}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="departure-time">Hora de salida</Label>
+              <Input
+                disabled={isReadOnly}
+                id="departure-time"
+                name="departureTime"
+                onChange={(event) => setDepartureTime(event.target.value)}
+                type="time"
+                value={departureTime}
+              />
+              {state.fieldErrors?.departureTime?.[0] ? (
+                <p className="text-sm text-destructive">
+                  {state.fieldErrors.departureTime[0]}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock
+          description={
+            isMobile
+              ? "Busca por codigo o placa y toca la unidad correcta para seleccionarla."
+              : "Selecciona la unidad correcta usando foto, codigo y placa."
+          }
+          mobile={isMobile}
+          title="Selecciona el bus"
+        >
+          <div className="space-y-2">
+            <Label id="bus-selector-label">Bus</Label>
+            <BusSelector
+              ariaDescribedBy={
+                state.fieldErrors?.busId?.[0] ? "bus-selector-error" : undefined
+              }
+              buses={buses}
+              currentRecordId={initialRecord?.id ?? null}
+              disabled={isReadOnly}
+              existingRecords={existingRecords}
+              helperText="La base confirma el bloqueo final al guardar y mantiene las reglas actuales del sistema."
+              labelId="bus-selector-label"
+              layout={isMobile ? "list" : "grid"}
+              onChange={setBusId}
+              recordDate={recordDate}
+              searchable={isMobile}
+              searchPlaceholder="Buscar bus por codigo o placa"
+              value={busId}
+            />
+            {state.fieldErrors?.busId?.[0] ? (
+              <p className="text-sm text-destructive" id="bus-selector-error">
+                {state.fieldErrors.busId[0]}
+              </p>
+            ) : null}
+          </div>
+        </SectionBlock>
+
+        <SectionBlock
+          description="Carga el ingreso operativo directamente en dolares."
+          mobile={isMobile}
+          title="Ingreso"
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="income-usd">Ingreso en d&oacute;lares</Label>
+              <Input
+                disabled={isReadOnly}
+                id="income-usd"
+                inputMode="decimal"
+                min="0"
+                name="incomeUsd"
+                onChange={(event) => setIncomeUsd(event.target.value)}
+                step="0.01"
+                type="number"
+                value={incomeUsd}
+              />
+              {state.fieldErrors?.incomeUsd?.[0] ? (
+                <p className="text-sm text-destructive">
+                  {state.fieldErrors.incomeUsd[0]}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock
+          description="Completa los gastos del dia; el neto se calcula automaticamente."
+          mobile={isMobile}
+          title="Gastos"
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="fuel-cost">Gasoil (USD)</Label>
+              <Input
+                disabled={isReadOnly}
+                id="fuel-cost"
+                inputMode="decimal"
+                min="0"
+                name="fuelCost"
+                onChange={(event) => setFuelCost(event.target.value)}
+                step="0.01"
+                type="number"
+                value={fuelCost}
+              />
+              {state.fieldErrors?.fuelCost?.[0] ? (
+                <p className="text-sm text-destructive">
+                  {state.fieldErrors.fuelCost[0]}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="worker-payment">Pago a trabajadores (USD)</Label>
+              <Input
+                disabled={isReadOnly}
+                id="worker-payment"
+                inputMode="decimal"
+                min="0"
+                name="workerPayment"
+                onChange={(event) => setWorkerPayment(event.target.value)}
+                step="0.01"
+                type="number"
+                value={workerPayment}
+              />
+              {state.fieldErrors?.workerPayment?.[0] ? (
+                <p className="text-sm text-destructive">
+                  {state.fieldErrors.workerPayment[0]}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="other-expenses">Otros gastos (USD)</Label>
+              <Input
+                disabled={isReadOnly}
+                id="other-expenses"
+                inputMode="decimal"
+                min="0"
+                name="otherExpenses"
+                onChange={(event) => setOtherExpenses(event.target.value)}
+                step="0.01"
+                type="number"
+                value={otherExpenses}
+              />
+              {state.fieldErrors?.otherExpenses?.[0] ? (
+                <p className="text-sm text-destructive">
+                  {state.fieldErrors.otherExpenses[0]}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock
+          description="Anota incidencias o contexto adicional del dia si hace falta."
+          mobile={isMobile}
+          title="Observaciones"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="notes">Observaciones</Label>
+            <Textarea
+              disabled={isReadOnly}
+              id="notes"
+              name="notes"
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder="Observaciones del dia, incidencias o contexto adicional."
+              value={notes}
+            />
+            {state.fieldErrors?.notes?.[0] ? (
+              <p className="text-sm text-destructive">{state.fieldErrors.notes[0]}</p>
+            ) : null}
+          </div>
+        </SectionBlock>
+
+        <div
+          className={cn(
+            "space-y-4 rounded-[24px] border border-border bg-card/95 p-4",
+            isMobile &&
+              "sticky bottom-[calc(var(--mobile-tabbar-height)+var(--safe-bottom)+0.75rem)] z-10 border-slate-200/90 bg-white/95 shadow-[0_16px_32px_rgba(15,23,42,0.12)] backdrop-blur",
+          )}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">
+                {initialRecord ? "Actualizar registro diario" : "Guardar registro diario"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {closureReady
+                  ? "Con todos los datos completos, el cierre sera automatico."
+                  : "Si falta algun dato, el sistema lo dejara como borrador."}
+              </p>
+            </div>
+            <Badge variant={closureReady ? "success" : "warning"}>
+              {closureReady ? "Cierre listo" : "Borrador"}
+            </Badge>
+          </div>
+
+          {state.message ? (
+            <p
+              className={
+                state.status === "success"
+                  ? "rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                  : "rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              }
+            >
+              {state.message}
+            </p>
+          ) : null}
+
+          {isMobile && isCreateSuccess ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Link
+                className={buttonVariants({
+                  className: "w-full",
+                  variant: "secondary",
+                })}
+                href={createAnotherHref}
+              >
+                Registrar otro
+              </Link>
+              <Link
+                className={buttonVariants({
+                  className: "w-full",
+                  variant: "outline",
+                })}
+                href={successContinueHref}
+              >
+                {successContinueLabel}
+              </Link>
+            </div>
+          ) : null}
+
+          {isReadOnly ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              {isClosedRecord
+                ? "Este registro ya esta cerrado. Solo el administrador puede corregirlo."
+                : "Este registro no esta disponible para editarse desde esta sesion."}
+            </div>
+          ) : (
+            <SubmitButton
+              className="w-full"
+              disabled={selectedBusBlocked || !busId}
+              pendingLabel="Guardando registro..."
+            >
+              {initialRecord
+                ? isClosedRecord
+                  ? "Guardar correccion"
+                  : closureReady
+                    ? "Guardar y cerrar"
+                    : "Guardar borrador"
+                : closureReady
+                  ? "Crear y cerrar"
+                  : "Crear borrador"}
+            </SubmitButton>
+          )}
+        </div>
       </div>
 
       <div className="space-y-5">
@@ -348,50 +497,32 @@ export function DailyForm({
               <p className="mt-2 text-2xl font-semibold">
                 {formatCurrency(incomeUsd)}
               </p>
+            </div>
+
+            <div className="rounded-3xl bg-muted/50 p-4">
+              <p className="text-sm text-muted-foreground">Gastos operativos</p>
+              <p className="mt-2 text-2xl font-semibold">
+                {formatCurrency(
+                  roundNumeric(
+                    toNumber(fuelCost) +
+                      toNumber(workerPayment) +
+                      toNumber(otherExpenses),
+                    2,
+                  ),
+                )}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {formatNumber(incomeBs)} Bs / {formatNumber(exchangeRate, 6)}
+                Gasoil, trabajadores y otros gastos
               </p>
             </div>
 
             <div className="rounded-3xl bg-muted/50 p-4">
-              <p className="text-sm text-muted-foreground">Neto calculado</p>
+              <p className="text-sm text-muted-foreground">Neto automatico</p>
               <p className="mt-2 text-2xl font-semibold">
                 {formatCurrency(calculatedNet)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Ingreso USD menos gastos operativos del dia
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-muted/50 p-4">
-              <p className="text-sm text-muted-foreground">Neto reportado</p>
-              <p className="mt-2 text-2xl font-semibold">
-                {formatCurrency(netProfitUsd)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Valor informado por la persona registradora
-              </p>
-            </div>
-
-            <div
-              className={
-                Math.abs(difference) >= 0.01
-                  ? "rounded-3xl border border-destructive/20 bg-destructive/10 p-4"
-                  : "rounded-3xl border border-emerald-200 bg-emerald-50 p-4"
-              }
-            >
-              <p className="text-sm text-muted-foreground">Diferencia</p>
-              <p
-                className={
-                  Math.abs(difference) >= 0.01
-                    ? "mt-2 text-2xl font-semibold text-destructive"
-                    : "mt-2 text-2xl font-semibold text-emerald-700"
-                }
-              >
-                {formatCurrency(difference)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Si no es 0, el sistema la guardara y la mostrara en rojo.
               </p>
             </div>
           </div>
@@ -416,7 +547,7 @@ export function DailyForm({
             </p>
             <p>
               4. Los registros cerrados quedan bloqueados en la app y en la base de
-              datos.
+              datos para el registrador; el admin puede corregirlos.
             </p>
             {isClosedRecord ? (
               <>

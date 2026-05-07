@@ -11,11 +11,16 @@ import { SubmitButton } from "@/components/ui/submit-button";
 type LoginFormProps = {
   disabled?: boolean;
   redirectTo: string;
+  submitLabel?: string;
 };
 
 const initialState: LoginFormState = {};
 
-export function LoginForm({ disabled = false, redirectTo }: LoginFormProps) {
+export function LoginForm({
+  disabled = false,
+  redirectTo,
+  submitLabel = "Entrar a RutaControl",
+}: LoginFormProps) {
   const [state, formAction] = useActionState(signInAction, initialState);
 
   return (
@@ -59,7 +64,7 @@ export function LoginForm({ disabled = false, redirectTo }: LoginFormProps) {
         </Button>
       ) : (
         <SubmitButton className="w-full" pendingLabel="Ingresando...">
-          Entrar al dashboard
+          {submitLabel}
         </SubmitButton>
       )}
     </form>

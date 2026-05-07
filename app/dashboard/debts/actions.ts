@@ -106,7 +106,11 @@ export async function saveDebtAction(
     due_date: parsed.data.dueDate ?? null,
   };
 
-  const { error } = await supabase.from("debts").insert(payload);
+  const { data: debt, error } = await supabase
+    .from("debts")
+    .insert(payload)
+    .select("id")
+    .single();
 
   if (error) {
     return {
@@ -125,8 +129,12 @@ export async function saveDebtAction(
   }
 
   revalidatePath("/dashboard/debts");
+  revalidatePath("/mobile");
+  revalidatePath("/mobile/register");
+  revalidatePath("/mobile/register/debts");
 
   return {
+    entityId: debt.id,
     message: "Deuda registrada correctamente.",
     status: "success",
   };
@@ -188,8 +196,11 @@ export async function registerDebtPaymentAction(
   }
 
   revalidatePath("/dashboard/debts");
+  revalidatePath("/mobile");
+  revalidatePath("/mobile/register/debts");
 
   return {
+    entityId: parsed.data.debtId,
     message: "Abono registrado correctamente.",
     status: "success",
   };

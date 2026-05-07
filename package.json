@@ -8,6 +8,10 @@
     "node": ">=20.9.0"
   },
   "scripts": {
+    "android:doctor": "cap doctor",
+    "android:open": "cap open android",
+    "android:run": "cap run android",
+    "android:sync": "cap sync android",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,6 +19,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/keyboard": "^8.0.2",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.0",
     "class-variance-authority": "^0.7.1",

@@ -28,14 +28,10 @@ export const dailyRecordSchema = z.object({
       .string()
       .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "La hora debe estar en formato HH:MM."),
   ),
-  incomeBs: optionalMoney,
-  exchangeRate: optionalField(
-    z.coerce.number().positive("La tasa debe ser mayor a cero."),
-  ),
+  incomeUsd: optionalMoney,
   fuelCost: optionalMoney,
   workerPayment: optionalMoney,
   otherExpenses: optionalMoney,
-  netProfitUsd: optionalField(z.coerce.number().finite()),
   notes: z.string().trim().max(1000).optional(),
 });
 
