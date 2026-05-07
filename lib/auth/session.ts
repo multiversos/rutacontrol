@@ -23,6 +23,10 @@ export type AuthorizedSessionContext = {
   user: User;
 };
 
+type RequireAuthOptions = {
+  redirectTo?: string;
+};
+
 export const getSessionContext = cache(async (): Promise<SessionContext> => {
   if (!hasRequiredPublicEnv()) {
     return {
@@ -79,15 +83,25 @@ export const getSessionContext = cache(async (): Promise<SessionContext> => {
   };
 });
 
-export async function requireAuth(): Promise<AuthorizedSessionContext> {
+export async function requireAuth(
+  options?: RequireAuthOptions,
+): Promise<AuthorizedSessionContext> {
   const context = await getSessionContext();
+  const loginRedirectOptions = options?.redirectTo
+    ? { redirectTo: options.redirectTo }
+    : undefined;
 
   if (!context.user) {
-    redirect("/login");
+    redirect(getLoginPath(loginRedirectOptions));
   }
 
   if (!context.profile) {
-    redirect(getLoginPath({ error: context.authIssue ?? "missing-profile" }));
+    redirect(
+      getLoginPath({
+        error: context.authIssue ?? "missing-profile",
+        ...(options?.redirectTo ? { redirectTo: options.redirectTo } : {}),
+      }),
+    );
   }
 
   return {

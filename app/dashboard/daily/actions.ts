@@ -22,10 +22,8 @@ function normalizeDailyFormData(formData: FormData) {
   return {
     busId: formData.get("busId"),
     departureTime: formData.get("departureTime"),
-    exchangeRate: formData.get("exchangeRate"),
     fuelCost: formData.get("fuelCost"),
-    incomeBs: formData.get("incomeBs"),
-    netProfitUsd: formData.get("netProfitUsd"),
+    incomeUsd: formData.get("incomeUsd"),
     notes: formData.get("notes"),
     otherExpenses: formData.get("otherExpenses"),
     recordDate: formData.get("recordDate"),
@@ -52,7 +50,7 @@ type DailyRecordAuditSnapshot = {
   fuel_cost: string | null;
   id: string;
   income_bs: string | null;
-  income_usd: string;
+  income_usd: string | null;
   net_profit_usd: string | null;
   notes: string | null;
   other_expenses: string | null;
@@ -68,12 +66,10 @@ function isClosureReadyInput(input: DailyRecordInput) {
     input.userId,
     input.recordDate,
     input.departureTime,
-    input.incomeBs,
-    input.exchangeRate,
+    input.incomeUsd,
     input.fuelCost,
     input.workerPayment,
     input.otherExpenses,
-    input.netProfitUsd,
   ].every((value) => value !== undefined && value !== null && value !== "");
 }
 
@@ -290,10 +286,11 @@ export async function saveDailyRecordAction(
 
   const basePayload = {
     departure_time: parsed.data.departureTime ?? null,
-    exchange_rate: toFixedOrNull(parsed.data.exchangeRate, 6),
+    exchange_rate: null,
     fuel_cost: toFixedOrNull(parsed.data.fuelCost, 2),
-    income_bs: toFixedOrNull(parsed.data.incomeBs, 2),
-    net_profit_usd: toFixedOrNull(parsed.data.netProfitUsd, 2),
+    income_bs: null,
+    income_usd: toFixedOrNull(parsed.data.incomeUsd, 2),
+    net_profit_usd: null,
     notes: parsed.data.notes?.trim() ? parsed.data.notes.trim() : null,
     other_expenses: toFixedOrNull(parsed.data.otherExpenses, 2),
     record_date: parsed.data.recordDate,
@@ -377,6 +374,10 @@ export async function saveDailyRecordAction(
   revalidatePath("/dashboard/debts");
   revalidatePath("/dashboard/daily");
   revalidatePath("/dashboard/daily/new");
+  revalidatePath("/mobile");
+  revalidatePath("/mobile/register");
+  revalidatePath("/mobile/register/expenses");
+  revalidatePath("/mobile/register/debts");
 
   if (recordId && existingRecord) {
     revalidatePath(`/dashboard/buses/${existingRecord.bus_id}`);
@@ -385,6 +386,7 @@ export async function saveDailyRecordAction(
   revalidatePath(`/dashboard/buses/${savedRecord.bus_id}`);
 
   return {
+    entityId: savedRecord.id,
     message:
       followUpMessage ??
       (savedRecord.status === "closed"

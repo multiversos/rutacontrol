@@ -515,7 +515,7 @@ function buildOperationRecord(
     difference: record.difference,
     expenseUsd: Math.max(incomeUsd - netUsd, 0),
     id: record.id,
-    incomeUsd: record.income_usd,
+    incomeUsd: record.income_usd ?? "0.00",
     netUsd: record.calculated_net,
     recordDate: record.record_date,
     status: record.status,

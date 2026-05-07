@@ -171,7 +171,7 @@ export type Database = {
           fuel_cost: string | null;
           id: string;
           income_bs: string | null;
-          income_usd: string;
+          income_usd: string | null;
           net_profit_usd: string | null;
           notes: string | null;
           other_expenses: string | null;
@@ -193,7 +193,7 @@ export type Database = {
           fuel_cost?: string | null;
           id?: string;
           income_bs?: string | null;
-          income_usd?: string;
+          income_usd?: string | null;
           net_profit_usd?: string | null;
           notes?: string | null;
           other_expenses?: string | null;
@@ -215,7 +215,7 @@ export type Database = {
           fuel_cost?: string | null;
           id?: string;
           income_bs?: string | null;
-          income_usd?: string;
+          income_usd?: string | null;
           net_profit_usd?: string | null;
           notes?: string | null;
           other_expenses?: string | null;

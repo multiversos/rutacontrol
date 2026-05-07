@@ -11,6 +11,7 @@ import {
 import { hasRequiredPublicEnv } from "@/lib/env";
 import {
   getLoginErrorMessage,
+  isMobileRedirectPath,
   sanitizeRedirectPath,
 } from "@/lib/auth/routing";
 
@@ -24,6 +25,7 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = searchParams ? await searchParams : undefined;
   const redirectTo = sanitizeRedirectPath(params?.redirectTo ?? "/dashboard", null);
+  const isMobileLogin = isMobileRedirectPath(redirectTo);
   const authErrorMessage = getLoginErrorMessage(
     params?.error ? String(params.error) : null,
   );
@@ -49,8 +51,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <div className="space-y-2">
                 <CardTitle>Acceso interno</CardTitle>
                 <CardDescription>
-                  Usa una cuenta creada en Supabase Auth. El perfil se sincroniza en
-                  `public.profiles` automaticamente.
+                  {isMobileLogin
+                    ? "Entraras de nuevo a la experiencia movil despues del login, usando la misma autenticacion y permisos actuales."
+                    : "Usa una cuenta creada en Supabase Auth. El perfil se sincroniza en `public.profiles` automaticamente."}
                 </CardDescription>
               </div>
             </CardHeader>
@@ -66,7 +69,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <ConfigAlert message="Completa las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` o `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` para habilitar el login real." />
               ) : null}
 
-              <LoginForm disabled={!isConfigured} redirectTo={redirectTo} />
+              <LoginForm
+                disabled={!isConfigured}
+                redirectTo={redirectTo}
+                {...(isMobileLogin
+                  ? { submitLabel: "Entrar a la experiencia movil" }
+                  : {})}
+              />
             </CardContent>
           </Card>
         </section>

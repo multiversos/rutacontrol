@@ -6,7 +6,6 @@ import {
   formatCurrency,
   formatDateLabel,
   formatDateTime,
-  formatNumber,
   isNonZeroAmount,
 } from "@/lib/formatters";
 
@@ -28,12 +27,9 @@ type DailyTableRecord = {
   calculatedNet: string;
   closedAt: string | null;
   difference: string;
-  exchangeRate: string;
   fuelCost: string;
   id: string;
-  incomeBs: string;
   incomeUsd: string;
-  netProfitUsd: string;
   otherExpenses: string;
   recordDate: string;
   status: string;
@@ -129,12 +125,9 @@ export function DailyTable({
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Bus</th>
                 {isAdmin ? <th className="px-4 py-3">Registrador</th> : null}
-                <th className="px-4 py-3">Ingreso Bs</th>
-                <th className="px-4 py-3">Tasa</th>
                 <th className="px-4 py-3">Ingreso USD</th>
                 <th className="px-4 py-3">Gasto total</th>
-                <th className="px-4 py-3">Neto reportado</th>
-                <th className="px-4 py-3">Neto calculado</th>
+                <th className="px-4 py-3">Neto</th>
                 <th className="px-4 py-3">Diferencia</th>
                 <th className="px-4 py-3">Estado</th>
                 {isAdmin ? <th className="px-4 py-3 text-right">Accion</th> : null}
@@ -161,11 +154,8 @@ export function DailyTable({
                     {isAdmin ? (
                       <td className="px-4 py-3">{record.userName ?? "--"}</td>
                     ) : null}
-                    <td className="px-4 py-3">{formatNumber(record.incomeBs)}</td>
-                    <td className="px-4 py-3">{formatNumber(record.exchangeRate, 6)}</td>
                     <td className="px-4 py-3">{formatCurrency(record.incomeUsd)}</td>
                     <td className="px-4 py-3">{formatCurrency(totalExpenses)}</td>
-                    <td className="px-4 py-3">{formatCurrency(record.netProfitUsd)}</td>
                     <td className="px-4 py-3">{formatCurrency(record.calculatedNet)}</td>
                     <td
                       className={

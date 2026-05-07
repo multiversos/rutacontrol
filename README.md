@@ -2,6 +2,8 @@
 
 Estado del repositorio: `Sprint 5 cerrado`.
 
+En la rama de trabajo de Sprint 6 ya existe una base Android con Capacitor y una shell movil propia bajo `/mobile`, sin tocar la logica de negocio ni el esquema SQL.
+
 RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible, alertas internas, deudas con pagos parciales y reparaciones con comprobante y uploads reales a Supabase Storage.
 
 ## Estado actual
@@ -67,6 +69,7 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - Tailwind CSS
 - Supabase SSR
 - Vercel
+- Capacitor Android
 
 ## Rutas activas del MVP
 
@@ -78,6 +81,14 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - `/dashboard/daily/new`
 - `/dashboard/debts`
 - `/dashboard/repairs`
+
+## Rutas base movil
+
+- `/mobile`
+- `/mobile/register`
+- `/mobile/buses`
+- `/mobile/alerts`
+- `/mobile/more`
 
 ## Criterios aprobados de Sprint 5
 
@@ -115,13 +126,58 @@ npm run build
 npm run dev
 ```
 
+## Base Android con Capacitor
+
+Arquitectura aplicada:
+
+- Capacitor envuelve la app Next.js existente como contenedor Android
+- La app Android apunta al origen remoto y arranca con `appStartPath=/mobile`
+- El fallback local `capacitor-shell/index.html` cubre fallo inicial de carga remota con reintento
+- SSR, Supabase Auth, Server Actions y calculos criticos siguen ocurriendo en servidor
+- La web desktop se mantiene intacta; la experiencia movil vive en rutas separadas
+- Back button, status bar, teclado, safe areas y estado de red se atienden solo en la experiencia movil
+
+Scripts disponibles:
+
+```bash
+npm run android:doctor
+npm run android:sync
+npm run android:open
+npm run android:run
+```
+
+Flujo recomendado:
+
+```bash
+# shell Android contra produccion o staging
+set CAPACITOR_SERVER_URL=https://rutacontrol.vercel.app/mobile
+npm run android:sync
+npm run android:open
+
+# desarrollo local con emulador Android
+set CAPACITOR_SERVER_URL=http://10.0.2.2:3000/mobile
+npm run dev
+npm run android:sync
+npm run android:run
+```
+
+Notas:
+
+- `CAPACITOR_SERVER_URL` debe incluir la ruta `/mobile`
+- En emulador Android, `10.0.2.2` apunta al `localhost` de tu maquina
+- La carpeta `capacitor-shell/` existe como `webDir` minima y como fallback `server.errorPath`
+- Metadata Android: `applicationId` `com.multiversos.rutacontrol`, `versionName` `0.6.0-internal.1`, `versionCode` `60001`
+- Release interno firmado requiere keystore fuera del repo y variables `RUTACONTROL_RELEASE_*`
+
 ## Documentacion operativa
 
 - Estado del proyecto: [docs/project-status.md](N:/projects/busescontrol/docs/project-status.md)
 - Checklist de despliegue e integraciones: [docs/deployment-checklist.md](N:/projects/busescontrol/docs/deployment-checklist.md)
 - Evidencia y checklist funcional de Sprint 1: [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md)
 - Checklist de fundacion: [docs/sprint-0-checklist.md](N:/projects/busescontrol/docs/sprint-0-checklist.md)
+- Plan de Sprint 6 Android: [docs/sprint-6-plan.md](N:/projects/busescontrol/docs/sprint-6-plan.md)
+- Cierre Android release interno: [docs/sprint-6-android-release.md](N:/projects/busescontrol/docs/sprint-6-android-release.md)
 
 ## Siguiente fase
 
-Sprint 6 queda pendiente y no iniciado. La base estable tras Sprint 5 ya incluye deudas, pagos parciales, reparaciones con comprobante, historial por unidad y proximo servicio sugerido, sin abrir todavia trabajo funcional nuevo fuera del roadmap.
+Sprint 6 queda abierto de forma explicita en una rama separada para la base Android con Capacitor. La base estable tras Sprint 5 sigue incluyendo deudas, pagos parciales, reparaciones con comprobante, historial por unidad y proximo servicio sugerido, sin abrir trabajo funcional nuevo de negocio fuera del roadmap.

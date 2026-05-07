@@ -26,12 +26,9 @@ type DailyRecordLookup = Pick<
   | "closed_at"
   | "created_at"
   | "difference"
-  | "exchange_rate"
   | "fuel_cost"
   | "id"
-  | "income_bs"
   | "income_usd"
-  | "net_profit_usd"
   | "other_expenses"
   | "record_date"
   | "status"
@@ -91,12 +88,9 @@ export type NormalizedDailyRecord = {
   closedAt: string | null;
   createdAt: string;
   difference: string;
-  exchangeRate: string;
   fuelCost: string;
   id: string;
-  incomeBs: string;
   incomeUsd: string;
-  netProfitUsd: string;
   otherExpenses: string;
   recordDate: string;
   status: Tables<"daily_records">["status"];
@@ -266,12 +260,9 @@ function normalizeDailyRecords(
     closedAt: record.closed_at,
     createdAt: record.created_at,
     difference: record.difference,
-    exchangeRate: record.exchange_rate ?? "0.000000",
     fuelCost: record.fuel_cost ?? "0.00",
     id: record.id,
-    incomeBs: record.income_bs ?? "0.00",
-    incomeUsd: record.income_usd,
-    netProfitUsd: record.net_profit_usd ?? "0.00",
+    incomeUsd: record.income_usd ?? "0.00",
     otherExpenses: record.other_expenses ?? "0.00",
     recordDate: record.record_date,
     status: record.status,
@@ -323,7 +314,7 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
   let recordsQuery = supabase
     .from("daily_records")
     .select(
-      "id, bus_id, user_id, record_date, income_usd, calculated_net, difference, status, closed_at, created_at, updated_at, income_bs, exchange_rate, fuel_cost, worker_payment, other_expenses, net_profit_usd",
+      "id, bus_id, user_id, record_date, income_usd, calculated_net, difference, status, closed_at, created_at, updated_at, fuel_cost, worker_payment, other_expenses",
     )
     .eq("record_date", selectedDate)
     .order("updated_at", { ascending: false });
@@ -456,7 +447,7 @@ export async function getDailyHistoryData(filters: HistoryFilterState) {
   let recordsQuery = supabase
     .from("daily_records")
     .select(
-      "id, bus_id, user_id, record_date, income_bs, exchange_rate, income_usd, fuel_cost, worker_payment, other_expenses, net_profit_usd, calculated_net, difference, status, closed_at, created_at, updated_at",
+      "id, bus_id, user_id, record_date, income_usd, fuel_cost, worker_payment, other_expenses, calculated_net, difference, status, closed_at, created_at, updated_at",
     )
     .gte("record_date", dateFrom)
     .lte("record_date", dateTo)

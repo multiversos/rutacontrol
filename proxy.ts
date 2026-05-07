@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
-  getDefaultDashboardPath,
   isAllowedRedirectPath,
+  sanitizeRedirectPath,
 } from "@/lib/auth/routing";
 import { updateSession } from "@/lib/supabase/middleware";
 
@@ -22,10 +22,13 @@ export async function proxy(request: NextRequest) {
 
   const isLoginRoute = pathname === "/login";
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isMobileRoute = pathname.startsWith("/mobile");
   const isDashboardRoot = pathname === "/dashboard";
+  const isProtectedRoute = isDashboardRoute || isMobileRoute;
 
-  if (!userId && isDashboardRoute) {
+  if (!userId && isProtectedRoute) {
     const loginUrl = request.nextUrl.clone();
+    const redirectTo = `${pathname}${request.nextUrl.search}`;
     loginUrl.pathname = "/login";
     loginUrl.search = "";
 
@@ -34,7 +37,7 @@ export async function proxy(request: NextRequest) {
     }
 
     if (isAllowedRedirectPath(pathname) && pathname !== "/dashboard") {
-      loginUrl.searchParams.set("redirectTo", pathname);
+      loginUrl.searchParams.set("redirectTo", redirectTo);
     }
 
     return redirectWithCookies(loginUrl, response);
@@ -50,9 +53,14 @@ export async function proxy(request: NextRequest) {
   }
 
   if (userId && isLoginRoute) {
+    const requestedRedirect = request.nextUrl.searchParams.get("redirectTo");
+    const safeRedirect = new URL(
+      sanitizeRedirectPath(requestedRedirect, role),
+      request.nextUrl.origin,
+    );
     const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = getDefaultDashboardPath(role);
-    dashboardUrl.search = "";
+    dashboardUrl.pathname = safeRedirect.pathname;
+    dashboardUrl.search = safeRedirect.search;
 
     return redirectWithCookies(dashboardUrl, response);
   }

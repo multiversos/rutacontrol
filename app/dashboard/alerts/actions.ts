@@ -32,6 +32,8 @@ export async function markAlertReadAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/alerts");
+  revalidatePath("/mobile");
+  revalidatePath("/mobile/alerts");
 }
 
 export async function markVisibleAlertsReadAction(formData: FormData) {
@@ -80,4 +82,6 @@ export async function markVisibleAlertsReadAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/alerts");
+  revalidatePath("/mobile");
+  revalidatePath("/mobile/alerts");
 }
