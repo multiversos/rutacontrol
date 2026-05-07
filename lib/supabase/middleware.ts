@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { User } from "@supabase/supabase-js";
 
 import { hasRequiredPublicEnv } from "@/lib/env";
 import type { LoginErrorCode } from "@/lib/auth/routing";
@@ -21,10 +22,6 @@ function hasSupabaseAuthCookie(request: NextRequest) {
       (cookie) =>
         cookie.name.startsWith("sb-") && cookie.name.includes("auth-token"),
     );
-}
-
-function isInvalidSessionError(errorMessage?: string) {
-  return /expired|invalid|jwt|session|token/i.test(errorMessage ?? "");
 }
 
 function clearSupabaseAuthCookies(request: NextRequest, response: NextResponse) {
@@ -81,13 +78,21 @@ export async function updateSession(
   });
 
   const hasAuthCookie = hasSupabaseAuthCookie(request);
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  let user: User | null = null;
+  let userErrorMessage: string | null = null;
+
+  try {
+    const { data, error } = await supabase.auth.getUser();
+
+    user = data.user;
+    userErrorMessage = error?.message ?? null;
+  } catch (error) {
+    userErrorMessage =
+      error instanceof Error ? error.message : "Unable to validate session.";
+  }
 
   let authIssue: LoginErrorCode | null =
-    userError && hasAuthCookie && isInvalidSessionError(userError.message)
+    userErrorMessage && hasAuthCookie
       ? "session-expired"
       : null;
 
