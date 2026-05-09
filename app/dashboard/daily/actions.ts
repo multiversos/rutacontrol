@@ -65,7 +65,6 @@ function isClosureReadyInput(input: DailyRecordInput) {
     input.busId,
     input.userId,
     input.recordDate,
-    input.departureTime,
     input.incomeUsd,
     input.fuelCost,
     input.workerPayment,
@@ -284,8 +283,13 @@ export async function saveDailyRecordAction(
     };
   }
 
+  const departureTimeForPersistence =
+    existingRecord?.departure_time ??
+    parsed.data.departureTime ??
+    (isClosureReadyInput(parsed.data) ? "00:00" : null);
+
   const basePayload = {
-    departure_time: parsed.data.departureTime ?? null,
+    departure_time: departureTimeForPersistence,
     exchange_rate: null,
     fuel_cost: toFixedOrNull(parsed.data.fuelCost, 2),
     income_bs: null,

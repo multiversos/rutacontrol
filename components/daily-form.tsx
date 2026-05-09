@@ -34,7 +34,6 @@ export type DailyFormExistingRecordRef = Pick<
 
 export type DailyFormInitialValues = {
   busId?: string | undefined;
-  departureTime?: string | undefined;
   fuelCost?: string | undefined;
   incomeUsd?: string | undefined;
   notes?: string | undefined;
@@ -123,9 +122,6 @@ export function DailyForm({
   const [recordDate, setRecordDate] = useState(
     initialRecord?.record_date ?? initialValues?.recordDate ?? getBusinessTodayDate(),
   );
-  const [departureTime, setDepartureTime] = useState(
-    (toInputValue(initialRecord?.departure_time) || initialValues?.departureTime || "").slice(0, 5),
-  );
   const [incomeUsd, setIncomeUsd] = useState(
     toInputValue(initialRecord?.income_usd) || initialValues?.incomeUsd || "",
   );
@@ -166,7 +162,6 @@ export function DailyForm({
     busId,
     currentUserId,
     recordDate,
-    departureTime,
     incomeUsd,
     fuelCost,
     workerPayment,
@@ -204,11 +199,11 @@ export function DailyForm({
         )}
       >
         <SectionBlock
-          description="Fecha operativa y hora de salida del cierre diario."
+          description="Fecha operativa usada para el cierre diario."
           mobile={isMobile}
           title="Operacion del dia"
         >
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="record-date">Fecha operativa</Label>
               <Input
@@ -222,23 +217,6 @@ export function DailyForm({
               {state.fieldErrors?.recordDate?.[0] ? (
                 <p className="text-sm text-destructive">
                   {state.fieldErrors.recordDate[0]}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="departure-time">Hora de salida</Label>
-              <Input
-                disabled={isReadOnly}
-                id="departure-time"
-                name="departureTime"
-                onChange={(event) => setDepartureTime(event.target.value)}
-                type="time"
-                value={departureTime}
-              />
-              {state.fieldErrors?.departureTime?.[0] ? (
-                <p className="text-sm text-destructive">
-                  {state.fieldErrors.departureTime[0]}
                 </p>
               ) : null}
             </div>

@@ -17,7 +17,6 @@ type NewDailyRecordPageProps = {
   searchParams?: Promise<{
     bus?: string;
     busId?: string;
-    departureTime?: string;
     fuelCost?: string;
     incomeUsd?: string;
     notes?: string;
@@ -37,11 +36,6 @@ function cleanText(value: string | undefined, maxLength = 1000) {
 function cleanDate(value: string | undefined) {
   const text = cleanText(value);
   return text && /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : undefined;
-}
-
-function cleanTime(value: string | undefined) {
-  const text = cleanText(value);
-  return text && /^([01]\d|2[0-3]):([0-5]\d)$/.test(text) ? text : undefined;
 }
 
 function cleanNumber(value: string | undefined) {
@@ -76,7 +70,6 @@ function buildSamanthaInitialValues(
 
   const values: DailyFormInitialValues = {
     busId: findBusId(buses, params.busId ?? params.bus),
-    departureTime: cleanTime(params.departureTime),
     fuelCost: cleanNumber(params.fuelCost),
     incomeUsd: cleanNumber(params.incomeUsd),
     notes: cleanText(params.notes),

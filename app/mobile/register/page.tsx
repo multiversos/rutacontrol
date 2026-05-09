@@ -1,6 +1,5 @@
 import {
   CalendarDays,
-  Clock3,
   ReceiptText,
   ShieldCheck,
   SquarePen,
@@ -243,7 +242,7 @@ export default async function MobileRegisterPage() {
               </p>
             </div>
             <div className="flex gap-3 rounded-[22px] border border-slate-200/80 bg-slate-50/70 p-4">
-              <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <p>
                 Fecha operativa actual: {formatDateLabel(registerActivity.businessDate)}.
                 El bloqueo final y el recalculo siguen ocurriendo en servidor.
