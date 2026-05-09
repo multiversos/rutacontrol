@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { BusIdentity } from "@/components/buses/bus-identity";
+import { BusPhoto } from "@/components/buses/bus-photo";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -32,6 +33,8 @@ type BusSelectorProps = {
   recordDate?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
+  showHelper?: boolean;
+  variant?: "full" | "compact";
   value: string;
 };
 
@@ -51,9 +54,12 @@ export function BusSelector({
   recordDate,
   searchable = false,
   searchPlaceholder = "Buscar por codigo o placa",
+  showHelper = true,
+  variant = "full",
   value,
 }: BusSelectorProps) {
   const [query, setQuery] = useState("");
+  const isCompact = variant === "compact";
   const isBlocked = (busId: string) =>
     existingRecords.some(
       (record) =>
@@ -70,7 +76,7 @@ export function BusSelector({
       return true;
     }
 
-    const haystack = [bus.code, bus.plate, bus.routeName]
+    const haystack = (isCompact ? [bus.code] : [bus.code, bus.plate, bus.routeName])
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
@@ -80,7 +86,10 @@ export function BusSelector({
   const helperId = `${id}-helper`;
   const searchId = `${id}-search`;
   const statusId = `${id}-status`;
-  const describedBy = [selectedBusBlocked ? statusId : helperId, ariaDescribedBy]
+  const describedBy = [
+    selectedBusBlocked ? statusId : showHelper ? helperId : undefined,
+    ariaDescribedBy,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -98,18 +107,19 @@ export function BusSelector({
             type="search"
             value={query}
           />
-          {selectedBus ? (
+          {selectedBus && !isCompact ? (
             <div className="flex items-center justify-between gap-3 rounded-[22px] border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
               <BusIdentity
-                className="min-w-0"
+                className="min-w-0 flex-1"
                 code={selectedBus.code}
                 photoUrl={selectedBus.photoUrl ?? null}
                 plate={selectedBus.plate}
                 secondaryText={selectedBus.routeName ?? null}
                 size="sm"
-                wrap
               />
-              <Badge variant="success">Seleccionado</Badge>
+              <Badge className="shrink-0" variant="success">
+                Seleccionado
+              </Badge>
             </div>
           ) : null}
         </div>
@@ -121,7 +131,9 @@ export function BusSelector({
         </div>
       ) : filteredBuses.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          No encontramos buses con ese criterio. Prueba con otro codigo o placa.
+          {isCompact
+            ? "No encontramos buses con ese numero."
+            : "No encontramos buses con ese criterio. Prueba con otro codigo o placa."}
         </div>
       ) : (
         <div
@@ -130,8 +142,11 @@ export function BusSelector({
           aria-invalid={selectedBusBlocked}
           aria-labelledby={labelId}
           className={cn(
-            "grid max-h-[360px] auto-rows-min gap-3 overflow-y-auto overscroll-contain pr-1",
-            layout === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1",
+            isCompact
+              ? "grid auto-rows-min grid-cols-1 gap-2"
+              : "grid max-h-[360px] auto-rows-min gap-3 overflow-y-auto overscroll-contain pr-1",
+            !isCompact &&
+              (layout === "grid" ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1"),
           )}
           id={id}
           role="radiogroup"
@@ -145,8 +160,11 @@ export function BusSelector({
             return (
               <button
                 aria-checked={isSelected}
+                aria-label={`Bus ${bus.code}${blocked ? ", ya registrado" : ""}`}
                 className={cn(
-                  "flex h-auto min-h-[72px] w-full min-w-0 items-center overflow-hidden rounded-[22px] border px-4 py-3 text-left transition-colors",
+                  isCompact
+                    ? "flex min-h-[60px] w-full min-w-0 items-center gap-3 overflow-hidden rounded-xl border px-3 py-2 text-left transition-colors"
+                    : "flex h-auto min-h-[72px] w-full min-w-0 items-center overflow-hidden rounded-[22px] border px-4 py-3 text-left transition-colors",
                   isSelected
                     ? "border-primary bg-primary/5 shadow-soft"
                     : "border-border bg-white/85 hover:border-primary/40 hover:bg-primary/5",
@@ -158,27 +176,40 @@ export function BusSelector({
                 role="radio"
                 type="button"
               >
-                <div className="grid w-full min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                  <BusIdentity
-                    className="min-w-0"
-                    code={bus.code}
-                    photoUrl={bus.photoUrl ?? null}
-                    plate={bus.plate}
-                    secondaryText={bus.routeName ?? null}
-                    size="sm"
-                    wrap
-                  />
+                {isCompact ? (
+                  <>
+                    <BusPhoto
+                      className="shrink-0 rounded-xl"
+                      code={bus.code}
+                      photoUrl={bus.photoUrl ?? null}
+                      size="sm"
+                    />
+                    <span className="min-w-0 truncate text-lg font-semibold text-foreground">
+                      {bus.code}
+                    </span>
+                  </>
+                ) : (
+                  <div className="flex w-full min-w-0 items-center justify-between gap-3">
+                    <BusIdentity
+                      className="min-w-0 flex-1"
+                      code={bus.code}
+                      photoUrl={bus.photoUrl ?? null}
+                      plate={bus.plate}
+                      secondaryText={bus.routeName ?? null}
+                      size="sm"
+                    />
 
-                  <div className="flex flex-wrap gap-2 sm:justify-end">
-                    {isSelected ? <Badge variant="success">Seleccionado</Badge> : null}
-                    {blocked ? (
-                      <Badge className="bg-destructive/10 text-destructive" variant="muted">
-                        Ya registrado
-                      </Badge>
-                    ) : null}
-                    {unavailable ? <Badge variant="warning">No disponible</Badge> : null}
+                    <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                      {isSelected ? <Badge variant="success">Seleccionado</Badge> : null}
+                      {blocked ? (
+                        <Badge className="bg-destructive/10 text-destructive" variant="muted">
+                          Ya registrado
+                        </Badge>
+                      ) : null}
+                      {unavailable ? <Badge variant="warning">No disponible</Badge> : null}
+                    </div>
                   </div>
-                </div>
+                )}
               </button>
             );
           })}
@@ -189,13 +220,13 @@ export function BusSelector({
         <p className="text-sm text-destructive" id={statusId}>
           El bus seleccionado ya tiene un registro para esta fecha.
         </p>
-      ) : (
+      ) : showHelper ? (
         <p className="text-sm text-muted-foreground" id={helperId}>
           {searchable
             ? `${filteredBuses.length} bus${filteredBuses.length === 1 ? "" : "es"} visible${filteredBuses.length === 1 ? "" : "s"}. ${helperText}`
             : helperText}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

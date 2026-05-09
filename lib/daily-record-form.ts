@@ -44,12 +44,16 @@ export async function getDailyFormContext(
 ): Promise<DailyFormContext> {
   try {
     const supabase = await createClient();
+    const initialRecord = recordId ? await getInitialDailyRecord(recordId) : null;
+    const busQueryBase = supabase
+      .from("buses")
+      .select("id, code, plate, photo_path, route_id, status");
+    const filteredBusQuery = initialRecord
+      ? busQueryBase.or(`status.eq.active,id.eq.${initialRecord.bus_id}`)
+      : busQueryBase.eq("status", "active");
     const [{ data: buses, error: busesError }, { data: existingRecords, error: recordsError }] =
       await Promise.all([
-        supabase
-          .from("buses")
-          .select("id, code, plate, photo_path, route_id, status")
-          .order("code"),
+        filteredBusQuery.order("code"),
         supabase.from("daily_records").select("id, bus_id, record_date"),
       ]);
 
@@ -61,7 +65,6 @@ export async function getDailyFormContext(
       throw recordsError;
     }
 
-    const initialRecord = recordId ? await getInitialDailyRecord(recordId) : null;
     const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
     const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
 

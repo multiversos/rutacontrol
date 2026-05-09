@@ -248,8 +248,8 @@ export function DailyForm({
         <SectionBlock
           description={
             isMobile
-              ? "Busca por codigo o placa y toca la unidad correcta para seleccionarla."
-              : "Selecciona la unidad correcta usando foto, codigo y placa."
+              ? "Busca por numero y toca la unidad correcta para seleccionarla."
+              : "Selecciona la unidad activa por foto y numero interno."
           }
           mobile={isMobile}
           title="Selecciona el bus"
@@ -264,13 +264,14 @@ export function DailyForm({
               currentRecordId={initialRecord?.id ?? null}
               disabled={isReadOnly}
               existingRecords={existingRecords}
-              helperText="La base confirma el bloqueo final al guardar y mantiene las reglas actuales del sistema."
               labelId="bus-selector-label"
-              layout={isMobile ? "list" : "grid"}
+              layout="list"
               onChange={setBusId}
               recordDate={recordDate}
               searchable={isMobile}
-              searchPlaceholder="Buscar bus por codigo o placa"
+              searchPlaceholder="Buscar bus por numero"
+              showHelper={false}
+              variant="compact"
               value={busId}
             />
             {state.fieldErrors?.busId?.[0] ? (
