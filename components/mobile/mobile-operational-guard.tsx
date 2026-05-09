@@ -21,9 +21,7 @@ export function MobileOperationalGuard() {
   const router = useRouter();
   const [clientError, setClientError] = useState(false);
   const [connectionType, setConnectionType] = useState<string | null>(null);
-  const [isOffline, setIsOffline] = useState(() =>
-    typeof navigator === "undefined" ? false : !navigator.onLine,
-  );
+  const [isOffline, setIsOffline] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
 
   const readNetworkStatus = useCallback(async () => {
@@ -127,7 +125,7 @@ export function MobileOperationalGuard() {
         description:
           "La pantalla encontro un error temporal. Puedes recargar o volver al login si la sesion vencio.",
         icon: TriangleAlert,
-        title: "Operacion interrumpida",
+        title: "Operación interrumpida",
         tone: "unexpected",
       };
     }
