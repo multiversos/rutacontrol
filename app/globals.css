@@ -28,6 +28,26 @@
   --safe-top: env(safe-area-inset-top, 0px);
 }
 
+html.dark {
+  --background: 216 30% 9%;
+  --foreground: 210 33% 96%;
+  --card: 217 28% 15%;
+  --card-foreground: 210 33% 96%;
+  --primary: 204 83% 58%;
+  --primary-foreground: 216 42% 10%;
+  --secondary: 209 36% 21%;
+  --secondary-foreground: 206 58% 91%;
+  --muted: 217 25% 19%;
+  --muted-foreground: 214 19% 74%;
+  --accent: 35 58% 22%;
+  --accent-foreground: 39 91% 86%;
+  --destructive: 0 68% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 20% 29%;
+  --input: 216 18% 31%;
+  --ring: 204 83% 58%;
+}
+
 * {
   border-color: hsl(var(--border));
 }
@@ -46,6 +66,13 @@ body {
   min-height: 100%;
 }
 
+html.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 30%),
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.1), transparent 25%),
+    hsl(var(--background));
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -58,6 +85,64 @@ a {
 .surface-grid {
   background-image: var(--tw-gradient-stops), linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
   background-size: auto, 22px 22px, 22px 22px;
+}
+
+html.dark .surface-grid {
+  background-image: var(--tw-gradient-stops), linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  color-scheme: dark;
+}
+
+html.dark :is(.bg-white, .bg-white\/95, .bg-white\/92, .bg-white\/90, .bg-white\/88, .bg-white\/85, .bg-white\/80, .bg-white\/70) {
+  background-color: hsl(var(--card) / 0.86) !important;
+}
+
+html.dark :is(.bg-slate-50\/85, .bg-slate-50\/80, .bg-slate-50\/75, .bg-slate-50\/70, .bg-slate-100) {
+  background-color: hsl(var(--muted) / 0.72) !important;
+}
+
+html.dark :is(.border-slate-200, .border-slate-200\/80, .border-slate-200\/90, .border-slate-300) {
+  border-color: hsl(var(--border) / 0.9) !important;
+}
+
+html.dark :is(.text-slate-950, .text-slate-900) {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark :is(.text-slate-600, .text-slate-500, .text-slate-400) {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+html.dark :is(.divide-slate-200, .divide-border) > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(var(--border) / 0.9) !important;
+}
+
+html.dark :is(.hover\:bg-white:hover, .hover\:bg-slate-100:hover) {
+  background-color: hsl(var(--muted) / 0.8) !important;
+}
+
+html.dark :is(.hover\:border-slate-300:hover) {
+  border-color: hsl(var(--border)) !important;
+}
+
+html.dark :is(.bg-emerald-50, .bg-emerald-100) {
+  background-color: hsl(151 45% 18% / 0.85) !important;
+}
+
+html.dark :is(.text-emerald-700, .text-emerald-800) {
+  color: hsl(151 70% 78%) !important;
+}
+
+html.dark :is(.bg-amber-50, .bg-amber-100) {
+  background-color: hsl(38 60% 20% / 0.9) !important;
+}
+
+html.dark :is(.text-amber-700, .text-amber-800) {
+  color: hsl(42 92% 78%) !important;
 }
 
 html.native-capacitor,

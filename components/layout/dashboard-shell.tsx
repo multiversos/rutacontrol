@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { signOutAction } from "@/app/dashboard/actions";
 import { AppBrand } from "@/components/branding/app-brand";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getDefaultDashboardPath } from "@/lib/auth/routing";
@@ -120,6 +121,7 @@ export function DashboardShell({
                   </Button>
                 </form>
               </div>
+              <ThemeToggle />
             </div>
 
             <SidebarNav items={navItems} />
