@@ -132,10 +132,8 @@ export default async function MobileDebtsPage({
         </Card>
       ) : (
         <DebtForm
-          busOptions={debtsData.busOptions}
           createAnotherHref="/mobile/register/debts?new=1"
           mode="mobile"
-          recordOptions={debtsData.recordOptions}
           successContinueHref="/mobile/register"
           successContinueLabel="Volver a Registrar"
         />

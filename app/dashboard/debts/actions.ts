@@ -7,6 +7,8 @@ import { initialFormState, type FormState } from "@/lib/forms/action-state";
 import { createClient } from "@/lib/supabase/server";
 import { debtPaymentSchema, debtSchema } from "@/lib/validators/debt";
 
+const GENERAL_DEBT_DESCRIPTION = "Compromiso financiero general";
+
 function normalizeDebtFormData(formData: FormData) {
   return {
     amountUsd: formData.get("amountUsd"),
@@ -44,66 +46,14 @@ export async function saveDebtAction(
   }
 
   const supabase = await createClient();
-  let resolvedBusId = parsed.data.busId ?? null;
-
-  if (parsed.data.dailyRecordId) {
-    const { data: linkedRecord, error: linkedRecordError } = await supabase
-      .from("daily_records")
-      .select("id, bus_id")
-      .eq("id", parsed.data.dailyRecordId)
-      .maybeSingle();
-
-    if (linkedRecordError || !linkedRecord) {
-      return {
-        fieldErrors: {
-          dailyRecordId: ["Selecciona un registro diario valido."],
-        },
-        message: "No pudimos validar el registro diario seleccionado.",
-        status: "error",
-      };
-    }
-
-    if (resolvedBusId && linkedRecord.bus_id !== resolvedBusId) {
-      return {
-        fieldErrors: {
-          busId: [
-            "El bus asociado debe coincidir con el bus del registro diario seleccionado.",
-          ],
-        },
-        message: "El bus y el registro diario no pertenecen a la misma unidad.",
-        status: "error",
-      };
-    }
-
-    resolvedBusId = linkedRecord.bus_id;
-  }
-
-  if (resolvedBusId) {
-    const { data: linkedBus, error: linkedBusError } = await supabase
-      .from("buses")
-      .select("id")
-      .eq("id", resolvedBusId)
-      .maybeSingle();
-
-    if (linkedBusError || !linkedBus) {
-      return {
-        fieldErrors: {
-          busId: ["Selecciona un bus valido."],
-        },
-        message: "No pudimos validar el bus asociado a la deuda.",
-        status: "error",
-      };
-    }
-  }
-
   const payload = {
     amount_usd: parsed.data.amountUsd.toFixed(2),
-    bus_id: resolvedBusId,
+    bus_id: null,
     creditor: parsed.data.creditor,
     created_by: context.profile.id,
-    daily_record_id: parsed.data.dailyRecordId ?? null,
-    description: parsed.data.description,
-    due_date: parsed.data.dueDate ?? null,
+    daily_record_id: null,
+    description: parsed.data.description ?? GENERAL_DEBT_DESCRIPTION,
+    due_date: null,
   };
 
   const { data: debt, error } = await supabase
@@ -114,15 +64,6 @@ export async function saveDebtAction(
 
   if (error) {
     return {
-      ...(error.code === "23514"
-        ? {
-            fieldErrors: {
-              busId: [
-                "La deuda no puede vincularse a un bus distinto del registro diario o mantenimiento asociado.",
-              ],
-            },
-          }
-        : {}),
       message: "No pudimos registrar la deuda.",
       status: "error",
     };

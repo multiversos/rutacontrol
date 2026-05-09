@@ -22,11 +22,12 @@ export const debtSchema = z.object({
     .min(2, "Indica el acreedor.")
     .max(160, "El acreedor no puede exceder 160 caracteres."),
   dailyRecordId: optionalField(z.string().uuid("Selecciona un registro valido.")),
-  description: z
-    .string()
-    .trim()
-    .min(4, "Describe la deuda.")
-    .max(500, "La descripcion no puede exceder 500 caracteres."),
+  description: optionalField(
+    z
+      .string()
+      .trim()
+      .max(500, "La descripcion no puede exceder 500 caracteres."),
+  ),
   dueDate: optionalField(
     z
       .string()

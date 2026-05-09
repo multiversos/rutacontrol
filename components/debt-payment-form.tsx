@@ -98,12 +98,12 @@ export function DebtPaymentForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="debt-payment-notes">Notas del abono</Label>
+        <Label htmlFor="debt-payment-notes">Notas del abono, opcional</Label>
         <Textarea
           disabled={disabled}
           id="debt-payment-notes"
           name="notes"
-          placeholder="Referencia, soporte o contexto del pago parcial."
+          placeholder="Referencia o comentario opcional del pago."
         />
         {state.fieldErrors?.notes?.[0] ? (
           <p className="text-sm text-destructive">{state.fieldErrors.notes[0]}</p>

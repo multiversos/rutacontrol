@@ -34,33 +34,9 @@ function cleanText(value: string | undefined, maxLength = 500) {
   return text ? text.slice(0, maxLength) : undefined;
 }
 
-function cleanDate(value: string | undefined) {
-  const text = cleanText(value);
-  return text && /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : undefined;
-}
-
 function cleanNumber(value: string | undefined) {
   const text = cleanText(value);
   return text && /^\d+(\.\d+)?$/.test(text) ? text : undefined;
-}
-
-function normalizeLookup(value: string) {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function findBusId(
-  buses: Array<{ code: string; id: string; plate: string }>,
-  busLookup: string | undefined,
-) {
-  const lookup = cleanText(busLookup);
-  if (!lookup) return undefined;
-
-  const normalized = normalizeLookup(lookup);
-  return buses.find((bus) => {
-    return [bus.id, bus.code, bus.plate].some((candidate) => {
-      return normalizeLookup(candidate) === normalized;
-    });
-  })?.id;
 }
 
 export default async function DebtsPage({ searchParams }: DebtsPageProps) {
@@ -79,11 +55,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   const samanthaDefaults = params?.samantha
     ? {
         amountUsd: cleanNumber(params.amountUsd),
-        busId: findBusId(debtsData.busOptions, params.busId ?? params.bus),
         creditor: cleanText(params.creditor, 160),
-        dailyRecordId: cleanText(params.dailyRecordId ?? params.recordId),
-        description: cleanText(params.description, 500),
-        dueDate: cleanDate(params.dueDate),
       }
     : {};
 
@@ -160,21 +132,14 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
             <CardHeader>
               <CardTitle>Crear deuda</CardTitle>
               <CardDescription>
-                Registra compromisos financieros nuevos y vinculos opcionales con
-                registros diarios.
+                Registra compromisos financieros generales de la operacion.
               </CardDescription>
             </CardHeader>
             <CardContent className="min-w-0">
               {debtsData.migrationReady ? (
                 <DebtForm
-                  busOptions={debtsData.busOptions}
                   defaultAmountUsd={samanthaDefaults.amountUsd}
-                  defaultBusId={samanthaDefaults.busId}
                   defaultCreditor={samanthaDefaults.creditor}
-                  defaultDescription={samanthaDefaults.description}
-                  defaultDueDate={samanthaDefaults.dueDate}
-                  defaultRecordId={samanthaDefaults.dailyRecordId}
-                  recordOptions={debtsData.recordOptions}
                 />
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
