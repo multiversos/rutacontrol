@@ -111,32 +111,22 @@ export function DashboardShell({
                   {profile.email}
                 </p>
               </div>
-              <Badge variant="default">{ROLE_LABELS[profile.role]}</Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="default">{ROLE_LABELS[profile.role]}</Badge>
+                <form action={signOutAction}>
+                  <Button size="sm" type="submit" variant="outline">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar sesion
+                  </Button>
+                </form>
+              </div>
             </div>
 
             <SidebarNav items={navItems} />
           </div>
         </aside>
 
-        <div className="space-y-6">
-          <header className="flex flex-col gap-4 rounded-[32px] border border-border/80 bg-card/90 p-5 shadow-soft backdrop-blur sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Operacion supervisada
-              </p>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Dashboard protegido
-              </h1>
-            </div>
-
-            <form action={signOutAction}>
-              <Button type="submit" variant="outline">
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar sesion
-              </Button>
-            </form>
-          </header>
-
+        <div>
           <main>{children}</main>
         </div>
       </div>
