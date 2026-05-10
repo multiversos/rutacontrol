@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BusIdentity } from "@/components/buses/bus-identity";
+import { DeleteDailyRecordButton } from "@/components/delete-daily-record-button";
 import { Badge } from "@/components/ui/badge";
 import {
   formatCurrency,
@@ -182,12 +183,17 @@ export function DailyTable({
                     </td>
                     {isAdmin ? (
                       <td className="px-4 py-3 text-right">
-                        <Link
-                          className="text-sm font-semibold text-primary"
-                          href={`/dashboard/daily/new?recordId=${record.id}`}
-                        >
-                          Editar
-                        </Link>
+                        <div className="flex flex-col items-end gap-2">
+                          <Link
+                            className="text-sm font-semibold text-primary"
+                            href={`/dashboard/daily/new?recordId=${record.id}`}
+                          >
+                            Editar
+                          </Link>
+                          {record.status === "draft" ? (
+                            <DeleteDailyRecordButton recordId={record.id} />
+                          ) : null}
+                        </div>
                       </td>
                     ) : null}
                   </tr>

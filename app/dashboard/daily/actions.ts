@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-import { requireAuth } from "@/lib/auth/session";
+import { requireAuth, requireRole } from "@/lib/auth/session";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -72,6 +73,13 @@ function isClosureReadyInput(input: DailyRecordInput) {
   ].every((value) => value !== undefined && value !== null && value !== "");
 }
 
+function normalizeDeleteDailyRecordFormData(formData: FormData) {
+  return {
+    recordId: String(formData.get("recordId") ?? "").trim(),
+    returnTo: String(formData.get("returnTo") ?? "").trim(),
+  };
+}
+
 function buildDailyRecordAuditValues(record: DailyRecordAuditSnapshot) {
   return {
     bus_id: record.bus_id,
@@ -92,6 +100,21 @@ function buildDailyRecordAuditValues(record: DailyRecordAuditSnapshot) {
     user_id: record.user_id,
     worker_payment: record.worker_payment,
   };
+}
+
+function buildDailyReturnPath(value: string) {
+  if (!value.startsWith("/")) {
+    return "/dashboard/daily?deletedDraft=1";
+  }
+
+  const url = new URL(value, "http://rutacontrol.local");
+  if (url.pathname !== "/dashboard/daily") {
+    return "/dashboard/daily?deletedDraft=1";
+  }
+
+  url.searchParams.set("deletedDraft", "1");
+
+  return `${url.pathname}?${url.searchParams.toString()}`;
 }
 
 function formatSupabaseError(error: SupabaseLikeError | null | undefined) {
@@ -402,4 +425,77 @@ export async function saveDailyRecordAction(
           : "Registro diario guardado como borrador."),
     status: "success",
   };
+}
+
+export async function deleteDailyRecordAction(
+  _previousState: FormState = initialFormState,
+  formData: FormData,
+): Promise<FormState> {
+  void _previousState;
+  await requireRole("admin");
+  const { recordId, returnTo } = normalizeDeleteDailyRecordFormData(formData);
+
+  if (!recordId) {
+    return {
+      message: "No pudimos identificar el borrador a eliminar.",
+      status: "error",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: record, error: recordError } = await supabase
+    .from("daily_records")
+    .select(dailyRecordAuditSelect)
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (recordError || !record) {
+    return {
+      message: "No encontramos el registro diario solicitado.",
+      status: "error",
+    };
+  }
+
+  if (record.status !== "draft") {
+    return {
+      message: "Solo se pueden eliminar registros en borrador.",
+      status: "error",
+    };
+  }
+
+  const { error: deleteError } = await supabase
+    .from("daily_records")
+    .delete()
+    .eq("id", recordId)
+    .eq("status", "draft");
+
+  if (deleteError) {
+    return {
+      message: getDailyRecordPersistenceMessage(deleteError, true),
+      status: "error",
+    };
+  }
+
+  try {
+    await reconcileDailyRecordDates(supabase, [record.record_date]);
+  } catch (reconcileError) {
+    console.error(
+      "No pudimos reconciliar alertas despues de eliminar el borrador diario.",
+      reconcileError,
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/alerts");
+  revalidatePath("/dashboard/buses");
+  revalidatePath("/dashboard/debts");
+  revalidatePath("/dashboard/daily");
+  revalidatePath("/dashboard/daily/new");
+  revalidatePath("/mobile");
+  revalidatePath("/mobile/register");
+  revalidatePath("/mobile/register/expenses");
+  revalidatePath("/mobile/register/debts");
+  revalidatePath(`/dashboard/buses/${record.bus_id}`);
+
+  redirect(buildDailyReturnPath(returnTo));
 }
