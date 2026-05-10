@@ -36,18 +36,29 @@ export function DebtPaymentForm({
   const disabled = debt.status === "paid";
   const isMobile = mode === "mobile";
   const paymentDateRef = useRef<HTMLInputElement>(null);
+  const paymentDateFallbackRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (defaultPaymentDate || !paymentDateRef.current) {
-      return;
+    const localDate = defaultPaymentDate ?? getLocalDateInputValue();
+
+    if (!defaultPaymentDate && paymentDateRef.current) {
+      paymentDateRef.current.value = localDate;
     }
 
-    paymentDateRef.current.value = getLocalDateInputValue();
+    if (paymentDateFallbackRef.current) {
+      paymentDateFallbackRef.current.value = localDate;
+    }
   }, [defaultPaymentDate]);
 
   return (
     <form action={formAction} className="space-y-5">
       <input name="debtId" type="hidden" value={debt.id} />
+      <input
+        name="paymentDateFallback"
+        ref={paymentDateFallbackRef}
+        type="hidden"
+        defaultValue={defaultPaymentDate ?? ""}
+      />
 
       <div
         className={cn(

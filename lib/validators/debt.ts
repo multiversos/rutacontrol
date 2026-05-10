@@ -44,9 +44,16 @@ export const debtPaymentSchema = z.object({
       .trim()
       .max(500, "Las notas no pueden exceder 500 caracteres."),
   ),
-  paymentDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe usar formato YYYY-MM-DD."),
+  paymentDate: optionalField(
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe usar formato YYYY-MM-DD."),
+  ),
+  paymentDateFallback: optionalField(
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe usar formato YYYY-MM-DD."),
+  ),
 });
 
 export type DebtInput = z.infer<typeof debtSchema>;

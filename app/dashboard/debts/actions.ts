@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireRole } from "@/lib/auth/session";
+import { getLocalDateInputValue } from "@/lib/dates";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
 import { createClient } from "@/lib/supabase/server";
 import { debtPaymentSchema, debtSchema } from "@/lib/validators/debt";
@@ -26,6 +27,7 @@ function normalizeDebtPaymentFormData(formData: FormData) {
     debtId: formData.get("debtId"),
     notes: formData.get("notes"),
     paymentDate: formData.get("paymentDate"),
+    paymentDateFallback: formData.get("paymentDateFallback"),
   };
 }
 
@@ -118,12 +120,17 @@ export async function registerDebtPaymentAction(
     };
   }
 
+  const paymentDate =
+    parsed.data.paymentDate ??
+    parsed.data.paymentDateFallback ??
+    getLocalDateInputValue();
+
   const { error } = await supabase.from("debt_payments").insert({
     amount_usd: parsed.data.amountUsd.toFixed(2),
     created_by: context.profile.id,
     debt_id: parsed.data.debtId,
     notes: parsed.data.notes ?? null,
-    payment_date: parsed.data.paymentDate,
+    payment_date: paymentDate,
   });
 
   if (error) {
