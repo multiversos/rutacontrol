@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, AlertTriangle, CalendarDays, ShieldCheck } from "lucide-react";
 
 import { BusIdentity } from "@/components/buses/bus-identity";
+import { DashboardFilterForm } from "@/components/dashboard-filter-form";
 import { KpiCards } from "@/components/kpi-cards";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
 import { getAdminDashboardData } from "@/lib/dashboard";
+import { isDateInputValue } from "@/lib/dates";
 import { formatCurrency, formatDateLabel, formatDateTime } from "@/lib/formatters";
 
 type DashboardPageProps = {
@@ -26,9 +28,10 @@ type DashboardPageProps = {
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   await requireRole("admin");
   const params = searchParams ? await searchParams : undefined;
+  const explicitDate = isDateInputValue(params?.date) ? params.date : undefined;
   const dashboardData = await getAdminDashboardData({
     busId: params?.busId ? String(params.busId) : undefined,
-    date: params?.date ? String(params.date) : undefined,
+    date: explicitDate,
   });
 
   return (
@@ -42,53 +45,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <form className="grid gap-4 md:grid-cols-[1fr_1fr_auto_auto]">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="dashboard-date">
-                Fecha operativa
-              </label>
-              <input
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
-                defaultValue={dashboardData.filters.date}
-                id="dashboard-date"
-                name="date"
-                type="date"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="dashboard-bus">
-                Filtrar por bus
-              </label>
-              <select
-                className="flex h-11 w-full rounded-2xl border border-input bg-white/90 px-4 py-2 text-sm"
-                defaultValue={dashboardData.filters.busId ?? ""}
-                id="dashboard-bus"
-                name="busId"
-              >
-                <option value="">Todos los buses</option>
-                {dashboardData.busOptions.map((bus) => (
-                  <option key={bus.id} value={bus.id}>
-                    {bus.code}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              className="inline-flex h-11 items-center justify-center self-end rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
-              type="submit"
-            >
-              Aplicar
-            </button>
-
-            <Link
-              className="inline-flex h-11 items-center justify-center self-end rounded-full border border-border px-5 text-sm font-semibold"
-              href="/dashboard"
-            >
-              Limpiar
-            </Link>
-          </form>
+          <DashboardFilterForm
+            busId={dashboardData.filters.busId}
+            busOptions={dashboardData.busOptions}
+            hasExplicitDate={Boolean(explicitDate)}
+            selectedDate={dashboardData.filters.date}
+          />
 
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <Badge variant="muted">

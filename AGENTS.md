@@ -39,6 +39,7 @@
 - Auth y guards en `lib/auth`
 - Validadores de negocio en `lib/validators`
 - ADRs en `docs/adr`
+- Contexto operativo para Samanta en `docs/samantha-debts-context.md`
 
 ## Calidad minima antes de cerrar una fase
 

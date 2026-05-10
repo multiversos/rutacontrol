@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { saveDailyRecordAction } from "@/app/dashboard/daily/actions";
 import { BusSelector } from "@/components/bus-selector";
@@ -11,10 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  formatCurrency,
-  getBusinessTodayDate,
-} from "@/lib/formatters";
+import { getLocalDateInputValue } from "@/lib/dates";
+import { formatCurrency } from "@/lib/formatters";
 import { initialFormState } from "@/lib/forms/action-state";
 import type { Tables } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
@@ -118,10 +116,10 @@ export function DailyForm({
   const isMobile = mode === "mobile";
   const isClosedRecord = initialRecord?.status === "closed";
   const isReadOnly = readOnly || (isClosedRecord && !allowClosedEditing);
+  const explicitRecordDate = initialRecord?.record_date ?? initialValues?.recordDate;
   const [busId, setBusId] = useState(initialRecord?.bus_id ?? initialValues?.busId ?? "");
-  const [recordDate, setRecordDate] = useState(
-    initialRecord?.record_date ?? initialValues?.recordDate ?? getBusinessTodayDate(),
-  );
+  const [recordDate, setRecordDate] = useState(explicitRecordDate ?? "");
+  const localDefaultDateApplied = useRef(Boolean(explicitRecordDate));
   const [incomeUsd, setIncomeUsd] = useState(
     toInputValue(initialRecord?.income_usd) || initialValues?.incomeUsd || "",
   );
@@ -137,6 +135,19 @@ export function DailyForm({
   const [notes, setNotes] = useState(
     toInputValue(initialRecord?.notes) || initialValues?.notes || "",
   );
+
+  useEffect(() => {
+    if (localDefaultDateApplied.current) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      localDefaultDateApplied.current = true;
+      setRecordDate((current) => current || getLocalDateInputValue());
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   const toNumber = (value: string) => {
     const parsed = Number.parseFloat(value);

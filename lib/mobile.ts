@@ -95,10 +95,11 @@ function toNumber(value: string | null | undefined) {
 }
 
 export async function getMobileHomeData(options: {
+  businessDate?: string | undefined;
   role: AppRole;
   userId: string;
 }): Promise<MobileHomeData> {
-  const businessDate = getBusinessTodayDate();
+  const businessDate = options.businessDate ?? getBusinessTodayDate();
 
   if (options.role === "admin") {
     const [dashboard, alerts] = await Promise.all([
@@ -276,13 +277,14 @@ export async function getMobileAlertsViewData(): Promise<MobileAlertsViewData> {
 }
 
 export async function getMobileRegisterActivity(options: {
+  businessDate?: string | undefined;
   role: AppRole;
   userId: string;
 }): Promise<{
   businessDate: string;
   records: MobileRegisterRecentRecord[];
 }> {
-  const businessDate = getBusinessTodayDate();
+  const businessDate = options.businessDate ?? getBusinessTodayDate();
   const supabase = await createClient();
   let recordsQuery = supabase
     .from("daily_records")

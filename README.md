@@ -172,6 +172,7 @@ Notas:
 ## Documentacion operativa
 
 - Estado del proyecto: [docs/project-status.md](N:/projects/busescontrol/docs/project-status.md)
+- Contexto operativo para Samanta en deudas y abonos: [docs/samantha-debts-context.md](N:/projects/busescontrol/docs/samantha-debts-context.md)
 - Checklist de despliegue e integraciones: [docs/deployment-checklist.md](N:/projects/busescontrol/docs/deployment-checklist.md)
 - Evidencia y checklist funcional de Sprint 1: [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md)
 - Checklist de fundacion: [docs/sprint-0-checklist.md](N:/projects/busescontrol/docs/sprint-0-checklist.md)

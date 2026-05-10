@@ -10,6 +10,7 @@ import {
 import { BusIdentity } from "@/components/buses/bus-identity";
 import { DailyForm } from "@/components/daily-form";
 import { ConfigAlert } from "@/components/layout/config-alert";
+import { LocalDateQuerySync } from "@/components/local-date-query-sync";
 import { MobileActionTile } from "@/components/mobile/mobile-action-tile";
 import { MobileEmptyState } from "@/components/mobile/mobile-empty-state";
 import { MobileSectionHeader } from "@/components/mobile/mobile-section-header";
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth/session";
 import { getDailyFormContext } from "@/lib/daily-record-form";
+import { isDateInputValue } from "@/lib/dates";
 import {
   formatCurrency,
   formatDateLabel,
@@ -25,15 +27,27 @@ import {
 } from "@/lib/formatters";
 import { getMobileHomeData, getMobileRegisterActivity } from "@/lib/mobile";
 
-export default async function MobileRegisterPage() {
+type MobileRegisterPageProps = {
+  searchParams?: Promise<{
+    date?: string;
+  }>;
+};
+
+export default async function MobileRegisterPage({
+  searchParams,
+}: MobileRegisterPageProps) {
   const context = await requireAuth({ redirectTo: "/mobile/register" });
+  const params = searchParams ? await searchParams : undefined;
+  const businessDate = isDateInputValue(params?.date) ? params.date : undefined;
   const [homeData, formContext, registerActivity] = await Promise.all([
     getMobileHomeData({
+      businessDate,
       role: context.profile.role,
       userId: context.user.id,
     }),
     getDailyFormContext(),
     getMobileRegisterActivity({
+      businessDate,
       role: context.profile.role,
       userId: context.user.id,
     }),
@@ -76,6 +90,8 @@ export default async function MobileRegisterPage() {
 
   return (
     <div className="space-y-4">
+      <LocalDateQuerySync currentDate={homeData.businessDate} />
+
       <Card className="bg-white/88">
         <CardContent className="space-y-4 p-5">
           <div className="flex items-start justify-between gap-4">

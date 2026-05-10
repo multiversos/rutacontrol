@@ -143,6 +143,7 @@ function normalizeDebt(
 
 export async function getDebtsData(filters: {
   payDebtId?: string;
+  payDebtQuery?: string;
   status?: DebtStatusFilter;
 }) {
   const supabase = await createClient();
@@ -233,8 +234,15 @@ export async function getDebtsData(filters: {
     });
   }
 
+  const payDebtQuery = filters.payDebtQuery?.trim().toLowerCase();
   const selectedDebt =
-    (debts ?? []).find((debt) => debt.id === filters.payDebtId) ?? null;
+    (debts ?? []).find((debt) => debt.id === filters.payDebtId) ??
+    (payDebtQuery
+      ? ((debts ?? []).find((debt) => {
+          const searchable = `${debt.creditor} ${debt.description}`.toLowerCase();
+          return debt.status !== "paid" && searchable.includes(payDebtQuery);
+        }) ?? null)
+      : null);
   const { data: payments } = selectedDebt
     ? await supabase
         .from("debt_payments")
@@ -281,6 +289,7 @@ export async function getDebtsData(filters: {
     debts: normalizedDebts,
     filters: {
       payDebtId: filters.payDebtId,
+      payDebtQuery: filters.payDebtQuery,
       status,
     },
     migrationReady,

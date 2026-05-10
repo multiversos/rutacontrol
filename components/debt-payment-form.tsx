@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
 import { registerDebtPaymentAction } from "@/app/dashboard/debts/actions";
 import { Badge } from "@/components/ui/badge";
@@ -8,18 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
+import { getLocalDateInputValue } from "@/lib/dates";
 import type { DebtListItem } from "@/lib/debts";
-import { formatCurrency, getBusinessTodayDate } from "@/lib/formatters";
+import { formatCurrency } from "@/lib/formatters";
 import { initialFormState } from "@/lib/forms/action-state";
 import { cn } from "@/lib/utils";
 
 type DebtPaymentFormProps = {
   debt: DebtListItem;
+  defaultAmountUsd?: string | undefined;
+  defaultNotes?: string | undefined;
+  defaultPaymentDate?: string | undefined;
   mode?: "desktop" | "mobile";
 };
 
 export function DebtPaymentForm({
   debt,
+  defaultAmountUsd,
+  defaultNotes,
+  defaultPaymentDate,
   mode = "desktop",
 }: DebtPaymentFormProps) {
   const [state, formAction] = useActionState(
@@ -28,6 +35,15 @@ export function DebtPaymentForm({
   );
   const disabled = debt.status === "paid";
   const isMobile = mode === "mobile";
+  const paymentDateRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (defaultPaymentDate || !paymentDateRef.current) {
+      return;
+    }
+
+    paymentDateRef.current.value = getLocalDateInputValue();
+  }, [defaultPaymentDate]);
 
   return (
     <form action={formAction} className="space-y-5">
@@ -64,6 +80,7 @@ export function DebtPaymentForm({
         <div className="space-y-2">
           <Label htmlFor="debt-payment-amount">Abono (USD)</Label>
           <Input
+            defaultValue={defaultAmountUsd ?? ""}
             disabled={disabled}
             id="debt-payment-amount"
             inputMode="decimal"
@@ -83,11 +100,12 @@ export function DebtPaymentForm({
         <div className="space-y-2">
           <Label htmlFor="debt-payment-date">Fecha del abono</Label>
           <Input
-            defaultValue={getBusinessTodayDate()}
             disabled={disabled}
             id="debt-payment-date"
             name="paymentDate"
+            ref={paymentDateRef}
             type="date"
+            defaultValue={defaultPaymentDate ?? ""}
           />
           {state.fieldErrors?.paymentDate?.[0] ? (
             <p className="text-sm text-destructive">
@@ -100,6 +118,7 @@ export function DebtPaymentForm({
       <div className="space-y-2">
         <Label htmlFor="debt-payment-notes">Notas del abono, opcional</Label>
         <Textarea
+          defaultValue={defaultNotes ?? ""}
           disabled={disabled}
           id="debt-payment-notes"
           name="notes"

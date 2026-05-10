@@ -21,10 +21,33 @@ import { formatCurrency, formatDateLabel, formatDateTime } from "@/lib/formatter
 
 type MobileDebtsPageProps = {
   searchParams?: Promise<{
+    amountUsd?: string;
+    creditor?: string;
+    debtQuery?: string;
+    notes?: string;
     pay?: string;
+    payDebt?: string;
+    paymentAmountUsd?: string;
+    paymentDate?: string;
+    samantha?: string;
     status?: string;
   }>;
 };
+
+function cleanText(value: string | undefined, maxLength = 500) {
+  const text = String(value ?? "").trim();
+  return text ? text.slice(0, maxLength) : undefined;
+}
+
+function cleanNumber(value: string | undefined) {
+  const text = cleanText(value);
+  return text && /^\d+(\.\d+)?$/.test(text) ? text : undefined;
+}
+
+function cleanDate(value: string | undefined) {
+  const text = cleanText(value);
+  return text && /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : undefined;
+}
 
 export default async function MobileDebtsPage({
   searchParams,
@@ -67,10 +90,25 @@ export default async function MobileDebtsPage({
     params?.status === "paid"
       ? (params.status as DebtStatusFilter)
       : "all";
+  const payDebtQuery = cleanText(params?.payDebt ?? params?.debtQuery, 160);
   const debtsData = await getDebtsData({
     ...(params?.pay ? { payDebtId: String(params.pay) } : {}),
+    ...(payDebtQuery ? { payDebtQuery } : {}),
     status,
   });
+  const samanthaDefaults = params?.samantha
+    ? {
+        amountUsd: cleanNumber(params.amountUsd),
+        creditor: cleanText(params.creditor, 160),
+      }
+    : {};
+  const samanthaPaymentDefaults = params?.samantha
+    ? {
+        amountUsd: cleanNumber(params.paymentAmountUsd),
+        notes: cleanText(params.notes, 500),
+        paymentDate: cleanDate(params.paymentDate),
+      }
+    : {};
   const openDebts = debtsData.debts.filter((debt) => debt.status !== "paid");
   const visibleDebts = (openDebts.length > 0 ? openDebts : debtsData.debts).slice(0, 8);
 
@@ -133,6 +171,8 @@ export default async function MobileDebtsPage({
       ) : (
         <DebtForm
           createAnotherHref="/mobile/register/debts?new=1"
+          defaultAmountUsd={samanthaDefaults.amountUsd}
+          defaultCreditor={samanthaDefaults.creditor}
           mode="mobile"
           successContinueHref="/mobile/register"
           successContinueLabel="Volver a Registrar"
@@ -146,7 +186,13 @@ export default async function MobileDebtsPage({
               description="Reutiliza la misma accion de abonos parciales del modulo web."
               title="Registrar abono"
             />
-            <DebtPaymentForm debt={debtsData.selectedDebt} mode="mobile" />
+            <DebtPaymentForm
+              debt={debtsData.selectedDebt}
+              defaultAmountUsd={samanthaPaymentDefaults.amountUsd}
+              defaultNotes={samanthaPaymentDefaults.notes}
+              defaultPaymentDate={samanthaPaymentDefaults.paymentDate}
+              mode="mobile"
+            />
 
             {debtsData.paymentHistory.length === 0 ? (
               <MobileEmptyState

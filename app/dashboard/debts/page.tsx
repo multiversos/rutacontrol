@@ -20,9 +20,14 @@ type DebtsPageProps = {
     busId?: string;
     creditor?: string;
     dailyRecordId?: string;
+    debtQuery?: string;
     description?: string;
     dueDate?: string;
+    notes?: string;
     pay?: string;
+    payDebt?: string;
+    paymentAmountUsd?: string;
+    paymentDate?: string;
     recordId?: string;
     samantha?: string;
     status?: string;
@@ -39,6 +44,11 @@ function cleanNumber(value: string | undefined) {
   return text && /^\d+(\.\d+)?$/.test(text) ? text : undefined;
 }
 
+function cleanDate(value: string | undefined) {
+  const text = cleanText(value);
+  return text && /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : undefined;
+}
+
 export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   await requireRole("admin");
   const params = searchParams ? await searchParams : undefined;
@@ -48,14 +58,23 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
     params?.status === "paid"
       ? (params.status as DebtStatusFilter)
       : "all";
+  const payDebtQuery = cleanText(params?.payDebt ?? params?.debtQuery, 160);
   const debtsData = await getDebtsData({
     ...(params?.pay ? { payDebtId: String(params.pay) } : {}),
+    ...(payDebtQuery ? { payDebtQuery } : {}),
     status,
   });
   const samanthaDefaults = params?.samantha
     ? {
         amountUsd: cleanNumber(params.amountUsd),
         creditor: cleanText(params.creditor, 160),
+      }
+    : {};
+  const samanthaPaymentDefaults = params?.samantha
+    ? {
+        amountUsd: cleanNumber(params.paymentAmountUsd),
+        notes: cleanText(params.notes, 500),
+        paymentDate: cleanDate(params.paymentDate),
       }
     : {};
 
@@ -165,6 +184,9 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
               {debtsData.migrationReady && debtsData.selectedDebt ? (
                 <>
                   <DebtPaymentForm
+                    defaultAmountUsd={samanthaPaymentDefaults.amountUsd}
+                    defaultNotes={samanthaPaymentDefaults.notes}
+                    defaultPaymentDate={samanthaPaymentDefaults.paymentDate}
                     key={debtsData.selectedDebt.id}
                     debt={debtsData.selectedDebt}
                   />

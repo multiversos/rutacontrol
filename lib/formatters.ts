@@ -1,3 +1,5 @@
+import { getLocalDateInputValue, shiftDateInputValue } from "@/lib/dates";
+
 export function formatCurrency(value: number | string, currency = "USD") {
   const amount =
     typeof value === "number"
@@ -34,18 +36,7 @@ export function isNonZeroAmount(value: number | string) {
 }
 
 export function getBusinessTodayDate() {
-  const formatter = new Intl.DateTimeFormat("en", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "America/Caracas",
-    year: "numeric",
-  });
-  const parts = formatter.formatToParts(new Date());
-  const year = parts.find((part) => part.type === "year")?.value ?? "1970";
-  const month = parts.find((part) => part.type === "month")?.value ?? "01";
-  const day = parts.find((part) => part.type === "day")?.value ?? "01";
-
-  return `${year}-${month}-${day}`;
+  return getLocalDateInputValue();
 }
 
 function parseDateString(value: string) {
@@ -87,8 +78,5 @@ export function formatFileSize(bytes: number) {
 }
 
 export function shiftDateString(value: string, days: number) {
-  const date = new Date(`${value}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-
-  return date.toISOString().slice(0, 10);
+  return shiftDateInputValue(value, days);
 }
