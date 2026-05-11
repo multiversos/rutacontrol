@@ -181,9 +181,11 @@ function TrendChart({ rows }: { rows: HistorySummaryRow[] }) {
     paddingTop + ((maxValue - value) / range) * plotHeight;
   const zeroY = yForValue(0);
   const barWidth = Math.min(44, Math.max(18, step * 0.42));
+  const xForIndex = (index: number) =>
+    chartRows.length > 1 ? paddingX + step * index : chartWidth / 2;
   const linePoints = chartRows.map((row, index) => ({
     periodKey: row.periodKey,
-    x: paddingX + step * index,
+    x: xForIndex(index),
     y: yForValue(row.totalCalculatedNet),
   }));
 
@@ -205,7 +207,7 @@ function TrendChart({ rows }: { rows: HistorySummaryRow[] }) {
           y2={zeroY}
         />
         {chartRows.map((row, index) => {
-          const x = paddingX + step * index;
+          const x = xForIndex(index);
           const incomeY = yForValue(row.totalIncomeUsd);
           const barY = Math.min(incomeY, zeroY);
           const barHeight = Math.max(Math.abs(zeroY - incomeY), 4);
@@ -530,10 +532,6 @@ export function FinancialHistoryPanel({
                     <p className="mt-4 text-sm text-muted-foreground">
                       Registros: {row.totalRecords} - Buses: {row.busCount} - Cerrados:{" "}
                       {row.closedRecords} - Borradores: {row.draftRecords}
-                    </p>
-                    <p className="hidden">
-                      Registros: {row.totalRecords} · Buses: {row.busCount} · Cerrados:{" "}
-                      {row.closedRecords} · Borradores: {row.draftRecords}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       Diferencias abiertas: {row.openDifferences}
