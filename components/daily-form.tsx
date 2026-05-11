@@ -456,7 +456,9 @@ export function DailyForm({
           ) : (
             <SubmitButton
               className="w-full"
+              data-testid="daily-submit-button"
               disabled={selectedBusBlocked || !busId}
+              id="daily-submit-button"
               pendingLabel="Guardando registro..."
             >
               {initialRecord

@@ -323,10 +323,11 @@ export async function saveDailyRecordAction(
     };
   }
 
+  const closureReadyForPersistence = isClosureReadyInput(parsed.data);
   const departureTimeForPersistence =
     existingRecord?.departure_time ??
     parsed.data.departureTime ??
-    (isClosureReadyInput(parsed.data) ? "00:00" : null);
+    (closureReadyForPersistence ? "00:00" : null);
   const incomeUsdForPersistence = toFixedOrNull(parsed.data.incomeUsd, 2);
   const netProfitUsdForPersistence = toFixedOrNull(
     calculateNetProfitInput(parsed.data),
@@ -345,6 +346,7 @@ export async function saveDailyRecordAction(
     notes: parsed.data.notes?.trim() ? parsed.data.notes.trim() : null,
     other_expenses: toFixedOrNull(parsed.data.otherExpenses, 2),
     record_date: parsed.data.recordDate,
+    status: closureReadyForPersistence ? "closed" : "draft",
     user_id: existingOwnerId,
     worker_payment: toFixedOrNull(parsed.data.workerPayment, 2),
   } satisfies Omit<TablesUpdate<"daily_records">, "bus_id">;
