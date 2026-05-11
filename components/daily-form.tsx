@@ -116,24 +116,24 @@ export function DailyForm({
   const isMobile = mode === "mobile";
   const isClosedRecord = initialRecord?.status === "closed";
   const isReadOnly = readOnly || (isClosedRecord && !allowClosedEditing);
-  const explicitRecordDate = initialRecord?.record_date ?? initialValues?.recordDate;
-  const [busId, setBusId] = useState(initialRecord?.bus_id ?? initialValues?.busId ?? "");
+  const explicitRecordDate = initialValues?.recordDate ?? initialRecord?.record_date;
+  const [busId, setBusId] = useState(initialValues?.busId ?? initialRecord?.bus_id ?? "");
   const [recordDate, setRecordDate] = useState(explicitRecordDate ?? "");
   const localDefaultDateApplied = useRef(Boolean(explicitRecordDate));
   const [incomeUsd, setIncomeUsd] = useState(
-    toInputValue(initialRecord?.income_usd) || initialValues?.incomeUsd || "",
+    initialValues?.incomeUsd || toInputValue(initialRecord?.income_usd) || "",
   );
   const [fuelCost, setFuelCost] = useState(
-    toInputValue(initialRecord?.fuel_cost) || initialValues?.fuelCost || "",
+    initialValues?.fuelCost || toInputValue(initialRecord?.fuel_cost) || "",
   );
   const [workerPayment, setWorkerPayment] = useState(
-    toInputValue(initialRecord?.worker_payment) || initialValues?.workerPayment || "",
+    initialValues?.workerPayment || toInputValue(initialRecord?.worker_payment) || "",
   );
   const [otherExpenses, setOtherExpenses] = useState(
-    toInputValue(initialRecord?.other_expenses) || initialValues?.otherExpenses || "",
+    initialValues?.otherExpenses || toInputValue(initialRecord?.other_expenses) || "",
   );
   const [notes, setNotes] = useState(
-    toInputValue(initialRecord?.notes) || initialValues?.notes || "",
+    initialValues?.notes || toInputValue(initialRecord?.notes) || "",
   );
 
   useEffect(() => {
@@ -281,6 +281,7 @@ export function DailyForm({
               <Label htmlFor="income-usd">Ingreso en d&oacute;lares</Label>
               <Input
                 disabled={isReadOnly}
+                data-testid="daily-income-usd-input"
                 id="income-usd"
                 inputMode="decimal"
                 min="0"

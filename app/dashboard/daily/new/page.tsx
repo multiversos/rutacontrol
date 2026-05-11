@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { DailyForm, type DailyFormInitialValues } from "@/components/daily-form";
 import { ConfigAlert } from "@/components/layout/config-alert";
@@ -81,6 +82,23 @@ function buildSamanthaInitialValues(
   return Object.values(values).some(Boolean) ? values : undefined;
 }
 
+function buildSamanthaEditHref(
+  recordId: string,
+  params: Awaited<NewDailyRecordPageProps["searchParams"]>,
+) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params ?? {}).forEach(([key, value]) => {
+    if (typeof value === "string" && key !== "recordId") {
+      searchParams.set(key, value);
+    }
+  });
+
+  searchParams.set("recordId", recordId);
+
+  return `/dashboard/daily/new?${searchParams.toString()}`;
+}
+
 export default async function NewDailyRecordPage({
   searchParams,
 }: NewDailyRecordPageProps) {
@@ -98,9 +116,25 @@ export default async function NewDailyRecordPage({
   const requestedRecordId = params?.recordId ? String(params.recordId) : undefined;
   const isClosedRecord = initialRecord?.status === "closed";
   const isEditingExistingRecord = Boolean(initialRecord);
-  const samanthaInitialValues = initialRecord
-    ? undefined
-    : buildSamanthaInitialValues(params, buses);
+  const samanthaInitialValues = buildSamanthaInitialValues(params, buses);
+
+  if (
+    params?.samantha &&
+    !initialRecord &&
+    samanthaInitialValues?.busId &&
+    samanthaInitialValues.recordDate
+  ) {
+    const matchingRecord = existingRecords.find(
+      (record) =>
+        record.bus_id === samanthaInitialValues.busId &&
+        record.record_date === samanthaInitialValues.recordDate,
+    );
+
+    if (matchingRecord) {
+      redirect(buildSamanthaEditHref(matchingRecord.id, params));
+    }
+  }
+
   const adminCanEditExisting = context.profile.role === "admin";
   const editBlockedForRole = isEditingExistingRecord && !adminCanEditExisting;
   const formUnavailable = Boolean(loadError) || Boolean(requestedRecordId && !initialRecord);
