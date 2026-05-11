@@ -102,11 +102,13 @@ export type NormalizedDailyRecord = {
 export type HistorySummaryRow = {
   busCount: number;
   closedRecords: number;
+  draftRecords: number;
   label: string;
   openDifferences: number;
   periodKey: string;
   totalCalculatedNet: number;
   totalDifference: number;
+  totalExpenses: number;
   totalIncomeUsd: number;
   totalRecords: number;
 };
@@ -161,11 +163,13 @@ function getAuditContext(entry: AuditLogLookup): NormalizedAuditContext {
 }
 
 function formatMonthLabel(dateValue: string) {
-  return new Intl.DateTimeFormat("es-VE", {
+  const label = new Intl.DateTimeFormat("es-VE", {
     month: "long",
     timeZone: "UTC",
     year: "numeric",
   }).format(new Date(`${dateValue}T00:00:00Z`));
+
+  return label.replace(" de ", " ").replace(/^\p{Ll}/u, (match) => match.toUpperCase());
 }
 
 function getWeekStart(dateValue: string) {
@@ -198,9 +202,14 @@ function buildSummaryRows(
     if (current) {
       current.busIds.add(record.busId);
       current.closedRecords += record.status === "closed" ? 1 : 0;
+      current.draftRecords += record.status === "draft" ? 1 : 0;
       current.openDifferences += Math.abs(toNumber(record.difference)) >= 0.01 ? 1 : 0;
       current.totalCalculatedNet += toNumber(record.calculatedNet);
       current.totalDifference += toNumber(record.difference);
+      current.totalExpenses +=
+        toNumber(record.fuelCost) +
+        toNumber(record.workerPayment) +
+        toNumber(record.otherExpenses);
       current.totalIncomeUsd += toNumber(record.incomeUsd);
       current.totalRecords += 1;
       return;
@@ -210,6 +219,7 @@ function buildSummaryRows(
       busCount: 1,
       busIds: new Set([record.busId]),
       closedRecords: record.status === "closed" ? 1 : 0,
+      draftRecords: record.status === "draft" ? 1 : 0,
       label:
         mode === "week"
           ? `${formatDateLabel(periodKey)} - ${formatDateLabel(
@@ -220,6 +230,10 @@ function buildSummaryRows(
       periodKey,
       totalCalculatedNet: toNumber(record.calculatedNet),
       totalDifference: toNumber(record.difference),
+      totalExpenses:
+        toNumber(record.fuelCost) +
+        toNumber(record.workerPayment) +
+        toNumber(record.otherExpenses),
       totalIncomeUsd: toNumber(record.incomeUsd),
       totalRecords: 1,
     });

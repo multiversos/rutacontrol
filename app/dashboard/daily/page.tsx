@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { DailyTable, type DailyFilters } from "@/components/daily-table";
-import { HistorySummaryTable } from "@/components/history-summary-table";
+import { FinancialHistoryPanel } from "@/components/financial-history-panel";
 import { KpiCards } from "@/components/kpi-cards";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -149,18 +149,11 @@ export default async function DailyPage({ searchParams }: DailyPageProps) {
 
       {context.profile.role === "admin" ? (
         <>
-          <section className="grid gap-6 xl:grid-cols-2">
-            <HistorySummaryTable
-              description="Agrupa registros por semana para revisar tendencia operativa sin salir del modulo."
-              rows={historyData.weeklySummary}
-              title="Historial semanal"
-            />
-            <HistorySummaryTable
-              description="Agrupa registros por mes para comparar volumen, neto calculado y diferencias."
-              rows={historyData.monthlySummary}
-              title="Historial mensual"
-            />
-          </section>
+          <FinancialHistoryPanel
+            dailyHref="/dashboard/daily"
+            monthlyRows={historyData.monthlySummary}
+            weeklyRows={historyData.weeklySummary}
+          />
 
           <Card>
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
