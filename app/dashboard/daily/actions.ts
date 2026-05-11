@@ -37,6 +37,23 @@ function toFixedOrNull(value: number | undefined, digits: number) {
   return value == null ? null : value.toFixed(digits);
 }
 
+function roundMoney(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function calculateNetProfitInput(input: DailyRecordInput) {
+  if (input.incomeUsd == null) {
+    return undefined;
+  }
+
+  return roundMoney(
+    input.incomeUsd -
+      (input.fuelCost ?? 0) -
+      (input.workerPayment ?? 0) -
+      (input.otherExpenses ?? 0),
+  );
+}
+
 const dailyRecordAuditSelect =
   "id, bus_id, user_id, record_date, departure_time, income_bs, exchange_rate, fuel_cost, worker_payment, other_expenses, net_profit_usd, income_usd, calculated_net, difference, notes, status, closed_at, closure_hash";
 
@@ -310,14 +327,21 @@ export async function saveDailyRecordAction(
     existingRecord?.departure_time ??
     parsed.data.departureTime ??
     (isClosureReadyInput(parsed.data) ? "00:00" : null);
+  const incomeUsdForPersistence = toFixedOrNull(parsed.data.incomeUsd, 2);
+  const netProfitUsdForPersistence = toFixedOrNull(
+    calculateNetProfitInput(parsed.data),
+    2,
+  );
 
   const basePayload = {
     departure_time: departureTimeForPersistence,
-    exchange_rate: null,
+    // Compatibility for databases still running the legacy trigger that derives
+    // income_usd from income_bs / exchange_rate before the direct-USD migration.
+    exchange_rate: incomeUsdForPersistence ? "1.00" : null,
     fuel_cost: toFixedOrNull(parsed.data.fuelCost, 2),
-    income_bs: null,
-    income_usd: toFixedOrNull(parsed.data.incomeUsd, 2),
-    net_profit_usd: null,
+    income_bs: incomeUsdForPersistence,
+    income_usd: incomeUsdForPersistence,
+    net_profit_usd: netProfitUsdForPersistence,
     notes: parsed.data.notes?.trim() ? parsed.data.notes.trim() : null,
     other_expenses: toFixedOrNull(parsed.data.otherExpenses, 2),
     record_date: parsed.data.recordDate,
