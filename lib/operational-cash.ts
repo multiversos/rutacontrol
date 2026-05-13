@@ -20,6 +20,8 @@ type OperationalCashMovementRow = Pick<
 
 type BusLookup = Pick<Tables<"buses">, "code" | "id" | "plate">;
 
+const PAGE_SIZE = 1000;
+
 export type OperationalCashMovementItem = {
   amountUsd: number;
   busCode: string | null;
@@ -136,14 +138,61 @@ function normalizeMovements(
     });
 }
 
+async function fetchOperationalCashMovements(supabase: SupabaseClient) {
+  const allMovements: OperationalCashMovementRow[] = [];
+  let page = 0;
+
+  while (true) {
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("operational_cash_movements")
+      .select(
+        "id, movement_date, type, direction, amount_usd, description, bus_id, created_at",
+      )
+      .order("movement_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      return { error, movements: allMovements };
+    }
+
+    allMovements.push(...(data ?? []));
+
+    if (!data || data.length < PAGE_SIZE) {
+      return { error: null, movements: allMovements };
+    }
+
+    page += 1;
+  }
+}
+
+async function fetchBusMap(supabase: SupabaseClient, busIds: string[]) {
+  const busMap = new Map<string, BusLookup>();
+
+  for (let index = 0; index < busIds.length; index += PAGE_SIZE) {
+    const chunk = busIds.slice(index, index + PAGE_SIZE);
+    const { data, error } =
+      chunk.length > 0
+        ? await supabase.from("buses").select("id, code, plate").in("id", chunk)
+        : { data: [] as BusLookup[], error: null };
+
+    if (error) {
+      throw error;
+    }
+
+    (data ?? []).forEach((bus) => {
+      busMap.set(bus.id, bus);
+    });
+  }
+
+  return busMap;
+}
+
 export async function getOperationalCashSummary(selectedDate: string) {
   const supabase = await createClient();
-  const { data: movements, error } = await supabase
-    .from("operational_cash_movements")
-    .select("id, movement_date, type, direction, amount_usd, description, bus_id, created_at")
-    .order("movement_date", { ascending: false })
-    .order("created_at", { ascending: false })
-    .range(0, 9999);
+  const { error, movements } = await fetchOperationalCashMovements(supabase);
 
   if (error) {
     if (["42P01", "42703", "PGRST204", "PGRST205"].includes(error.code ?? "")) {
@@ -161,19 +210,10 @@ export async function getOperationalCashSummary(selectedDate: string) {
   }
 
   const busIds = Array.from(
-    new Set((movements ?? []).map((movement) => movement.bus_id).filter(Boolean)),
+    new Set(movements.map((movement) => movement.bus_id).filter(Boolean)),
   ) as string[];
-  const { data: buses, error: busesError } =
-    busIds.length > 0
-      ? await supabase.from("buses").select("id, code, plate").in("id", busIds)
-      : { data: [] as BusLookup[], error: null };
-
-  if (busesError) {
-    throw busesError;
-  }
-
-  const busMap = new Map((buses ?? []).map((bus) => [bus.id, bus]));
-  const normalizedMovements = normalizeMovements(movements ?? [], busMap);
+  const busMap = await fetchBusMap(supabase, busIds);
+  const normalizedMovements = normalizeMovements(movements, busMap);
   const todayMovements = normalizedMovements.filter(
     (movement) => movement.movementDate === selectedDate,
   );
