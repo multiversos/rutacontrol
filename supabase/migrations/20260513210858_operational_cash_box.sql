@@ -10,11 +10,11 @@ create table if not exists public.operational_cash_movements (
   direction text not null,
   amount_usd numeric(14, 2) not null,
   description text not null,
-  daily_record_id uuid references public.daily_records (id) on delete set null,
-  debt_payment_id uuid references public.debt_payments (id) on delete set null,
-  bus_id uuid references public.buses (id) on delete set null,
-  debt_id uuid references public.debts (id) on delete set null,
-  created_by uuid references public.profiles (id) on delete set null,
+  daily_record_id uuid references public.daily_records (id),
+  debt_payment_id uuid references public.debt_payments (id),
+  bus_id uuid references public.buses (id),
+  debt_id uuid references public.debts (id),
+  created_by uuid references public.profiles (id),
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
   constraint operational_cash_movements_type_check check (
@@ -55,12 +55,21 @@ create unique index if not exists operational_cash_movements_debt_payment_once
 on public.operational_cash_movements (debt_payment_id)
 where type = 'debt_payment' and debt_payment_id is not null;
 
-drop trigger if exists trg_operational_cash_movements_set_updated_at
-on public.operational_cash_movements;
-create trigger trg_operational_cash_movements_set_updated_at
-before update on public.operational_cash_movements
-for each row
-execute function public.set_updated_at();
+do $do$
+begin
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'trg_operational_cash_movements_set_updated_at'
+      and tgrelid = 'public.operational_cash_movements'::regclass
+  ) then
+    create trigger trg_operational_cash_movements_set_updated_at
+    before update on public.operational_cash_movements
+    for each row
+    execute function public.set_updated_at();
+  end if;
+end
+$do$;
 
 create or replace function public.sync_operational_cash_from_daily_record(
   _record_id uuid
@@ -279,29 +288,6 @@ begin
 end;
 $$;
 
-create or replace function public.sync_operational_cash_from_deleted_debt_payment()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  movement_id uuid;
-begin
-  update public.operational_cash_movements
-  set direction = 'adjustment',
-      amount_usd = 0,
-      debt_payment_id = null,
-      description = 'Pago de deuda eliminado; movimiento anulado en Caja operativa',
-      updated_at = timezone('utc', now())
-  where debt_payment_id = old.id
-    and type = 'debt_payment'
-  returning id into movement_id;
-
-  return old;
-end;
-$$;
-
 create or replace function public.trg_sync_operational_cash_daily_record()
 returns trigger
 language plpgsql
@@ -326,45 +312,53 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_daily_records_sync_operational_cash
-on public.daily_records;
-create trigger trg_daily_records_sync_operational_cash
-after insert or update of
-  bus_id,
-  calculated_net,
-  exchange_rate,
-  fuel_cost,
-  income_bs,
-  income_usd,
-  net_profit_usd,
-  other_expenses,
-  record_date,
-  status,
-  user_id,
-  worker_payment
-on public.daily_records
-for each row
-execute function public.trg_sync_operational_cash_daily_record();
+do $do$
+begin
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'trg_daily_records_sync_operational_cash'
+      and tgrelid = 'public.daily_records'::regclass
+  ) then
+    create trigger trg_daily_records_sync_operational_cash
+    after insert or update of
+      bus_id,
+      calculated_net,
+      exchange_rate,
+      fuel_cost,
+      income_bs,
+      income_usd,
+      net_profit_usd,
+      other_expenses,
+      record_date,
+      status,
+      user_id,
+      worker_payment
+    on public.daily_records
+    for each row
+    execute function public.trg_sync_operational_cash_daily_record();
+  end if;
 
-drop trigger if exists trg_debt_payments_sync_operational_cash
-on public.debt_payments;
-create trigger trg_debt_payments_sync_operational_cash
-after insert or update of
-  amount_usd,
-  payment_date,
-  debt_id,
-  paid_from_operational_cash,
-  created_by
-on public.debt_payments
-for each row
-execute function public.trg_sync_operational_cash_debt_payment();
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'trg_debt_payments_sync_operational_cash'
+      and tgrelid = 'public.debt_payments'::regclass
+  ) then
+    create trigger trg_debt_payments_sync_operational_cash
+    after insert or update of
+      amount_usd,
+      payment_date,
+      debt_id,
+      paid_from_operational_cash,
+      created_by
+    on public.debt_payments
+    for each row
+    execute function public.trg_sync_operational_cash_debt_payment();
+  end if;
 
-drop trigger if exists trg_debt_payments_zero_operational_cash_on_delete
-on public.debt_payments;
-create trigger trg_debt_payments_zero_operational_cash_on_delete
-before delete on public.debt_payments
-for each row
-execute function public.sync_operational_cash_from_deleted_debt_payment();
+end
+$do$;
 
 insert into public.operational_cash_movements (
   movement_date,
@@ -413,29 +407,51 @@ grant execute on function public.sync_operational_cash_from_debt_payment(uuid) t
 
 alter table public.operational_cash_movements enable row level security;
 
-drop policy if exists "operational_cash_movements_admin_select"
-on public.operational_cash_movements;
-create policy "operational_cash_movements_admin_select"
-on public.operational_cash_movements
-for select
-to authenticated
-using (public.is_admin());
+do $do$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'operational_cash_movements'
+      and policyname = 'operational_cash_movements_admin_select'
+  ) then
+    create policy "operational_cash_movements_admin_select"
+    on public.operational_cash_movements
+    for select
+    to authenticated
+    using (public.is_admin());
+  end if;
 
-drop policy if exists "operational_cash_movements_admin_insert"
-on public.operational_cash_movements;
-create policy "operational_cash_movements_admin_insert"
-on public.operational_cash_movements
-for insert
-to authenticated
-with check (public.is_admin());
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'operational_cash_movements'
+      and policyname = 'operational_cash_movements_admin_insert'
+  ) then
+    create policy "operational_cash_movements_admin_insert"
+    on public.operational_cash_movements
+    for insert
+    to authenticated
+    with check (public.is_admin());
+  end if;
 
-drop policy if exists "operational_cash_movements_admin_update"
-on public.operational_cash_movements;
-create policy "operational_cash_movements_admin_update"
-on public.operational_cash_movements
-for update
-to authenticated
-using (public.is_admin())
-with check (public.is_admin());
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'operational_cash_movements'
+      and policyname = 'operational_cash_movements_admin_update'
+  ) then
+    create policy "operational_cash_movements_admin_update"
+    on public.operational_cash_movements
+    for update
+    to authenticated
+    using (public.is_admin())
+    with check (public.is_admin());
+  end if;
+end
+$do$;
 
 commit;
