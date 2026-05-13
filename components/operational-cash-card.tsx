@@ -1,5 +1,6 @@
 import { ArrowDownLeft, ArrowUpRight, WalletCards } from "lucide-react";
 
+import { OperationalCashAdjustmentForm } from "@/components/operational-cash-adjustment-form";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -16,6 +17,7 @@ import type {
 import { cn } from "@/lib/utils";
 
 type OperationalCashCardProps = {
+  canAdjust?: boolean;
   selectedDate: string;
   summary: OperationalCashSummary;
 };
@@ -53,6 +55,7 @@ function MovementAmount({ movement }: { movement: OperationalCashMovementItem })
 }
 
 export function OperationalCashCard({
+  canAdjust = false,
   selectedDate,
   summary,
 }: OperationalCashCardProps) {
@@ -70,7 +73,12 @@ export function OperationalCashCard({
               marcados como salidos de caja.
             </CardDescription>
           </div>
-          <Badge variant="muted">{formatDateLabel(selectedDate)}</Badge>
+          <div className="flex flex-col gap-3 sm:items-end">
+            <Badge variant="muted">{formatDateLabel(selectedDate)}</Badge>
+            {canAdjust && summary.migrationReady ? (
+              <OperationalCashAdjustmentForm defaultDate={selectedDate} />
+            ) : null}
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

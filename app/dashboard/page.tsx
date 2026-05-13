@@ -68,6 +68,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <KpiCards items={dashboardData.kpis} />
 
       <OperationalCashCard
+        canAdjust
         selectedDate={dashboardData.selectedDate}
         summary={dashboardData.operationalCash}
       />
