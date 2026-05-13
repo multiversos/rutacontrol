@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireAuth, requireRole } from "@/lib/auth/session";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
+import { syncOperationalCashFromDailyRecord } from "@/lib/operational-cash";
 import { createClient } from "@/lib/supabase/server";
 import {
   dailyRecordSchema,
@@ -420,6 +421,8 @@ export async function saveDailyRecordAction(
         "La correccion se guardo, pero no pudimos reconciliar alertas ni diferencias automaticamente.";
     }
   }
+
+  await syncOperationalCashFromDailyRecord(savedRecord.id, supabase);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/alerts");

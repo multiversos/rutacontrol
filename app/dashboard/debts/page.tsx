@@ -2,6 +2,7 @@ import { DebtForm } from "@/components/debt-form";
 import { DebtPaymentForm } from "@/components/debt-payment-form";
 import { DebtTable } from "@/components/debt-table";
 import { KpiCards } from "@/components/kpi-cards";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -208,6 +209,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                             <tr>
                               <th className="px-4 py-3">Fecha</th>
                               <th className="px-4 py-3">Abono</th>
+                              <th className="px-4 py-3">Caja</th>
                               <th className="px-4 py-3">Notas</th>
                             </tr>
                           </thead>
@@ -224,6 +226,19 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
                                 </td>
                                 <td className="px-4 py-3 font-semibold">
                                   {formatCurrency(payment.amountUsd)}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <Badge
+                                    variant={
+                                      payment.paidFromOperationalCash
+                                        ? "warning"
+                                        : "muted"
+                                    }
+                                  >
+                                    {payment.paidFromOperationalCash
+                                      ? "Descontado"
+                                      : "Sin descuento"}
+                                  </Badge>
                                 </td>
                                 <td className="px-4 py-3">
                                   {payment.notes?.trim() ? payment.notes : "--"}

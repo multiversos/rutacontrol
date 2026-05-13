@@ -13,7 +13,12 @@ import { createClient } from "@/lib/supabase/server";
 
 type DebtPaymentRow = Pick<
   Tables<"debt_payments">,
-  "amount_usd" | "created_at" | "id" | "notes" | "payment_date"
+  | "amount_usd"
+  | "created_at"
+  | "id"
+  | "notes"
+  | "paid_from_operational_cash"
+  | "payment_date"
 >;
 
 type DebtRow = Pick<
@@ -61,6 +66,7 @@ export type DebtPaymentListItem = {
   createdAt: string;
   id: string;
   notes: string | null;
+  paidFromOperationalCash: boolean;
   paymentDate: string;
 };
 
@@ -243,14 +249,47 @@ export async function getDebtsData(filters: {
           return debt.status !== "paid" && searchable.includes(payDebtQuery);
         }) ?? null)
       : null);
-  const { data: payments } = selectedDebt
-    ? await supabase
+  let payments: DebtPaymentRow[] = [];
+
+  if (selectedDebt) {
+    const { data, error: paymentsError } = await supabase
+      .from("debt_payments")
+      .select(
+        "id, amount_usd, payment_date, notes, paid_from_operational_cash, created_at",
+      )
+      .eq("debt_id", selectedDebt.id)
+      .order("payment_date", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (
+      paymentsError &&
+      ["42P01", "42703", "PGRST204", "PGRST205"].includes(
+        paymentsError.code ?? "",
+      )
+    ) {
+      const { data: fallbackPayments, error: fallbackPaymentsError } = await supabase
         .from("debt_payments")
         .select("id, amount_usd, payment_date, notes, created_at")
         .eq("debt_id", selectedDebt.id)
         .order("payment_date", { ascending: false })
-        .order("created_at", { ascending: false })
-    : { data: [] as DebtPaymentRow[] };
+        .order("created_at", { ascending: false });
+
+      if (fallbackPaymentsError) {
+        throw fallbackPaymentsError;
+      }
+
+      payments = (fallbackPayments ?? []).map((payment) => ({
+        ...payment,
+        paid_from_operational_cash: false,
+      }));
+    } else {
+      if (paymentsError) {
+        throw paymentsError;
+      }
+
+      payments = data ?? [];
+    }
+  }
 
   const normalizedDebts = (debts ?? [])
     .filter((debt) => !isDemoDebtRecord(debt))
@@ -293,11 +332,12 @@ export async function getDebtsData(filters: {
       status,
     },
     migrationReady,
-    paymentHistory: (payments ?? []).map((payment) => ({
+    paymentHistory: payments.map((payment) => ({
       amountUsd: payment.amount_usd,
       createdAt: payment.created_at,
       id: payment.id,
       notes: payment.notes,
+      paidFromOperationalCash: payment.paid_from_operational_cash,
       paymentDate: payment.payment_date,
     })) satisfies DebtPaymentListItem[],
     recordOptions: (recentRecords ?? [])

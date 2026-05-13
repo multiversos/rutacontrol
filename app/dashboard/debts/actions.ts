@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/session";
 import { getLocalDateInputValue } from "@/lib/dates";
 import { initialFormState, type FormState } from "@/lib/forms/action-state";
+import { syncOperationalCashFromDebtPayment } from "@/lib/operational-cash";
 import { createClient } from "@/lib/supabase/server";
 import { debtPaymentSchema, debtSchema } from "@/lib/validators/debt";
 
@@ -26,6 +27,7 @@ function normalizeDebtPaymentFormData(formData: FormData) {
     amountUsd: formData.get("amountUsd"),
     debtId: formData.get("debtId"),
     notes: formData.get("notes"),
+    paidFromOperationalCash: formData.get("paidFromOperationalCash"),
     paymentDate: formData.get("paymentDate"),
     paymentDateFallback: formData.get("paymentDateFallback"),
   };
@@ -125,13 +127,18 @@ export async function registerDebtPaymentAction(
     parsed.data.paymentDateFallback ??
     getLocalDateInputValue();
 
-  const { error } = await supabase.from("debt_payments").insert({
-    amount_usd: parsed.data.amountUsd.toFixed(2),
-    created_by: context.profile.id,
-    debt_id: parsed.data.debtId,
-    notes: parsed.data.notes ?? null,
-    payment_date: paymentDate,
-  });
+  const { data: payment, error } = await supabase
+    .from("debt_payments")
+    .insert({
+      amount_usd: parsed.data.amountUsd.toFixed(2),
+      created_by: context.profile.id,
+      debt_id: parsed.data.debtId,
+      notes: parsed.data.notes ?? null,
+      paid_from_operational_cash: parsed.data.paidFromOperationalCash,
+      payment_date: paymentDate,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return {
@@ -143,6 +150,11 @@ export async function registerDebtPaymentAction(
     };
   }
 
+  if (payment) {
+    await syncOperationalCashFromDebtPayment(payment.id, supabase);
+  }
+
+  revalidatePath("/dashboard");
   revalidatePath("/dashboard/debts");
   revalidatePath("/mobile");
   revalidatePath("/mobile/register/debts");

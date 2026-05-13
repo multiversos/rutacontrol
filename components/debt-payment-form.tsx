@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 
 import { registerDebtPaymentAction } from "@/app/dashboard/debts/actions";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -139,6 +140,30 @@ export function DebtPaymentForm({
           <p className="text-sm text-destructive">{state.fieldErrors.notes[0]}</p>
         ) : null}
       </div>
+
+      {!isMobile ? (
+        <div className="rounded-2xl border border-border bg-muted/40 p-4">
+          <label
+            className="flex cursor-pointer items-start gap-3"
+            htmlFor="debt-payment-operational-cash"
+          >
+            <Checkbox
+              disabled={disabled}
+              id="debt-payment-operational-cash"
+              name="paidFromOperationalCash"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-semibold text-foreground">
+                Descontar este pago de la Caja operativa
+              </span>
+              <span className="block text-sm leading-6 text-muted-foreground">
+                Marca esta opcion solo si el dinero salio realmente de la Caja
+                operativa y no fue contado ya como gasto del registro diario.
+              </span>
+            </span>
+          </label>
+        </div>
+      ) : null}
 
       {state.message ? (
         <p

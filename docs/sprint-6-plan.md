@@ -1,8 +1,34 @@
 # Sprint 6 Plan
 
-Fecha de apertura: 9 de abril de 2026.
+Fecha de apertura original: 9 de abril de 2026.
 
-## Objetivo de esta rama
+Actualizacion de alcance en rama `codex/operational-cash-box`: 13 de mayo de 2026.
+
+## Alcance activo de esta rama
+
+Implementar Caja operativa como ledger auditable del dinero disponible acumulado:
+
+1. Nueva tabla `operational_cash_movements` como historial de movimientos.
+2. Backfill no destructivo de netos de `daily_records` ya cerrados.
+3. Entradas automaticas desde `daily_records.status = 'closed'`.
+4. Actualizacion idempotente del movimiento si se corrige un registro diario cerrado.
+5. Soporte para netos negativos como salida de Caja operativa.
+6. Columna `debt_payments.paid_from_operational_cash` para pagos marcados por el admin.
+7. Salidas automaticas desde pagos de deuda solo cuando el checkbox este marcado.
+8. Indices unicos parciales por `daily_record_id` y `debt_payment_id` para evitar duplicados.
+9. RLS admin-only para lectura/escritura directa del ledger.
+10. Tarjeta e historial inicial en `/dashboard`.
+11. Integracion del checkbox en el formulario de abonos de `/dashboard/debts`.
+
+## Decisiones de Caja operativa
+
+- El saldo no se guarda como fuente de verdad; se deriva de la suma del ledger.
+- Los movimientos automaticos ligados a registros diarios y pagos se actualizan en lugar de duplicarse.
+- Si un registro cerrado volviera a `draft`, el movimiento asociado queda en monto `0` y direccion `adjustment`; no se borra la fila para conservar trazabilidad.
+- Los pagos de deuda existentes antes de esta rama no descuentan Caja operativa porque no hay evidencia historica del origen del dinero.
+- Los ajustes manuales quedan contemplados en el esquema (`manual_adjustment`), pero no se habilita UI de ajuste en esta primera version.
+
+## Objetivo historico Android
 
 Preparar la base Android de RutaControl usando Capacitor y volver operativas las rutas moviles base (`/mobile`) para auth, registro diario, alertas, gastos complementarios y deudas, sin rehacer la aplicacion ni alterar backend, auth, reglas de negocio o esquema de base de datos.
 

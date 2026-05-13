@@ -2,9 +2,9 @@
 
 Estado del repositorio: `Sprint 5 cerrado`.
 
-En la rama de trabajo de Sprint 6 ya existe una base Android con Capacitor y una shell movil propia bajo `/mobile`, sin tocar la logica de negocio ni el esquema SQL.
+En la rama `codex/operational-cash-box`, Sprint 6 abre el alcance de Caja operativa con ledger auditable, entradas automaticas desde cierres diarios y descuentos opt-in desde pagos de deuda.
 
-RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible, alertas internas, deudas con pagos parciales y reparaciones con comprobante y uploads reales a Supabase Storage.
+RutaControl es una aplicacion web interna para registrar la operacion diaria y financiera de una empresa de buses de pasajeros. El estado actual cubre autenticacion con Supabase Auth, roles `admin` y `registrador`, CRUD de rutas, CRUD de buses, registros diarios con recalculo financiero en SQL, cierre automatico operativo, dashboard administrativo con KPIs, historial, auditoria visible, alertas internas, deudas con pagos parciales, Caja operativa y reparaciones con comprobante y uploads reales a Supabase Storage.
 
 ## Estado actual
 
@@ -14,6 +14,7 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - Sprint 3: cerrado el 3 de abril de 2026
 - Sprint 4: cerrado el 3 de abril de 2026
 - Sprint 5: cerrado el 4 de abril de 2026
+- Sprint 6: abierto en rama separada para Caja operativa
 
 ## Criterios aprobados de Sprint 1
 
@@ -81,6 +82,17 @@ RutaControl es una aplicacion web interna para registrar la operacion diaria y f
 - `/dashboard/daily/new`
 - `/dashboard/debts`
 - `/dashboard/repairs`
+
+## Caja operativa
+
+La Caja operativa vive en `/dashboard` como tarjeta de resumen e historial. Su saldo se deriva de `operational_cash_movements`, no de un numero guardado aparte.
+
+- `daily_records` cerrados generan movimientos `daily_net`.
+- Correcciones de registros cerrados actualizan el mismo movimiento por `daily_record_id`.
+- Netos negativos se reflejan como salida de caja.
+- `debt_payments` solo generan salida `debt_payment` cuando `paid_from_operational_cash` es `true`.
+- Los indices unicos parciales por origen evitan doble conteo automatico.
+- Los pagos de deuda advierten que el checkbox solo debe marcarse si el dinero no fue contado ya como gasto diario.
 
 ## Rutas base movil
 
@@ -176,7 +188,7 @@ Notas:
 - Checklist de despliegue e integraciones: [docs/deployment-checklist.md](N:/projects/busescontrol/docs/deployment-checklist.md)
 - Evidencia y checklist funcional de Sprint 1: [docs/smoke-test-sprint-1.md](N:/projects/busescontrol/docs/smoke-test-sprint-1.md)
 - Checklist de fundacion: [docs/sprint-0-checklist.md](N:/projects/busescontrol/docs/sprint-0-checklist.md)
-- Plan de Sprint 6 Android: [docs/sprint-6-plan.md](N:/projects/busescontrol/docs/sprint-6-plan.md)
+- Plan de Sprint 6 y Caja operativa: [docs/sprint-6-plan.md](N:/projects/busescontrol/docs/sprint-6-plan.md)
 - Cierre Android release interno: [docs/sprint-6-android-release.md](N:/projects/busescontrol/docs/sprint-6-android-release.md)
 
 ## Siguiente fase

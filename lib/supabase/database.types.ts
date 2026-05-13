@@ -250,6 +250,7 @@ export type Database = {
           debt_id: string;
           id: string;
           notes: string | null;
+          paid_from_operational_cash: boolean;
           payment_date: string;
           updated_at: string;
         };
@@ -260,6 +261,7 @@ export type Database = {
           debt_id: string;
           id?: string;
           notes?: string | null;
+          paid_from_operational_cash?: boolean;
           payment_date?: string;
           updated_at?: string;
         };
@@ -270,6 +272,7 @@ export type Database = {
           debt_id?: string;
           id?: string;
           notes?: string | null;
+          paid_from_operational_cash?: boolean;
           payment_date?: string;
           updated_at?: string;
         };
@@ -523,6 +526,90 @@ export type Database = {
             columns: ["debt_id"];
             isOneToOne: false;
             referencedRelation: "debts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      operational_cash_movements: {
+        Row: {
+          amount_usd: string;
+          bus_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          daily_record_id: string | null;
+          debt_id: string | null;
+          debt_payment_id: string | null;
+          description: string;
+          direction: "in" | "out" | "adjustment";
+          id: string;
+          movement_date: string;
+          type: "daily_net" | "debt_payment" | "manual_adjustment";
+          updated_at: string;
+        };
+        Insert: {
+          amount_usd: string;
+          bus_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          daily_record_id?: string | null;
+          debt_id?: string | null;
+          debt_payment_id?: string | null;
+          description: string;
+          direction: "in" | "out" | "adjustment";
+          id?: string;
+          movement_date: string;
+          type: "daily_net" | "debt_payment" | "manual_adjustment";
+          updated_at?: string;
+        };
+        Update: {
+          amount_usd?: string;
+          bus_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          daily_record_id?: string | null;
+          debt_id?: string | null;
+          debt_payment_id?: string | null;
+          description?: string;
+          direction?: "in" | "out" | "adjustment";
+          id?: string;
+          movement_date?: string;
+          type?: "daily_net" | "debt_payment" | "manual_adjustment";
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "operational_cash_movements_bus_id_fkey";
+            columns: ["bus_id"];
+            isOneToOne: false;
+            referencedRelation: "buses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "operational_cash_movements_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "operational_cash_movements_daily_record_id_fkey";
+            columns: ["daily_record_id"];
+            isOneToOne: false;
+            referencedRelation: "daily_records";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "operational_cash_movements_debt_id_fkey";
+            columns: ["debt_id"];
+            isOneToOne: false;
+            referencedRelation: "debts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "operational_cash_movements_debt_payment_id_fkey";
+            columns: ["debt_payment_id"];
+            isOneToOne: false;
+            referencedRelation: "debt_payments";
             referencedColumns: ["id"];
           },
         ];
@@ -805,6 +892,18 @@ export type Database = {
           _record_date?: string | null;
         };
         Returns: number;
+      };
+      sync_operational_cash_from_daily_record: {
+        Args: {
+          _record_id: string;
+        };
+        Returns: string | null;
+      };
+      sync_operational_cash_from_debt_payment: {
+        Args: {
+          _payment_id: string;
+        };
+        Returns: string | null;
       };
       reconcile_maintenance_alerts: {
         Args: {

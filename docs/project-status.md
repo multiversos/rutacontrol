@@ -1,6 +1,6 @@
 # Project Status
 
-Fecha de actualizacion: 9 de abril de 2026.
+Fecha de actualizacion: 13 de mayo de 2026.
 
 ## Estado por sprint
 
@@ -12,11 +12,11 @@ Fecha de actualizacion: 9 de abril de 2026.
 | Sprint 3 | Cerrado | Dashboard admin, KPIs, filtros, historial y auditoria visible validados |
 | Sprint 4 | Cerrado | Alertas internas y monitoreo operativo sin Telegram |
 | Sprint 5 | Cerrado | Deudas, pagos parciales, reparaciones con comprobante, Storage e historial por unidad validados |
-| Sprint 6 | En rama separada | Base Android con Capacitor, experiencia movil y preparacion de release interno sobre logica existente |
+| Sprint 6 | En rama separada | Caja operativa con ledger auditable en `codex/operational-cash-box` |
 
 ## Resumen ejecutivo
 
-RutaControl mantiene una base funcional validada hasta Sprint 5. En una rama separada de Sprint 6 ya existe una base Android con Capacitor, una shell movil propia y una experiencia movil operativa para telefono sobre la misma logica actual, sin alterar backend, auth, RLS ni esquema SQL.
+RutaControl mantiene una base funcional validada hasta Sprint 5. La rama `codex/operational-cash-box` abre Sprint 6 para Caja operativa: saldo derivado de ledger, entradas desde cierres diarios y salidas desde pagos de deuda marcados explicitamente como salidos de caja.
 
 ## Estado real de infraestructura
 
@@ -48,6 +48,7 @@ RutaControl mantiene una base funcional validada hasta Sprint 5. En una rama sep
 - Modulo de reparaciones operativo con comprobante obligatorio y Storage real
 - Historial de reparaciones por bus operativo
 - Proximo servicio sugerido por unidad operativo
+- Caja operativa en desarrollo sobre rama separada, sin merge ni deploy
 
 ## Estado de Sprint 5
 
@@ -82,33 +83,23 @@ Estado actual de validacion:
 
 ## Estado de Sprint 6 en rama separada
 
-Alcance preparado en la rama de trabajo Android:
+Alcance activo de Caja operativa:
 
-1. Integracion de Capacitor
-2. Plataforma Android creada
-3. Shell movil `/mobile`
-4. Navegacion base `Inicio`, `Registrar`, `Buses`, `Alertas`, `Mas`
-5. Ajustes de viewport, safe area y teclado
-6. Auth movil con redirect estable a rutas `/mobile/*`
-7. Registro diario movil reutilizando `saveDailyRecordAction`
-8. Alertas moviles priorizadas reutilizando `getAlertsData`
-9. Gastos complementarios moviles sobre `expenses`
-10. Deudas moviles sobre el modulo real de deudas y abonos
-11. Perfil movil por bus con vista semanal y mensual reutilizando `lib/bus-profile`
-12. Fallback local para fallo inicial de web remota
-13. Guard movil de red/error con `@capacitor/network`
-14. Back button, status bar, teclado y safe areas ajustados
-15. Metadata de release interno y documentacion de APK/AAB
+1. Ledger `operational_cash_movements`
+2. Backfill de netos diarios cerrados existentes
+3. Sincronizacion idempotente desde `daily_records`
+4. Checkbox de pago desde Caja operativa en abonos de deuda
+5. Sincronizacion idempotente desde `debt_payments`
+6. Tarjeta e historial inicial en `/dashboard`
+7. RLS admin-only para el ledger
+8. Documentacion de funcionamiento y decisiones
 
-Validacion actual del branch:
+Validacion del branch:
 
-- `typecheck`: PASS
-- `lint`: PASS
-- `build`: PASS
-- redirects moviles `/mobile/register/expenses`, `/mobile/register/debts` y `/mobile/alerts`: PASS
-- `npm run android:sync`: PASS
-- `gradlew assembleDebug`: PASS usando Android Studio JBR y SDK local detectados
-- arranque real en emulador/dispositivo: pendiente porque no hay AVD creado ni dispositivo conectado
+- Pendiente ejecutar `npm run typecheck`
+- Pendiente ejecutar `npm run lint`
+- Pendiente ejecutar `npm run build`
+- Pendiente smoke local autenticado
 
 ## Estado de cierre
 
@@ -118,8 +109,8 @@ Validacion actual del branch:
 - Sprint 3: cerrado
 - Sprint 4: cerrado
 - Sprint 5: cerrado el 4 de abril de 2026
-- Sprint 6: abierto en rama separada el 9 de abril de 2026 solo para base Android
+- Sprint 6: abierto en rama separada para Caja operativa el 13 de mayo de 2026
 
 ## Pendiente siguiente fase
 
-Sprint 6 queda abierto solo en rama separada para la experiencia Android y movil. El trabajo funcional realizado se limito a shells y flujos moviles apoyados en la logica existente, sin abrir alcances nuevos de backend ni cambios de negocio.
+Sprint 6 queda abierto solo en rama separada para Caja operativa. No hay merge a `main` ni deploy sin aprobacion.

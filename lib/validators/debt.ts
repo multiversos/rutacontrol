@@ -14,7 +14,10 @@ const optionalField = <T extends z.ZodTypeAny>(schema: T) =>
   }, schema.optional());
 
 export const debtSchema = z.object({
-  amountUsd: z.coerce.number().positive("El monto debe ser mayor a cero."),
+  amountUsd: z.coerce
+    .number()
+    .finite("El monto debe ser un numero valido.")
+    .positive("El monto debe ser mayor a cero."),
   busId: optionalField(z.string().uuid("Selecciona un bus valido.")),
   creditor: z
     .string()
@@ -36,7 +39,10 @@ export const debtSchema = z.object({
 });
 
 export const debtPaymentSchema = z.object({
-  amountUsd: z.coerce.number().positive("El abono debe ser mayor a cero."),
+  amountUsd: z.coerce
+    .number()
+    .finite("El abono debe ser un numero valido.")
+    .positive("El abono debe ser mayor a cero."),
   debtId: z.string().uuid("La deuda seleccionada no es valida."),
   notes: optionalField(
     z
@@ -53,6 +59,10 @@ export const debtPaymentSchema = z.object({
     z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe usar formato YYYY-MM-DD."),
+  ),
+  paidFromOperationalCash: z.preprocess(
+    (value) => value === true || value === "on" || value === "true",
+    z.boolean(),
   ),
 });
 

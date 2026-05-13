@@ -14,6 +14,7 @@ import {
   getBusinessTodayDate,
   shiftDateString,
 } from "@/lib/formatters";
+import { getOperationalCashSummary } from "@/lib/operational-cash";
 import { createClient } from "@/lib/supabase/server";
 
 type BusLookup = Pick<Tables<"buses">, "code" | "id" | "photo_path" | "plate" | "status">;
@@ -349,6 +350,7 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
         .order("created_at", { ascending: false })
         .limit(6),
     ]);
+  const operationalCash = await getOperationalCashSummary(selectedDate);
 
   const visibleBuses = (buses ?? []).filter((bus) => !isDemoBus(bus));
   const photoMap = await getBusPhotoUrlMap(supabase, visibleBuses);
@@ -435,6 +437,7 @@ export async function getAdminDashboardData(filters: DashboardFilterState) {
         value: String(pendingBuses.length),
       },
     ] satisfies DashboardKpiItem[],
+    operationalCash,
     pendingBuses: pendingBuses.map((bus) => bus.code),
     records: filteredRecords.map((record) => ({
       busCode: record.busCode,

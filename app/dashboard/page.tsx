@@ -4,6 +4,7 @@ import { ArrowRight, AlertTriangle, CalendarDays, ShieldCheck } from "lucide-rea
 import { BusIdentity } from "@/components/buses/bus-identity";
 import { DashboardFilterForm } from "@/components/dashboard-filter-form";
 import { KpiCards } from "@/components/kpi-cards";
+import { OperationalCashCard } from "@/components/operational-cash-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -65,6 +66,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </Card>
 
       <KpiCards items={dashboardData.kpis} />
+
+      <OperationalCashCard
+        selectedDate={dashboardData.selectedDate}
+        summary={dashboardData.operationalCash}
+      />
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
