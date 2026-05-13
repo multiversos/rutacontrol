@@ -6,6 +6,7 @@ export const DASHBOARD_REDIRECT_PATHS = [
   "/dashboard/daily",
   "/dashboard/daily/new",
   "/dashboard/buses",
+  "/dashboard/operational-cash",
   "/dashboard/debts",
   "/dashboard/maintenance",
   "/dashboard/repairs",
@@ -94,6 +95,7 @@ export function sanitizeRedirectPath(path?: string | null, role?: AppRole | null
     (target.pathname === "/dashboard" ||
       target.pathname === "/dashboard/alerts" ||
       target.pathname === "/dashboard/debts" ||
+      target.pathname === "/dashboard/operational-cash" ||
       target.pathname === "/dashboard/maintenance" ||
       target.pathname === "/dashboard/repairs" ||
       target.pathname === "/dashboard/buses" ||

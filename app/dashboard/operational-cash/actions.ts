@@ -56,6 +56,7 @@ export async function createOperationalCashAdjustmentAction(
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/operational-cash");
 
   return {
     entityId: movement.id,

@@ -22,6 +22,7 @@ type SidebarIconKey =
   | "dashboard"
   | "route"
   | "bus"
+  | "cash"
   | "calendar"
   | "debt"
   | "maintenance"
@@ -41,6 +42,7 @@ const iconMap = {
   alerts: BellRing,
   audit: ShieldCheck,
   bus: BusFront,
+  cash: WalletCards,
   calendar: CalendarDays,
   debt: WalletCards,
   dashboard: LayoutDashboard,

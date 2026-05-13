@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, WalletCards } from "lucide-react";
 
 import { OperationalCashAdjustmentForm } from "@/components/operational-cash-adjustment-form";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -75,6 +77,17 @@ export function OperationalCashCard({
           </div>
           <div className="flex flex-col gap-3 sm:items-end">
             <Badge variant="muted">{formatDateLabel(selectedDate)}</Badge>
+            {summary.migrationReady ? (
+              <Link
+                className={buttonVariants({
+                  size: "sm",
+                  variant: "secondary",
+                })}
+                href="/dashboard/operational-cash"
+              >
+                Ver movimientos
+              </Link>
+            ) : null}
             {canAdjust && summary.migrationReady ? (
               <OperationalCashAdjustmentForm defaultDate={selectedDate} />
             ) : null}

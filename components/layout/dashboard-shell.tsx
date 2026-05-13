@@ -14,6 +14,7 @@ type DashboardNavIcon =
   | "audit"
   | "bus"
   | "calendar"
+  | "cash"
   | "debt"
   | "dashboard"
   | "maintenance"
@@ -41,6 +42,11 @@ export function DashboardShell({
             href: "/dashboard/buses",
             icon: "bus" as DashboardNavIcon,
             label: "Buses",
+          },
+          {
+            href: "/dashboard/operational-cash",
+            icon: "cash" as DashboardNavIcon,
+            label: "Caja operativa",
           },
           {
             href: "/dashboard/daily",
